@@ -15,16 +15,16 @@ KEYWORDS="~amd64 ~x86"
 IUSE="gpm examples"
 
 DEPEND="
-    sys-libs/ncurses:0=[unicode]
+    sys-libs/ncurses:0
     gpm? ( sys-libs/gpm )
 "
 RDEPEND="${DEPEND}
     x11-misc/xclip
     x11-misc/xsel
-    gui-libs/wl-clipboard
+    gui-apps/wl-clipboard
 "
 
-BDEPEND=">=dev-util/cmake-3.13"
+BDEPEND="dev-build/cmake"
 
 src_configure() {
     local mycmakeargs=(
@@ -39,23 +39,5 @@ src_compile() {
 }
 
 src_install() {
-    # Install the static lib manually
-    dolib.a build/libtvision.a
-
-    # Install headers
-    insinto /usr/include
-    doins -r include/tvision
-
-    # Backward-compat headers
-    doins -r include/tvision/compat
-
-    if use examples; then
-        exeinto /usr/share/${PN}/examples
-        doexe build/hello build/tvdemo build/tvedit build/tvdir build/mmenu build/palette
-    fi
-
-    # Help compiler (optional tool)
-    dobin build/tvhc
-
-    dodoc README.md
+   cmake_src_install
 }
