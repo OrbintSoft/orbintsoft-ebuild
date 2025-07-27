@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pkgmetadata>
+  <maintainer type="person">
+    <email>stefano.balzarotti@orbintsoft.net</email>
+    <name>Stefano Balzarotti</name>
+  </maintainer>
+  <longdescription>
+    Easy scripts to auto-configure ssh agent and load keys and passwords.
+  </longdescription>
+  <upstream>
+    <remote-id type="github">OrbintSoft/ssh-profile-config</remote-id>
+  </upstream>
+</pkgmetadata>
