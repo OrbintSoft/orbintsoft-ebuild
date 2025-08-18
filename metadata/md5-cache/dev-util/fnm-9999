@@ -1,0 +1,15 @@
+BDEPEND=|| ( >=dev-lang/rust-bin-1.74.1:* >=dev-lang/rust-1.74.1:* )
+DEFINED_PHASES=compile configure install postinst setup test unpack
+DEPEND=dev-lang/rust
+DESCRIPTION=Fast and simple Node.js version manager, built in Rust
+EAPI=8
+HOMEPAGE=https://github.com/Schniz/fnm
+INHERIT=cargo
+IUSE=debug
+KEYWORDS=amd64
+LICENSE=MIT
+RDEPEND=dev-lang/rust
+RESTRICT=network-sandbox
+SLOT=0
+_eclasses_=toolchain-funcs	a0b29008c671a362b505f96fa80ce9c0	flag-o-matic	a7afe42e95fb46ce9691605acfb24672	multiprocessing	1e32df7deee68372153dca65f4a7c21f	rust	2c958ff95a0fd21c1cb19e961cb2946d	rust-toolchain	76468983281b0a7fc167ca224f84ecfd	cargo	5da01b45ec362e78575502b4fb82773a
+_md5_=2d2df16d2a3e7b54a691f3b4d4fba59c
