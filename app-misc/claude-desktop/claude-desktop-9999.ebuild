@@ -1,0 +1,55 @@
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"
+HOMEPAGE="https://github.com/aaddrick/claude-desktop-debian"
+
+SRC_URI=""
+S="${WORKDIR}"
+
+LICENSE="MIT"
+SLOT="0"
+KEYWORDS="~amd64"
+IUSE="wayland"
+PROPERTIES="live"
+RESTRICT="network-sandbox"
+
+RDEPEND="
+	dev-libs/nss
+	x11-libs/libXScrnSaver
+	x11-libs/libXtst
+"
+BDEPEND="
+	app-arch/dpkg
+	net-misc/curl
+	app-misc/jq
+"
+
+src_unpack() {
+	local api_url="https://api.github.com/repos/aaddrick/claude-desktop-debian/releases/latest"
+
+	einfo "Querying latest release..."
+	local deb_url=$(curl -sL --fail "${api_url}" \
+		| jq -r '.assets[] | select(.name | endswith("_amd64.deb")) | .browser_download_url' \
+		| head -1)
+
+	[[ -z "${deb_url}" ]] && die "Could not determine latest .deb URL"
+	einfo "Downloading: ${deb_url}"
+
+	local deb_file="${T}/claude-desktop.deb"
+	curl -L --fail -o "${deb_file}" "${deb_url}" || die "Download failed"
+
+	dpkg-deb -x "${deb_file}" "${S}" || die "dpkg-deb extraction failed"
+}
+
+src_install() {
+	[[ -d "${S}/usr" ]] && { cp -r "${S}/usr" "${D}/" || die ; }
+	[[ -d "${S}/opt" ]] && { cp -r "${S}/opt" "${D}/" || die ; }
+
+}
+
+pkg_postinst() {
+	einfo "Claude Desktop installed! Avvia con: claude-desktop"
+}

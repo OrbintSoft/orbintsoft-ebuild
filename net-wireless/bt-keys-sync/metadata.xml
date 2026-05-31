@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
+	</maintainer>
+	<longdescription lang="en">
+		bt-keys-sync syncs Bluetooth pairing keys between Windows and
+		Linux dual-boot systems, so that paired devices keep working on
+		both operating systems without having to re-pair after each boot.
+		Reads/writes the Windows SYSTEM registry hive and the BlueZ info
+		files under /var/lib/bluetooth.
+	</longdescription>
+	<use>
+		<flag name="openrc">Install an OpenRC init script to sync keys at boot</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">KeyofBlueS/bt-keys-sync</remote-id>
+	</upstream>
+</pkgmetadata>

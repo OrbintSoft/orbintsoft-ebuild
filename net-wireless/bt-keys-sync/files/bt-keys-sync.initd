@@ -1,0 +1,33 @@
+#!/sbin/openrc-run
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+description="Sync Bluetooth pairing keys from Windows registry"
+
+: ${WINDOWS_MOUNT:=/mnt/windows}
+: ${SYNC_DIRECTION:=--windows-keys}
+: ${EXTRA_ARGS:=}
+
+depend() {
+	need localmount
+	before bluetooth
+}
+
+start() {
+	if [ ! -d "${WINDOWS_MOUNT}" ]; then
+		ewarn "Windows mount point ${WINDOWS_MOUNT} not present — skipping"
+		return 0
+	fi
+
+	if [ ! -f "${WINDOWS_MOUNT}/Windows/System32/config/SYSTEM" ]; then
+		ewarn "Windows SYSTEM hive not found under ${WINDOWS_MOUNT} — skipping"
+		return 0
+	fi
+
+	ebegin "Syncing Bluetooth keys from Windows"
+	yes | /usr/bin/bt-keys-sync \
+		--windows-mount-point "${WINDOWS_MOUNT}" \
+		${SYNC_DIRECTION} \
+		${EXTRA_ARGS} > /var/log/bt-keys-sync.log 2>&1
+	eend $?
+}

@@ -1,0 +1,58 @@
+# /var/db/repos/local/x11-misc/polo/polo-9999.ebuild
+
+EAPI=8
+
+inherit git-r3 autotools xdg
+
+DESCRIPTION="Polo File Manager (Vala/GTK)"
+HOMEPAGE="https://github.com/OrbintSoft/polo"
+EGIT_REPO_URI="https://github.com/OrbintSoft/polo.git"
+
+LICENSE="GPL-3"
+SLOT="0"
+KEYWORDS="amd64"
+IUSE=""
+
+# Runtime dependencies
+RDEPEND="
+    dev-libs/glib:2
+    dev-libs/json-glib
+    dev-libs/libgee
+    dev-libs/libxml2
+    dev-libs/libxslt
+    sys-apps/util-linux
+    sys-libs/ncurses
+    x11-libs/gtk+:3
+    x11-libs/gdk-pixbuf:2
+    x11-libs/pango
+    x11-libs/cairo
+    x11-misc/shared-mime-info
+    dev-util/desktop-file-utils
+"
+
+# Build-time dependencies
+DEPEND="${RDEPEND}
+    sys-devel/gettext
+    dev-util/intltool
+    dev-lang/vala
+"
+
+# Prepare phase: regenerate configure script if needed
+src_prepare() {
+    default
+}
+
+# Configure phase
+src_configure() {
+    emake
+}
+
+# Compile phase
+src_compile() {
+    emake
+}
+
+# Install phase
+src_install() {
+    emake DESTDIR="${D}" install
+}

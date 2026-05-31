@@ -1,0 +1,14 @@
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+# Path where the Windows partition is mounted.
+# The init script will look for ${WINDOWS_MOUNT}/Windows/System32/config/SYSTEM
+WINDOWS_MOUNT="/mnt/windows"
+
+# Sync direction:
+#   --windows-keys  : Windows is source of truth (default, recommended)
+#   --linux-keys    : Linux is source of truth (will modify Windows registry)
+SYNC_DIRECTION="--windows-keys"
+
+# Any additional arguments to pass to bt-keys-sync
+EXTRA_ARGS=""

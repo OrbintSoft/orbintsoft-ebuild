@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+
+<pkgmetadata>
+	<maintainer type="person">
+		<email>you@example.com</email>
+		<name>Your Name</name>
+		<description>Maintainer of Claude Desktop ebuild</description>
+	</maintainer>
+
+	<upstream>
+		<maintainer type="person">
+			<email>support@anthropic.com</email>
+			<name>Anthropic</name>
+		</maintainer>
+		<bugs-to>https://github.com/anthropics/claude-desktop/issues</bugs-to>
+		<doc>https://docs.claude.com</doc>
+		<changelog>https://github.com/anthropics/claude-desktop/releases</changelog>
+	</upstream>
+
+	<use>
+		<flag name="wayland">Enable support for Wayland display server</flag>
+	</use>
+
+	<longdescription>
+Claude is an AI assistant made by Anthropic. This package provides the official
+desktop application for Claude, allowing users to interact with the AI assistant
+directly from their desktop environment.
+
+Features:
+- Latest Claude models
+- MCP (Model Context Protocol) support
+- Integration with local tools and utilities
+- Cross-platform compatibility (Linux, macOS, Windows)
+
+This ebuild provides two installation options:
+1. Live build (9999) - Always downloads the latest source from GitHub
+2. Stable versions - Use pre-compiled binaries from release archives
+
+Requires Node.js 18+ and Python 3.10+
+	</longdescription>
+
+	<slots>
+		<slot name="0">
+			<description>Single slot for Claude Desktop</description>
+		</slot>
+	</slots>
+</pkgmetadata>
