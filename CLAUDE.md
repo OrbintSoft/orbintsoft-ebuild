@@ -49,8 +49,9 @@ it can be published as a public, CI-tested overlay with automated version bumps.
 
 ## Repository conventions
 
-- **EAPI: the latest** (currently **8**). Not mandatory to chase, but upgrade when
-  EAPI 9 is stable.
+- **EAPI: the latest.** EAPI **9** was released 2025-12-14 and is supported by the
+  installed Portage; it is the target for new and bumped ebuilds. Existing ebuilds
+  are still EAPI 8 — migrate per PLAN.md (Phase 1.10). Adopt future EAPIs likewise.
 - **Indentation: tabs** in `*.ebuild` / `*.eclass` (not spaces).
 - **Copyright header** (to be standardized in Phase 1; verify pkgcheck accepts it):
   ```
