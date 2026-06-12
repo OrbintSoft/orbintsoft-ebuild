@@ -82,7 +82,17 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `src_configure(){ emake }`; build/install via the makefile. Added the missing
       `x11-libs/vte:2.91` (valac links `vte-2.91`) + `virtual/pkgconfig`; dropped
       unused `dev-util/intltool` (the makefile uses gettext directly).
-- [ ] **1.6** Fix `dev-util/fnm` (use cargo eclass properly; install to /usr/bin not /opt)
+- [x] **1.6** Fix `dev-util/fnm` — was a fake-live ebuild doing a manual `git clone`
+      + `git checkout <latest tag>`, calling `cargo build` by hand and installing to
+      `/opt/fnm`. Now a proper live cargo ebuild: `inherit cargo git-r3`, with
+      `src_unpack(){ git-r3_src_unpack; cargo_live_src_unpack; }` (vendors crates for
+      offline build/install) and the eclass's `cargo_src_install` (→ `/usr/bin/fnm`).
+      Dropped the redundant `DEPEND="dev-lang/rust"`/`RDEPEND` (the rust eclass adds
+      the toolchain to `BDEPEND`) and `RESTRICT="network-sandbox"` (git-r3 sets
+      `PROPERTIES=live`, so network is allowed in `src_unpack`). Fixed `LICENSE`
+      `MIT` → `GPL-3` (upstream `Cargo.toml`/GitHub both say GPL-3.0); added
+      `QA_FLAGS_IGNORED`. Dependent-crate licenses are not enumerable for a live
+      ebuild, so only the upstream license is listed (accepted limitation).
 - [ ] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty `IUSE=""`
       (`VisibleVcsPkg` / `EmptyGlobalAssignment`; stray path comments removed in 1.1)
 - [ ] **1.8** Remove Italian text from `app-misc/claude-desktop` `pkg_postinst`
@@ -133,7 +143,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 7 | 8/11 packages | missing `metadata.xml`; `claude-desktop` has placeholder maintainer | 1.3 ✅ |
 | 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 ✅ |
 | 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 ✅ |
-| 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt` | 1.6 |
+| 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
 | 11 | live ebuilds | non-empty `KEYWORDS` (stray path comments removed in 1.1) | 1.7 / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` to verify | 1.9 |
