@@ -38,6 +38,10 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    repo in a state that can be committed.
 10. **Ask before committing.** Before each `git commit` (and before pushing), ask
    whether to commit — never commit or push unannounced. The user decides when.
+11. **Check the current branch first.** At the start of a task and before every
+   commit/push, run `git branch --show-current` and confirm you're on the intended
+   feature branch (never `master`). The branch can change between turns — e.g. after
+   a PR is merged — so never assume; verify.
 
 ### Proposed additional rules (pending approval)
 
@@ -54,10 +58,18 @@ it can be published as a public, CI-tested overlay with automated version bumps.
   installed Portage; it is the target for new and bumped ebuilds. Existing ebuilds
   are still EAPI 8 — migrate per PLAN.md (Phase 1.10). Adopt future EAPIs likewise.
 - **Indentation: tabs** in `*.ebuild` / `*.eclass` (not spaces).
-- **Copyright header** (to be standardized in Phase 1; verify pkgcheck accepts it):
+- **Copyright headers** (standardized in Phase 1.1; `pkgcheck scan` accepts them).
+  Original work uses GPL-3:
   ```
   # Copyright <year> Stefano Balzarotti
   # Distributed under the terms of the GNU General Public License v3
+  ```
+  Files reworked from a Gentoo(-Authors) ebuild keep the upstream attribution and
+  stay GPL-2:
+  ```
+  # Copyright 1999-<year> Gentoo Authors
+  # Copyright <year> Stefano Balzarotti
+  # Distributed under the terms of the GNU General Public License v2
   ```
 - **Live ebuilds (`-9999`) are fine and currently the norm** — every package is
   live, and that's OK. Converting a package to a versioned ebuild (tracking
@@ -65,6 +77,10 @@ it can be published as a public, CI-tested overlay with automated version bumps.
   automation exist. Empty `KEYWORDS=""` on live ebuilds is good practice.
 - Every package should have a `metadata.xml` (GLEP 68) with a real maintainer and,
   where applicable, an `<upstream><remote-id>` (needed by the future bump bot).
+- **Upstream acknowledgement.** Every ebuild that packages third-party software
+  carries a short `# Thanks to <author>, author of <project> (<url>).` comment above
+  `DESCRIPTION`, crediting the *package* author (not the ebuild author). Skip it
+  where the upstream author is OrbintSoft/Stefano, or for stub/dummy packages.
 - **One package per step** when fixing ebuilds.
 - **Commit messages: Conventional Commits — a *should*, not a *must*.** Prefer
   `type(scope): summary` (`feat`, `fix`, `chore`, `docs`, `refactor`, `ci`, …) for
