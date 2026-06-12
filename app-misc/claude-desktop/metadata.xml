@@ -3,19 +3,19 @@
 
 <pkgmetadata>
 	<maintainer type="person">
-		<email>you@example.com</email>
-		<name>Your Name</name>
-		<description>Maintainer of Claude Desktop ebuild</description>
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
 	</maintainer>
 
 	<upstream>
-		<maintainer type="person">
+		<maintainer status="active">
 			<email>support@anthropic.com</email>
 			<name>Anthropic</name>
 		</maintainer>
 		<bugs-to>https://github.com/anthropics/claude-desktop/issues</bugs-to>
 		<doc>https://docs.claude.com</doc>
 		<changelog>https://github.com/anthropics/claude-desktop/releases</changelog>
+		<remote-id type="github">aaddrick/claude-desktop-debian</remote-id>
 	</upstream>
 
 	<use>
@@ -41,8 +41,6 @@ Requires Node.js 18+ and Python 3.10+
 	</longdescription>
 
 	<slots>
-		<slot name="0">
-			<description>Single slot for Claude Desktop</description>
-		</slot>
+		<slot name="0">Single slot for Claude Desktop</slot>
 	</slots>
 </pkgmetadata>

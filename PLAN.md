@@ -68,7 +68,10 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       Stefano/GPL-2 for Gentoo-derived. Also dropped the stray path comments on
       fnm/shellcheck/polo (the path-comment part of 1.7).
 - [ ] **1.2** Normalize indentation to tabs
-- [ ] **1.3** Add missing `metadata.xml` for all packages; fix `claude-desktop` placeholder
+- [x] **1.3** Add missing `metadata.xml` for all packages (maintainer + GitHub
+      `remote-id`); fix `claude-desktop` placeholder maintainer + invalid XML
+      (`PkgInvalidXml`), drop redundant `ssh-profile-config` longdescription, and
+      describe nerd-fonts' local USE flags (`UnknownUseFlags`).
 - [ ] **1.4** Fix `app-admin/pamtester` (broken: no compile/install)
 - [ ] **1.5** Fix `x11-misc/polo` (`src_configure` runs emake; autotools never reconf'd)
 - [ ] **1.6** Fix `dev-util/fnm` (use cargo eclass properly; install to /usr/bin not /opt)
@@ -114,8 +117,8 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 3 | `LICENSE` | MIT, want GPL-3 | 0.3 ✅ |
 | 4 | `metadata/md5-cache` | committed but incomplete (5/11), generated artifact | 0.8 ✅ |
 | 5 | all ebuilds | inconsistent copyright headers (some wrongly "Gentoo Authors") | 1.1 ✅ |
-| 6 | 6 vs 5 ebuilds | mixed tabs/spaces | 1.2 |
-| 7 | 8/11 packages | missing `metadata.xml`; `claude-desktop` has placeholder maintainer | 1.3 |
+| 6 | 6 vs 5 ebuilds | mixed tabs/spaces | 1.2 ✅ |
+| 7 | 8/11 packages | missing `metadata.xml`; `claude-desktop` has placeholder maintainer | 1.3 ✅ |
 | 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 |
 | 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 |
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt` | 1.6 |
