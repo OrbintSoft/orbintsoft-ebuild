@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit git-r3 autotools xdg
+inherit git-r3 xdg
 
 # Thanks to teejee2008 (Tony George), author of the original Polo File Manager;
 # maintained here as the OrbintSoft fork (https://github.com/OrbintSoft/polo).
@@ -29,33 +29,22 @@ RDEPEND="
 	x11-libs/gdk-pixbuf:2
 	x11-libs/pango
 	x11-libs/cairo
+	x11-libs/vte:2.91
 	x11-misc/shared-mime-info
 	dev-util/desktop-file-utils
 "
 
 # Build-time dependencies
 DEPEND="${RDEPEND}
-	sys-devel/gettext
-	dev-util/intltool
 	dev-lang/vala
+	sys-devel/gettext
+	virtual/pkgconfig
 "
 
-# Prepare phase: regenerate configure script if needed
-src_prepare() {
-	default
-}
-
-# Configure phase
-src_configure() {
-	emake
-}
-
-# Compile phase
 src_compile() {
 	emake
 }
 
-# Install phase
 src_install() {
 	emake DESTDIR="${D}" install
 }

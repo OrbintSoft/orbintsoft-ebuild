@@ -77,7 +77,11 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       switched to `inherit meson`, forced the DocBook man page (`-Dman=enabled`,
       no automagic) and added `virtual/pkgconfig` + `dev-libs/libxslt` +
       `app-text/docbook-xsl-ns-stylesheets` to `BDEPEND`.
-- [ ] **1.5** Fix `x11-misc/polo` (`src_configure` runs emake; autotools never reconf'd)
+- [x] **1.5** Fix `x11-misc/polo` — upstream is a hand-written makefile (teejee2008
+      fork), not autotools: dropped the unused `autotools` inherit and the bogus
+      `src_configure(){ emake }`; build/install via the makefile. Added the missing
+      `x11-libs/vte:2.91` (valac links `vte-2.91`) + `virtual/pkgconfig`; dropped
+      unused `dev-util/intltool` (the makefile uses gettext directly).
 - [ ] **1.6** Fix `dev-util/fnm` (use cargo eclass properly; install to /usr/bin not /opt)
 - [ ] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty `IUSE=""`
       (`VisibleVcsPkg` / `EmptyGlobalAssignment`; stray path comments removed in 1.1)
@@ -128,7 +132,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 6 | 6 vs 5 ebuilds | mixed tabs/spaces | 1.2 ✅ |
 | 7 | 8/11 packages | missing `metadata.xml`; `claude-desktop` has placeholder maintainer | 1.3 ✅ |
 | 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 ✅ |
-| 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 |
+| 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 ✅ |
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt` | 1.6 |
 | 11 | live ebuilds | non-empty `KEYWORDS` (stray path comments removed in 1.1) | 1.7 / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 |
