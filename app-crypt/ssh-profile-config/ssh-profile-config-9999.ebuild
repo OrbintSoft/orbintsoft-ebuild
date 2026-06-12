@@ -8,14 +8,10 @@ HOMEPAGE="https://github.com/OrbintSoft/ssh-profile-config"
 EGIT_REPO_URI="https://github.com/OrbintSoft/ssh-profile-config.git"
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64 ~x86 ~arm ~arm64 ~riscv ~ppc ~ppc64"
-IUSE=""
+KEYWORDS=""
 
 # Needed to fetch from GitHub
 inherit git-r3
-
-DEPEND=""
-RDEPEND="${DEPEND}"
 
 src_compile() {
 	: # no-op

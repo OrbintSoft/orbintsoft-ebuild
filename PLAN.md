@@ -93,8 +93,13 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `MIT` → `GPL-3` (upstream `Cargo.toml`/GitHub both say GPL-3.0); added
       `QA_FLAGS_IGNORED`. Dependent-crate licenses are not enumerable for a live
       ebuild, so only the upstream license is listed (accepted limitation).
-- [ ] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty `IUSE=""`
-      (`VisibleVcsPkg` / `EmptyGlobalAssignment`; stray path comments removed in 1.1)
+- [x] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty global
+      assignments (`VisibleVcsPkg` / `EmptyGlobalAssignment`). Set `KEYWORDS=""` on
+      the 9 live ebuilds (nerd-fonts is versioned → kept); removed the redundant
+      empty `IUSE=""` (pamtester, ssh-profile-config, fsearch, polo) plus the other
+      empty assignments the same check flags: `SRC_URI=""` (claude-desktop,
+      shellcheck), `DEPEND=""`/`RDEPEND="${DEPEND}"` (ssh-profile-config, no deps),
+      `RDEPEND=""` (shellcheck). Stray path comments were already removed in 1.1.
 - [ ] **1.8** Remove Italian text from `app-misc/claude-desktop` `pkg_postinst`
 - [ ] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree
 - [ ] **1.10** Bump all ebuilds EAPI 8 → 9 (released 2025-12-14, supported by Portage).
@@ -144,7 +149,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 ✅ |
 | 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 ✅ |
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
-| 11 | live ebuilds | non-empty `KEYWORDS` (stray path comments removed in 1.1) | 1.7 / 1.1 ✅ |
+| 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` to verify | 1.9 |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |

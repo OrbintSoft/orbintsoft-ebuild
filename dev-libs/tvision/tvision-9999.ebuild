@@ -13,7 +13,7 @@ EGIT_REPO_URI="https://github.com/magiblot/tvision.git"
 
 LICENSE="MIT freed"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS=""
 IUSE="gpm examples"
 
 DEPEND="

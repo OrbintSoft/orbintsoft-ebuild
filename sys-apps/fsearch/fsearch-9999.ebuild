@@ -13,8 +13,7 @@ EGIT_REPO_URI="https://github.com/cboxdoerfer/fsearch.git"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="amd64"
-IUSE=""
+KEYWORDS=""
 
 DEPEND="
 	dev-libs/glib:2

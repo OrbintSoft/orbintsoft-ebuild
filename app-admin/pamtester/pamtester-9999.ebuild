@@ -13,8 +13,7 @@ EGIT_REPO_URI="https://github.com/thkukuk/pamtester.git"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="amd64"
-IUSE=""
+KEYWORDS=""
 
 DEPEND="
 	sys-libs/pam

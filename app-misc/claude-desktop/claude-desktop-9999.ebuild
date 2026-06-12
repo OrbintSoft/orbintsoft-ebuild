@@ -9,12 +9,11 @@ EAPI=8
 DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"
 HOMEPAGE="https://github.com/aaddrick/claude-desktop-debian"
 
-SRC_URI=""
 S="${WORKDIR}"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS=""
 IUSE="wayland"
 PROPERTIES="live"
 RESTRICT="network-sandbox"
