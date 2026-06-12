@@ -10,5 +10,5 @@ S="${WORKDIR}"
 SLOT="6"
 
 src_install() {
-    einfo "Nothing to install."
+	einfo "Nothing to install."
 }

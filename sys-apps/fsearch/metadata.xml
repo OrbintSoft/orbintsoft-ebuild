@@ -6,6 +6,6 @@
 		<name>Stefano Balzarotti</name>
 	</maintainer>
 	<upstream>
-		<remote-id type="github">OrbintSoft/ssh-profile-config</remote-id>
+		<remote-id type="github">cboxdoerfer/fsearch</remote-id>
 	</upstream>
 </pkgmetadata>

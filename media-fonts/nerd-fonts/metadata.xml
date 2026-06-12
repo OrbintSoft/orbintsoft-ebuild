@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
+	</maintainer>
+	<use>
+		<flag name="symbols-only">Install only the Nerd Fonts Symbols-Only font (icons/glyphs without a full family)</flag>
+		<flag name="0xproto">Install the 0xProto Nerd Font</flag>
+		<flag name="3270">Install the 3270 Nerd Font</flag>
+		<flag name="agave">Install the Agave Nerd Font</flag>
+		<flag name="anonymouspro">Install the AnonymousPro Nerd Font</flag>
+		<flag name="arimo">Install the Arimo Nerd Font</flag>
+		<flag name="aurulentsansmono">Install the AurulentSansMono Nerd Font</flag>
+		<flag name="bigblueterminal">Install the BigBlueTerminal Nerd Font</flag>
+		<flag name="bitstreamverasansmono">Install the BitstreamVeraSansMono Nerd Font</flag>
+		<flag name="cascadiacode">Install the CascadiaCode Nerd Font</flag>
+		<flag name="cascadiamono">Install the CascadiaMono Nerd Font</flag>
+		<flag name="codenewroman">Install the CodeNewRoman Nerd Font</flag>
+		<flag name="comicshannsmono">Install the ComicShannsMono Nerd Font</flag>
+		<flag name="commitmono">Install the CommitMono Nerd Font</flag>
+		<flag name="cousine">Install the Cousine Nerd Font</flag>
+		<flag name="d2coding">Install the D2Coding Nerd Font</flag>
+		<flag name="daddytimemono">Install the DaddyTimeMono Nerd Font</flag>
+		<flag name="dejavusansmono">Install the DejaVuSansMono Nerd Font</flag>
+		<flag name="droidsansmono">Install the DroidSansMono Nerd Font</flag>
+		<flag name="envycoder">Install the EnvyCodeR Nerd Font</flag>
+		<flag name="fantasquesansmono">Install the FantasqueSansMono Nerd Font</flag>
+		<flag name="firacode">Install the FiraCode Nerd Font</flag>
+		<flag name="firamono">Install the FiraMono Nerd Font</flag>
+		<flag name="geistmono">Install the GeistMono Nerd Font</flag>
+		<flag name="go-mono">Install the Go-Mono Nerd Font</flag>
+		<flag name="gohu">Install the Gohu Nerd Font</flag>
+		<flag name="hack">Install the Hack Nerd Font</flag>
+		<flag name="hasklig">Install the Hasklig Nerd Font</flag>
+		<flag name="heavydata">Install the HeavyData Nerd Font</flag>
+		<flag name="hermit">Install the Hermit Nerd Font</flag>
+		<flag name="ia-writer">Install the iA-Writer Nerd Font</flag>
+		<flag name="ibmplexmono">Install the IBMPlexMono Nerd Font</flag>
+		<flag name="inconsolata">Install the Inconsolata Nerd Font</flag>
+		<flag name="inconsolatago">Install the InconsolataGo Nerd Font</flag>
+		<flag name="inconsolatalgc">Install the InconsolataLGC Nerd Font</flag>
+		<flag name="intelonemono">Install the IntelOneMono Nerd Font</flag>
+		<flag name="iosevka">Install the Iosevka Nerd Font</flag>
+		<flag name="iosevkaterm">Install the IosevkaTerm Nerd Font</flag>
+		<flag name="iosevkatermslab">Install the IosevkaTermSlab Nerd Font</flag>
+		<flag name="jetbrainsmono">Install the JetBrainsMono Nerd Font</flag>
+		<flag name="lekton">Install the Lekton Nerd Font</flag>
+		<flag name="liberationmono">Install the LiberationMono Nerd Font</flag>
+		<flag name="lilex">Install the Lilex Nerd Font</flag>
+		<flag name="martianmono">Install the MartianMono Nerd Font</flag>
+		<flag name="meslo">Install the Meslo Nerd Font</flag>
+		<flag name="monaspace">Install the Monaspace Nerd Font</flag>
+		<flag name="monofur">Install the Monofur Nerd Font</flag>
+		<flag name="monoid">Install the Monoid Nerd Font</flag>
+		<flag name="mononoki">Install the Mononoki Nerd Font</flag>
+		<flag name="mplus">Install the MPlus Nerd Font</flag>
+		<flag name="noto">Install the Noto Nerd Font</flag>
+		<flag name="opendyslexic">Install the OpenDyslexic Nerd Font</flag>
+		<flag name="overpass">Install the Overpass Nerd Font</flag>
+		<flag name="profont">Install the ProFont Nerd Font</flag>
+		<flag name="proggyclean">Install the ProggyClean Nerd Font</flag>
+		<flag name="recursive">Install the Recursive Nerd Font</flag>
+		<flag name="robotomono">Install the RobotoMono Nerd Font</flag>
+		<flag name="sharetechmono">Install the ShareTechMono Nerd Font</flag>
+		<flag name="sourcecodepro">Install the SourceCodePro Nerd Font</flag>
+		<flag name="spacemono">Install the SpaceMono Nerd Font</flag>
+		<flag name="terminus">Install the Terminus Nerd Font</flag>
+		<flag name="tinos">Install the Tinos Nerd Font</flag>
+		<flag name="ubuntu">Install the Ubuntu Nerd Font</flag>
+		<flag name="ubuntumono">Install the UbuntuMono Nerd Font</flag>
+		<flag name="ubuntusans">Install the UbuntuSans Nerd Font</flag>
+		<flag name="victormono">Install the VictorMono Nerd Font</flag>
+		<flag name="zedmono">Install the ZedMono Nerd Font</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">ryanoasis/nerd-fonts</remote-id>
+	</upstream>
+</pkgmetadata>
