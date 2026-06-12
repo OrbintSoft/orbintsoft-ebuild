@@ -29,10 +29,9 @@ done. Large items are broken into sub-steps tracked in a gitignored
 - **EAPI 9** (released 2025-12-14, supported by the installed Portage) is the target
   for new/bumped ebuilds; existing ebuilds migrate in Phase 1 (1.10). Future EAPIs
   adopted likewise when released.
+- **Commit messages**: Conventional Commits as a *should*, not a *must* (see CLAUDE.md).
 
 ## Open questions
-
-- Commit-message convention to adopt? (Conventional Commits — currently used de facto.)
 - Heavy builds (shellcheck→GHC, fnm→Rust) in CI: allowlist / on-demand / timeout?
 - Confirm pkgcheck accepts a GPL-3 copyright header (it may warn).
 

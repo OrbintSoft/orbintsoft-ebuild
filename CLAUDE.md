@@ -36,6 +36,8 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    errors, notes), since they are never committed.
 9. **Every PLAN.md item is committable when done.** Each plan item must leave the
    repo in a state that can be committed.
+10. **Ask before committing.** Before each `git commit` (and before pushing), ask
+   whether to commit — never commit or push unannounced. The user decides when.
 
 ### Proposed additional rules (pending approval)
 
@@ -45,7 +47,6 @@ it can be published as a public, CI-tested overlay with automated version bumps.
 - Never hand-commit generated artifacts (`metadata/md5-cache`, `Manifest`) — let a
   `make` target or CI produce them. (Policy TBD — see PLAN.md Phase 0.8.)
 - Every new package needs a `metadata.xml`, a correct copyright header, and tabs.
-- Adopt a consistent commit-message convention (TBD — e.g. Conventional Commits).
 
 ## Repository conventions
 
@@ -65,6 +66,9 @@ it can be published as a public, CI-tested overlay with automated version bumps.
 - Every package should have a `metadata.xml` (GLEP 68) with a real maintainer and,
   where applicable, an `<upstream><remote-id>` (needed by the future bump bot).
 - **One package per step** when fixing ebuilds.
+- **Commit messages: Conventional Commits — a *should*, not a *must*.** Prefer
+  `type(scope): summary` (`feat`, `fix`, `chore`, `docs`, `refactor`, `ci`, …) for
+  readability and future automation, but it is a recommendation, not enforced.
 
 ## How to verify (once tooling lands in Phase 1)
 
