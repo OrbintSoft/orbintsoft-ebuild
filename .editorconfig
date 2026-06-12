@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Ebuilds, eclasses and shell scripts use tabs (Gentoo convention).
+[*.{ebuild,eclass}]
+indent_style = tab
+
+[*.sh]
+indent_style = tab
+
+# Metadata and config files.
+[*.{xml,conf}]
+indent_style = tab
+
+[*.{md,yml,yaml}]
+indent_style = space
+indent_size = 2
