@@ -1,0 +1,36 @@
+# Repository-wide: treat content as text and normalize to LF in the working tree.
+# This overlay targets Linux/Gentoo only — ebuilds, eclasses and scripts must
+# never use CRLF, or the package manager and shell will choke.
+* text=auto eol=lf
+
+# Sources that MUST stay LF (belt-and-suspenders, also documents intent).
+*.ebuild	text eol=lf
+*.eclass	text eol=lf
+*.sh		text eol=lf
+*.bash		text eol=lf
+*.initd		text eol=lf
+*.confd		text eol=lf
+*.desktop	text eol=lf
+
+# Thin Manifests are managed by tooling: keep LF, collapse diffs on GitHub.
+Manifest	text eol=lf linguist-generated=true
+
+# Common binary assets — never normalize or diff. None are committed today
+# (fonts/tarballs are fetched via SRC_URI); this guards against accidental
+# corruption if any are added later.
+*.ttf	binary
+*.otf	binary
+*.woff	binary
+*.woff2	binary
+*.png	binary
+*.jpg	binary
+*.jpeg	binary
+*.gif	binary
+*.ico	binary
+*.gz	binary
+*.bz2	binary
+*.xz	binary
+*.zst	binary
+*.zip	binary
+*.7z	binary
+*.deb	binary
