@@ -1,8 +1,11 @@
-# Copyright 2026 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
+# Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
+# Thanks to Anthropic for Claude Desktop and to aaddrick for the Linux
+# repackage (https://github.com/aaddrick/claude-desktop-debian).
 DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"
 HOMEPAGE="https://github.com/aaddrick/claude-desktop-debian"
 

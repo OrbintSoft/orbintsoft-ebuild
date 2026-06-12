@@ -1,7 +1,9 @@
-# /var/db/repos/local/dev-util/shellcheck/shellcheck-9999.ebuild
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 
+# Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"
 LICENSE="GPL-3"

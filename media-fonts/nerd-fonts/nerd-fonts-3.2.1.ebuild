@@ -1,10 +1,12 @@
-# Copyright 2023-2024 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
+# Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 inherit font
 
+# Thanks to ryanoasis, author of Nerd Fonts (https://github.com/ryanoasis/nerd-fonts).
 DESCRIPTION="Collection of fonts that are patched to include a high number of glyphs (icons)."
 HOMEPAGE="https://www.nerdfonts.com/"
 

@@ -1,10 +1,12 @@
-# Copyright 2026 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
+# Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 inherit git-r3
 
+# Thanks to KeyofBlueS, author of bt-keys-sync (https://github.com/KeyofBlueS/bt-keys-sync).
 DESCRIPTION="Sync Bluetooth pairing keys between Windows and Linux"
 HOMEPAGE="https://github.com/KeyofBlueS/bt-keys-sync"
 EGIT_REPO_URI="https://github.com/KeyofBlueS/bt-keys-sync.git"

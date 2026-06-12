@@ -1,10 +1,12 @@
-# Copyright 2025
+# Copyright 1999-2026 Gentoo Authors
+# Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 inherit cmake git-r3
 
+# Thanks to magiblot, author of Turbo Vision (https://github.com/magiblot/tvision).
 DESCRIPTION="Turbo Vision - A modern port of Borland's TUI library"
 HOMEPAGE="https://github.com/magiblot/tvision"
 EGIT_REPO_URI="https://github.com/magiblot/tvision.git"

@@ -1,10 +1,12 @@
-# /usr/local/portage/dev-util/fnm/fnm-9999.ebuild
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 
 inherit cargo
 
 RESTRICT="network-sandbox"
+# Thanks to Schniz, author of fnm (https://github.com/Schniz/fnm).
 DESCRIPTION="Fast and simple Node.js version manager, built in Rust"
 HOMEPAGE="https://github.com/Schniz/fnm"
 LICENSE="MIT"
