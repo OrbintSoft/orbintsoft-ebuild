@@ -65,6 +65,13 @@ Live (`-9999`) ebuilds have empty `KEYWORDS` and may need to be unmasked first.
 Bug reports and pull requests are welcome. Please read
 [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
+## Authors & acknowledgements
+
+Created and maintained by Stefano Balzarotti (OrbintSoft), with contributions from
+Claude (AI assistant) and the Gentoo community. Thanks to the Gentoo project, all
+contributors, and the upstream authors of the packaged software.
+See [AUTHORS.md](AUTHORS.md) for the full list.
+
 ## License
 
 The overlay's own files (ebuilds, eclasses, metadata, scripts) are distributed
