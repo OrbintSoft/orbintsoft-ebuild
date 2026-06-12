@@ -67,15 +67,20 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       OpenRC scripts): Stefano/GPL-3 for original work, dual Gentoo Authors +
       Stefano/GPL-2 for Gentoo-derived. Also dropped the stray path comments on
       fnm/shellcheck/polo (the path-comment part of 1.7).
-- [ ] **1.2** Normalize indentation to tabs
+- [x] **1.2** Normalize indentation to tabs
 - [x] **1.3** Add missing `metadata.xml` for all packages (maintainer + GitHub
       `remote-id`); fix `claude-desktop` placeholder maintainer + invalid XML
       (`PkgInvalidXml`), drop redundant `ssh-profile-config` longdescription, and
       describe nerd-fonts' local USE flags (`UnknownUseFlags`).
-- [ ] **1.4** Fix `app-admin/pamtester` (broken: no compile/install)
+- [x] **1.4** Fix `app-admin/pamtester` — was broken (only `src_prepare`, no
+      compile/install). Upstream `thkukuk/pamtester` is a **meson** project, so
+      switched to `inherit meson`, forced the DocBook man page (`-Dman=enabled`,
+      no automagic) and added `virtual/pkgconfig` + `dev-libs/libxslt` +
+      `app-text/docbook-xsl-ns-stylesheets` to `BDEPEND`.
 - [ ] **1.5** Fix `x11-misc/polo` (`src_configure` runs emake; autotools never reconf'd)
 - [ ] **1.6** Fix `dev-util/fnm` (use cargo eclass properly; install to /usr/bin not /opt)
-- [ ] **1.7** Empty `KEYWORDS` on live ebuilds (stray path comments already removed in 1.1)
+- [ ] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty `IUSE=""`
+      (`VisibleVcsPkg` / `EmptyGlobalAssignment`; stray path comments removed in 1.1)
 - [ ] **1.8** Remove Italian text from `app-misc/claude-desktop` `pkg_postinst`
 - [ ] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree
 - [ ] **1.10** Bump all ebuilds EAPI 8 → 9 (released 2025-12-14, supported by Portage).
@@ -84,6 +89,9 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       one pass once CI can verify. [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
 - [ ] **1.11** Lint the `Makefile` itself (e.g. `checkmake`): add a `lint-make`
       target and wire it into `lint` (and CI). Tool not yet chosen/installed.
+- [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
+      DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
+      it into `lint` + CI.
 
 ## Phase 2 — CI  `[ ]`
 
@@ -119,7 +127,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 5 | all ebuilds | inconsistent copyright headers (some wrongly "Gentoo Authors") | 1.1 ✅ |
 | 6 | 6 vs 5 ebuilds | mixed tabs/spaces | 1.2 ✅ |
 | 7 | 8/11 packages | missing `metadata.xml`; `claude-desktop` has placeholder maintainer | 1.3 ✅ |
-| 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 |
+| 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 ✅ |
 | 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 |
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt` | 1.6 |
 | 11 | live ebuilds | non-empty `KEYWORDS` (stray path comments removed in 1.1) | 1.7 / 1.1 ✅ |
