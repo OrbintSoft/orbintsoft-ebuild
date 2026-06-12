@@ -18,10 +18,10 @@ DEPEND=""
 RDEPEND="${DEPEND}"
 
 src_compile() {
-    : # no-op
+	: # no-op
 }
 
 src_install() {
-   emake print-paths DESTDIR="${D}" PREFIX="/usr"
-   emake install DESTDIR="${D}" PREFIX="/usr"
+	emake print-paths DESTDIR="${D}" PREFIX="/usr"
+	emake install DESTDIR="${D}" PREFIX="/usr"
 }

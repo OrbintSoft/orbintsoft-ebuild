@@ -17,29 +17,29 @@ KEYWORDS="~amd64 ~x86"
 IUSE="gpm examples"
 
 DEPEND="
-    sys-libs/ncurses:0
-    gpm? ( sys-libs/gpm )
+	sys-libs/ncurses:0
+	gpm? ( sys-libs/gpm )
 "
 RDEPEND="${DEPEND}
-    x11-misc/xclip
-    x11-misc/xsel
-    gui-apps/wl-clipboard
+	x11-misc/xclip
+	x11-misc/xsel
+	gui-apps/wl-clipboard
 "
 
 BDEPEND="dev-build/cmake"
 
 src_configure() {
-    local mycmakeargs=(
-        -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
-    )
-    cmake_src_configure
+	local mycmakeargs=(
+		-DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
+	)
+	cmake_src_configure
 }
 
 src_compile() {
-    cmake_src_compile
+	cmake_src_compile
 }
 
 src_install() {
-   cmake_src_install
+	cmake_src_install
 }
