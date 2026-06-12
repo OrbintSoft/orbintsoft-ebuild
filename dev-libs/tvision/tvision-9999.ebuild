@@ -11,7 +11,7 @@ DESCRIPTION="Turbo Vision - A modern port of Borland's TUI library"
 HOMEPAGE="https://github.com/magiblot/tvision"
 EGIT_REPO_URI="https://github.com/magiblot/tvision.git"
 
-LICENSE="MIT freed"
+LICENSE="MIT freedist"
 SLOT="0"
 KEYWORDS=""
 IUSE="gpm examples"

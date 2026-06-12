@@ -105,7 +105,10 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       hints belong in the elog summary). Verified no other Italian text in committable
       files. Two pre-existing pkgcheck issues on this ebuild are out of scope and
       tracked separately (1.13).
-- [ ] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree
+- [x] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree.
+      `freed` is not a Gentoo license token (`pkgcheck` → `UnknownLicense`); upstream
+      `COPYRIGHT` is MIT for magiblot's code + the original Borland Turbo Vision released
+      "gratuitously" (freely distributable). Fixed `MIT freed` → `MIT freedist`.
 - [ ] **1.10** Bump all ebuilds EAPI 8 → 9 (released 2025-12-14, supported by Portage).
       No banned commands in use (`assert`/`domo` absent); verify the "variables no
       longer exported" change doesn't bite. Bump while touching each package, or in
@@ -160,6 +163,6 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 ✅ |
 | 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage`, `UnknownRestrict` (found in 1.8) | 1.13 |
-| 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` to verify | 1.9 |
+| 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | all ebuilds | still EAPI 8; bump to EAPI 9 (released 2025-12-14) | 1.10 |
