@@ -5,6 +5,8 @@ EAPI=8
 
 inherit git-r3 autotools xdg
 
+# Thanks to teejee2008 (Tony George), author of the original Polo File Manager;
+# maintained here as the OrbintSoft fork (https://github.com/OrbintSoft/polo).
 DESCRIPTION="Polo File Manager (Vala/GTK)"
 HOMEPAGE="https://github.com/OrbintSoft/polo"
 EGIT_REPO_URI="https://github.com/OrbintSoft/polo.git"

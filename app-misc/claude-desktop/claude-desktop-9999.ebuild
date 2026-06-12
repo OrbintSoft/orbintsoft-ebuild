@@ -4,6 +4,8 @@
 
 EAPI=8
 
+# Thanks to Anthropic for Claude Desktop and to aaddrick for the Linux
+# repackage (https://github.com/aaddrick/claude-desktop-debian).
 DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"
 HOMEPAGE="https://github.com/aaddrick/claude-desktop-debian"
 

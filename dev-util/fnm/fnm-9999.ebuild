@@ -6,6 +6,7 @@ EAPI=8
 inherit cargo
 
 RESTRICT="network-sandbox"
+# Thanks to Schniz, author of fnm (https://github.com/Schniz/fnm).
 DESCRIPTION="Fast and simple Node.js version manager, built in Rust"
 HOMEPAGE="https://github.com/Schniz/fnm"
 LICENSE="MIT"

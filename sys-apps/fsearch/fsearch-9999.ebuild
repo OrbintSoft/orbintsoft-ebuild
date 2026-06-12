@@ -6,6 +6,7 @@ EAPI=8
 
 inherit meson git-r3
 
+# Thanks to cboxdoerfer, author of FSearch (https://github.com/cboxdoerfer/fsearch).
 DESCRIPTION="A fast file search utility for Unix-like systems"
 HOMEPAGE="https://github.com/cboxdoerfer/fsearch"
 EGIT_REPO_URI="https://github.com/cboxdoerfer/fsearch.git"

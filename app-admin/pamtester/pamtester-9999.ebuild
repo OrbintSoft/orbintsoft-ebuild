@@ -6,6 +6,7 @@ EAPI=8
 
 inherit git-r3
 
+# Thanks to thkukuk, author of pamtester (https://github.com/thkukuk/pamtester).
 DESCRIPTION="Non-interactive PAM testing tool"
 HOMEPAGE="https://github.com/thkukuk/pamtester"
 EGIT_REPO_URI="https://github.com/thkukuk/pamtester.git"
