@@ -1,4 +1,5 @@
-# Copyright 2025
+# Copyright 1999-2026 Gentoo Authors
+# Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8

@@ -1,4 +1,5 @@
-# /var/db/repos/local/x11-misc/polo/polo-9999.ebuild
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 

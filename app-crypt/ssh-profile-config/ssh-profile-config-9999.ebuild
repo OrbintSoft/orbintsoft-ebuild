@@ -1,5 +1,5 @@
-# Copyright 2025 Stefano Balzarotti
-# Distributed under the terms of the GNU General Public License v2
+# Copyright 2025-2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 

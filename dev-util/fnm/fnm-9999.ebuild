@@ -1,4 +1,5 @@
-# /usr/local/portage/dev-util/fnm/fnm-9999.ebuild
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 

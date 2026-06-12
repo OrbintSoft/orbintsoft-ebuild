@@ -1,4 +1,5 @@
-# /var/db/repos/local/dev-util/shellcheck/shellcheck-9999.ebuild
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI=8
 
