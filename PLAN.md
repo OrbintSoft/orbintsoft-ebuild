@@ -93,10 +93,22 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `MIT` → `GPL-3` (upstream `Cargo.toml`/GitHub both say GPL-3.0); added
       `QA_FLAGS_IGNORED`. Dependent-crate licenses are not enumerable for a live
       ebuild, so only the upstream license is listed (accepted limitation).
-- [ ] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty `IUSE=""`
-      (`VisibleVcsPkg` / `EmptyGlobalAssignment`; stray path comments removed in 1.1)
-- [ ] **1.8** Remove Italian text from `app-misc/claude-desktop` `pkg_postinst`
-- [ ] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree
+- [x] **1.7** Empty `KEYWORDS` on live ebuilds + drop redundant empty global
+      assignments (`VisibleVcsPkg` / `EmptyGlobalAssignment`). Set `KEYWORDS=""` on
+      the 9 live ebuilds (nerd-fonts is versioned → kept); removed the redundant
+      empty `IUSE=""` (pamtester, ssh-profile-config, fsearch, polo) plus the other
+      empty assignments the same check flags: `SRC_URI=""` (claude-desktop,
+      shellcheck), `DEPEND=""`/`RDEPEND="${DEPEND}"` (ssh-profile-config, no deps),
+      `RDEPEND=""` (shellcheck). Stray path comments were already removed in 1.1.
+- [x] **1.8** Remove Italian text from `app-misc/claude-desktop` `pkg_postinst`
+      ("Avvia con:" → "Launch it with:"); also switched `einfo` → `elog` (post-install
+      hints belong in the elog summary). Verified no other Italian text in committable
+      files. Two pre-existing pkgcheck issues on this ebuild are out of scope and
+      tracked separately (1.13).
+- [x] **1.9** Verify `dev-libs/tvision` `LICENSE="MIT freed"` against the licenses tree.
+      `freed` is not a Gentoo license token (`pkgcheck` → `UnknownLicense`); upstream
+      `COPYRIGHT` is MIT for magiblot's code + the original Borland Turbo Vision released
+      "gratuitously" (freely distributable). Fixed `MIT freed` → `MIT freedist`.
 - [ ] **1.10** Bump all ebuilds EAPI 8 → 9 (released 2025-12-14, supported by Portage).
       No banned commands in use (`assert`/`domo` absent); verify the "variables no
       longer exported" change doesn't bite. Bump while touching each package, or in
@@ -106,6 +118,10 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 - [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
       DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
       it into `lint` + CI.
+- [ ] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
+      `NonPosixHeadTailUsage` (`head -1` → `head -n1`) and `UnknownRestrict`
+      (`RESTRICT="network-sandbox"` — likely redundant given `PROPERTIES="live"`;
+      verify whether it's needed at all and drop or correct it).
 
 ## Phase 2 — CI  `[ ]`
 
@@ -144,8 +160,9 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 8 | `app-admin/pamtester` | broken: only `src_prepare`, no compile/install | 1.4 ✅ |
 | 9 | `x11-misc/polo` | `src_configure(){ emake }`; autotools never reconf'd | 1.5 ✅ |
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
-| 11 | live ebuilds | non-empty `KEYWORDS` (stray path comments removed in 1.1) | 1.7 / 1.1 ✅ |
-| 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 |
-| 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` to verify | 1.9 |
+| 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
+| 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 ✅ |
+| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage`, `UnknownRestrict` (found in 1.8) | 1.13 |
+| 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | all ebuilds | still EAPI 8; bump to EAPI 9 (released 2025-12-14) | 1.10 |

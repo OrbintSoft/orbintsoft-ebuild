@@ -8,19 +8,17 @@ DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS=""
 
 # cabal needs network access to fetch the Haskell dependencies
 RESTRICT="network-sandbox test"
 
 EGIT_REPO_URI="https://github.com/koalaman/shellcheck.git"
-SRC_URI=""
 
 DEPEND="
 	>=dev-lang/ghc-8.10.6
 	dev-haskell/cabal-install
 "
-RDEPEND=""
 
 S="${WORKDIR}/shellcheck"
 

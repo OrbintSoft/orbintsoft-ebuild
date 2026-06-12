@@ -12,7 +12,7 @@ EGIT_REPO_URI="https://github.com/Schniz/fnm.git"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS=""
 
 # rust does not honor *FLAGS from make.conf; silence the portage QA notice
 QA_FLAGS_IGNORED="usr/bin/fnm"
