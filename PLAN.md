@@ -58,7 +58,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 `make lint`/`test`/`manifest`/`metadata` + pkgcheck/shellcheck, then fix issues
 **one package per step** (Rule 1).
 
-- [ ] **1.0** `Makefile` with lint/test/manifest/metadata/install targets
+- [x] **1.0** `Makefile` with lint/test/manifest/metadata/install targets
 - [ ] **1.1** Standardize copyright headers (GPL-3) across all ebuilds
 - [ ] **1.2** Normalize indentation to tabs
 - [ ] **1.3** Add missing `metadata.xml` for all packages; fix `claude-desktop` placeholder
@@ -72,6 +72,8 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       No banned commands in use (`assert`/`domo` absent); verify the "variables no
       longer exported" change doesn't bite. Bump while touching each package, or in
       one pass once CI can verify. [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
+- [ ] **1.11** Lint the `Makefile` itself (e.g. `checkmake`): add a `lint-make`
+      target and wire it into `lint` (and CI). Tool not yet chosen/installed.
 
 ## Phase 2 — CI  `[ ]`
 
@@ -113,5 +115,5 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 11 | live ebuilds | non-empty `KEYWORDS`; stray path comments at top | 1.7 |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` to verify | 1.9 |
-| 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore added; Makefile/CI still missing | 0 ✅ / 1.0 / 2 |
+| 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | all ebuilds | still EAPI 8; bump to EAPI 9 (released 2025-12-14) | 1.10 |
