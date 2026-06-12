@@ -53,5 +53,5 @@ src_install() {
 }
 
 pkg_postinst() {
-	einfo "Claude Desktop installed! Avvia con: claude-desktop"
+	elog "Claude Desktop installed! Launch it with: claude-desktop"
 }
