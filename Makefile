@@ -3,7 +3,8 @@
 #
 # Developer tooling for the orbintsoft overlay.
 # Requires: app-portage/pkgcheck, app-portage/pkgdev (egencache),
-#           dev-util/shellcheck. See CONTRIBUTING.md.
+#           dev-util/shellcheck, checkmake (go install
+#           github.com/checkmake/checkmake@latest). See CONTRIBUTING.md.
 #
 # Quick start:
 #   make lint      # pkgcheck + shellcheck
@@ -18,6 +19,7 @@ PKGCHECK   ?= pkgcheck
 PKGDEV     ?= pkgdev
 EGENCACHE  ?= egencache
 SHELLCHECK ?= shellcheck
+CHECKMAKE  ?= checkmake
 EBUILD     ?= ebuild
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
@@ -31,15 +33,14 @@ SH_SOURCES := $(sort \
 
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ebuild lint-sh test manifest metadata \
-        install uninstall clean
+.PHONY: help lint lint-ebuild lint-sh lint-make test manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-lint: lint-ebuild lint-sh ## Run all linters (pkgcheck + shellcheck)
+lint: lint-ebuild lint-sh lint-make ## Run all linters (pkgcheck + shellcheck + checkmake)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan
@@ -51,6 +52,9 @@ lint-sh: ## Run shellcheck on scripts under files/
 	else \
 		echo "no shell sources to check"; \
 	fi
+
+lint-make: ## Lint the Makefile itself (checkmake)
+	$(CHECKMAKE) --config=checkmake.ini Makefile
 
 manifest: ## Regenerate thin Manifests for all packages (pkgdev)
 	$(PKGDEV) manifest

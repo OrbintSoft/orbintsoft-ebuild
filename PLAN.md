@@ -122,8 +122,15 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       (verified by stash compare). The other 6 inherit eclasses still capped at EAPI 8
       (`cargo`/`rust`, `cmake`, `meson`, `font`, `xdg`) → deferred to **Phase 5**.
       [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
-- [ ] **1.11** Lint the `Makefile` itself (e.g. `checkmake`): add a `lint-make`
-      target and wire it into `lint` (and CI). Tool not yet chosen/installed.
+- [x] **1.11** Lint the `Makefile` itself with `checkmake` (not in the Gentoo
+      tree; `go install github.com/checkmake/checkmake@latest`). Added a `lint-make`
+      target wired into `lint`. Config in `checkmake.ini`: this overlay has no build
+      step (default goal is `help`, no `all` target) so `minphony.required` is set to
+      `clean,test`, and `maxbodylength` is raised to 10 (the `lint-sh` if/else recipe
+      is one logical statement at 6 lines). Also collapsed the multi-line `.PHONY`
+      onto a single line — checkmake doesn't parse `\` continuations and was falsely
+      flagging `clean` as not declared PHONY. CI wiring deferred to Phase 2 (no CI
+      yet). Per new rule 12, future file types get the same linter evaluation.
 - [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
       DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
       it into `lint` + CI.
