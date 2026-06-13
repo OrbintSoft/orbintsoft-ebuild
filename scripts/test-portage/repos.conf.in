@@ -1,0 +1,6 @@
+# Template processed by scripts/test-pkg-container.sh (@TOKEN@ -> value via sed).
+# Registers this overlay inside the throwaway test container.
+[@REPO_NAME@]
+location = /var/db/repos/@REPO_NAME@
+masters = gentoo
+auto-sync = no

@@ -37,8 +37,9 @@ done. Large items are broken into sub-steps tracked in a gitignored
   headers (verified 2026-06-12), so the open question on this is resolved.
 
 ## Open questions
-- Heavy builds (shellcheck→GHC, fnm→Rust) in CI: allowlist / on-demand / timeout?
-  (tracked as Phase 2.5; resolve when building the local test runner.)
+- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust): **resolved in Phase 2.5.**
+  Binpkgs are optional via the `GETBINPKG` knob (no skip-list); CI uses them for
+  speed, local runs default to a full source build.
 
 ---
 
@@ -226,19 +227,61 @@ Goal: `make test` builds+installs packages in a throwaway Gentoo container, **on
 package per fresh container** — full isolation: start → emerge → verify → stop, then
 the next package.
 
-- [ ] **2.3** Runner script (`scripts/test-pkg.sh`, shellcheck-clean) that, for one
-      `cat/pkg`: ① starts a fresh `gentoo/stage3` container (`CONTAINER_ENGINE ?=
-      docker`, configurable); ② provides the gentoo ebuild tree (local: bind-mount the
-      host tree read-only for speed; CI: `gentoo/portage` image layer /
-      `emerge-webrsync`); ③ mounts this overlay and registers it in repos.conf;
-      ④ `emerge -v cat/pkg`; ⑤ verifies success (emerge exit 0 **+** `qlist -I
-      cat/pkg`); ⑥ stops and removes the container.
-- [ ] **2.4** Makefile: `make test PKG=cat/name` → one package (replaces today's
-      host-local `ebuild` target); `make test` → **all** packages, each in its own
-      fresh container, sequentially.
-- [ ] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
-      → GHC, `dev-util/fnm` → Rust. Decide allowlist / timeout / binhost cache so the
-      full local run is bearable.
+- [x] **2.3** Runner script (`scripts/test-pkg.sh`, shellcheck-clean) that, for one
+      `cat/pkg`: ① starts a fresh `gentoo/stage3` container (`CONTAINER_ENGINE`,
+      configurable); ② provides the gentoo ebuild tree (`TREE_MODE=bind` bind-mounts
+      the host tree read-only for speed, `=webrsync` runs `emerge-webrsync` inside the
+      container for CI/non-Gentoo hosts, `=auto` picks bind iff `GENTOO_REPO` is a
+      tree); ③ bind-mounts this overlay read-only and writes its `repos.conf`
+      (`masters = gentoo`); ④ `emerge -v cat/pkg`; ⑤ verifies install (emerge exit 0
+      **+** `qlist -I`, falling back to a `/var/db/pkg` check when portage-utils is
+      absent from the stage3); ⑥ removes the container (foreground `run --rm`).
+      Decisions: it sets `*/*::<repo> **` (live ebuilds have empty `KEYWORDS`) and
+      `ACCEPT_LICENSE="*"` (throwaway container — we test the build, not licence
+      policy), and disables the privilege-needing namespace sandboxes
+      (`FEATURES_DISABLE` default `-network-sandbox -ipc-sandbox -pid-sandbox`) since
+      plain unprivileged docker can't `unshare` them; override via `--privileged` in
+      `CONTAINER_OPTS` + empty `FEATURES_DISABLE`. Other knobs: `STAGE3_IMAGE`,
+      `EMERGE_OPTS`. The in-container provisioning/build is a second script
+      (`scripts/test-pkg-container.sh`, mounted read-only and run inside the
+      container) rather than an inline heredoc, so it is shellcheck-linted too.
+      Makefile wiring is 2.4; heavy-build policy (GHC/Rust) is 2.5.
+      *Rule 12:* `scripts/*.sh` is the same shell language already linted — `make
+      lint-sh` globs by shebang and auto-picked up both new files (confirmed clean),
+      so no new linter is needed.
+- [x] **2.4** Makefile: `make test PKG=cat/name` → one package, `make test` → the
+      whole overlay, each package in its own fresh container. The loop logic lives in
+      a shellcheck-linted script, **not** the Makefile: `scripts/test-all.sh` discovers
+      packages (`find -mindepth 3 -maxdepth 3 -name '*.ebuild'`, or takes atoms as
+      args), calls `test-pkg.sh` per package, and prints a pass/fail summary.
+      **Fail-fast by default** (stop at the first failure, matching 2.6 "one problem at
+      a time"); `make test KEEP_GOING=1` tests every package despite failures, then
+      exits non-zero if any failed (make exports command-line vars to the recipe env,
+      so the knob reaches the script). The Makefile target is one line —
+      `@$(TEST_RUNNER) $(PKG)` with `TEST_RUNNER ?= scripts/test-all.sh` (empty `PKG`
+      ⇒ whole overlay) — replacing the host-local `ebuild` target (dropped `EBUILD`).
+      Verified the orchestration (discovery, loop, fail-fast, summary, exit codes) with
+      a stub engine (`CONTAINER_ENGINE=true`/`false`); shellcheck + checkmake clean.
+      Requires a container engine (noted in the Makefile header + CONTRIBUTING pointer).
+- [x] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
+      → GHC, `dev-util/fnm` → Rust. **Decision: binpkgs optional, never a skip-list.**
+      No package is excluded. Added a `GETBINPKG` knob (+ optional `BINHOST` sync-uri)
+      to `test-pkg.sh`/`test-pkg-container.sh`: unset ⇒ full source build (compile GHC/
+      Rust and all); set ⇒ pull prebuilt packages from a binhost with `--getbinpkg=y
+      --binpkg-respect-use=y`, falling back to source when no binpkg matches the USE.
+      Locally the user chooses source (default) or binpkg-accelerated; CI will set
+      `GETBINPKG` for speed (wired in 2.8). When `BINHOST` is empty we reuse whatever
+      binrepos.conf the stage3 image ships. No forced timeout (left as a future
+      nice-to-have). shellcheck clean; verified both modes with a stub engine.
+      Follow-up (Rule 13): the Portage config the container script used to emit via
+      heredocs now lives in real files `scripts/test-portage/*.in` (repos.conf,
+      package.accept_keywords, make.conf, binrepos.conf), filled with `sed` from
+      `@TOKEN@` placeholders — no language embedded in bash. **Rule 12 decision for
+      the new `*.in` template type: no linter** — there is no standard validator for
+      Portage repos.conf/make.conf/binrepos.conf, and the files are tiny; they are
+      not wired into `make lint`. The `make install` target was rewritten the same
+      way: it now fills `scripts/install-repos.conf.in` with `sed` instead of an
+      inline `printf` (functionally tested into a temp dir; checkmake clean).
 
 ### Phase 2C — Fix packages locally (one at a time)
 

@@ -1,0 +1,6 @@
+# Template appended to the container's make.conf by scripts/test-pkg-container.sh
+# (@TOKEN@ -> value via sed). Throwaway container: accept any licence and relax
+# the namespace sandboxes that need privileges plain docker does not grant.
+# ${FEATURES} stays literal so Portage expands it; @FEATURES_DISABLE@ is filled in.
+ACCEPT_LICENSE="*"
+FEATURES="${FEATURES} @FEATURES_DISABLE@"

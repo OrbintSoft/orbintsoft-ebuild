@@ -1,0 +1,3 @@
+# Template processed by scripts/test-pkg-container.sh (@TOKEN@ -> value via sed).
+# Live ebuilds carry empty KEYWORDS (== **); accept them for this overlay only.
+*/*::@REPO_NAME@ **

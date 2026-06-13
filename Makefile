@@ -8,12 +8,14 @@
 #           (go install github.com/checkmake/checkmake/cmd/checkmake@latest),
 #           actionlint
 #           (go install github.com/rhysd/actionlint/cmd/actionlint@latest).
+#           `make test` additionally needs a container engine (docker/podman).
 #           See CONTRIBUTING.md.
 #
 # Quick start:
-#   make lint      # pkgcheck + shellcheck
-#   make install   # register this tree as a Portage repo (needs root)
-#   make metadata  # regenerate the gitignored md5-cache
+#   make lint              # pkgcheck + shellcheck + …
+#   make test PKG=cat/name # build+install one package in a fresh stage3 container
+#   make install           # register this tree as a Portage repo (needs root)
+#   make metadata          # regenerate the gitignored md5-cache
 
 REPO_NAME      := $(shell cat profiles/repo_name 2>/dev/null)
 JOBS           ?= $(shell nproc 2>/dev/null || echo 1)
@@ -27,7 +29,8 @@ CHECKMAKE  ?= checkmake
 XMLLINT    ?= xmllint
 YAMLLINT   ?= yamllint
 ACTIONLINT ?= actionlint
-EBUILD     ?= ebuild
+TEST_RUNNER ?= scripts/test-all.sh
+REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
@@ -107,17 +110,16 @@ manifest: ## Regenerate thin Manifests for all packages (pkgdev)
 metadata: ## Regenerate the gitignored md5-cache (needs `make install` first)
 	$(EGENCACHE) --update --repo $(REPO_NAME) --jobs $(JOBS)
 
-test: ## Build+install one package locally: make test PKG=cat/name (ebuild(1); CI uses stage3, see PLAN.md Phase 2)
-	@test -n "$(PKG)" || { echo "usage: make test PKG=cat/name"; exit 2; }
-	@set -e; for e in $(PKG)/*.ebuild; do \
-		echo ">> $$e"; $(EBUILD) "$$e" clean install; \
-	done
+# Logic lives in the (shellcheck-linted) scripts; PKG empty => whole overlay,
+# PKG=cat/name => one package. Pass KEEP_GOING=1 to test all despite failures.
+test: ## Build+install package(s) in fresh stage3 containers: make test [PKG=cat/name] [KEEP_GOING=1]
+	@$(TEST_RUNNER) $(PKG)
 
 install: ## Register this tree in $(REPOS_CONF_DIR) as '$(REPO_NAME)' (needs root)
 	@test -n "$(REPO_NAME)" || { echo "profiles/repo_name is empty"; exit 2; }
 	install -d -m0755 $(REPOS_CONF_DIR)
-	@printf '[%s]\nlocation = %s\nauto-sync = no\n' \
-		'$(REPO_NAME)' '$(CURDIR)' > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
+	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(CURDIR)|g' \
+		$(REPOS_CONF_TEMPLATE) > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
 	@echo "Registered '$(REPO_NAME)' -> $(CURDIR)"
 
 uninstall: ## Remove the repos.conf entry created by `make install`

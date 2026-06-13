@@ -1,0 +1,4 @@
+# Template processed by scripts/test-pkg-container.sh (@TOKEN@ -> value via sed).
+# Used only when GETBINPKG + BINHOST are set: pull prebuilt packages from here.
+[test-binhost]
+sync-uri = @BINHOST@
