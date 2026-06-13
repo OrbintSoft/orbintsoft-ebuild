@@ -122,11 +122,22 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       (verified by stash compare). The other 6 inherit eclasses still capped at EAPI 8
       (`cargo`/`rust`, `cmake`, `meson`, `font`, `xdg`) → deferred to **Phase 5**.
       [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
-- [ ] **1.11** Lint the `Makefile` itself (e.g. `checkmake`): add a `lint-make`
-      target and wire it into `lint` (and CI). Tool not yet chosen/installed.
-- [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
-      DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
-      it into `lint` + CI.
+- [x] **1.11** Lint the `Makefile` itself with `checkmake` (not in the Gentoo
+      tree; `go install github.com/checkmake/checkmake@latest`). Added a `lint-make`
+      target wired into `lint`. Config in `checkmake.ini`: this overlay has no build
+      step (default goal is `help`, no `all` target) so `minphony.required` is set to
+      `clean,test`, and `maxbodylength` is raised to 10 (the `lint-sh` if/else recipe
+      is one logical statement at 6 lines). Also collapsed the multi-line `.PHONY`
+      onto a single line — checkmake doesn't parse `\` continuations and was falsely
+      flagging `clean` as not declared PHONY. CI wiring deferred to Phase 2 (no CI
+      yet). Per new rule 12, future file types get the same linter evaluation.
+- [x] **1.12** XML lint via `xmllint --noout --nonet` (`dev-libs/libxml2`): added a
+      `lint-xml` target (wired into `lint`) that checks every `*.xml` (currently all
+      `metadata.xml`) for well-formedness, **offline**. DTD/semantic validation of
+      `metadata.xml` against the gentoo `metadata.dtd` is intentionally left to
+      `pkgcheck` (`lint-ebuild`), which already does it — duplicating it here would
+      need a local DTD copy and tie the target to a machine-specific path. CI wiring
+      deferred to Phase 2.
 - [x] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
       `NonPosixHeadTailUsage` (`head -1` → `head -n1`) fixed. `UnknownRestrict`
       (`RESTRICT="network-sandbox"`) **kept**: verified it is *not* redundant —
@@ -161,6 +172,25 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       (size + BLAKE2B + SHA512, computed from the v3.2.1 raw file). Package now
       scans **fully clean**. Long-term, Manifest generation should move to a
       `make`/CI target (Phase 0.8 / Phase 2) per the proposed no-hand-commit rule.
+- [x] **1.17** Rule 12 evaluation — INI files (`checkmake.ini`, introduced by 1.11):
+      **no dedicated INI linter.** Only one INI file exists, it is tiny and static,
+      and its sole consumer (`checkmake`) parses it on every `make lint-make`. A
+      malformed config does not pass silently: `checkmake` falls back to its built-in
+      defaults, whose stricter rules (`all` target required, `maxbodylength` 5) then
+      fail `lint-make` (exit 1) — caught by the existing lint, though the message
+      points at the default-rule violations rather than the broken `.ini`. Generic
+      INI linters are immature and none matches go-ini's exact dialect, so a
+      standalone validator would risk false positives for little gain.
+      (`metadata/layout.conf`, also INI-ish, is already validated by Portage/pkgcheck.)
+- [x] **1.18** `net-wireless/bt-keys-sync` OpenRC scripts — `make lint-sh` was red
+      (discovered once 1.12 made the full `lint` chain run). conf.d `SC2034` (the three
+      vars are sourced and consumed by the init script) silenced with a file-level
+      `# shellcheck disable=SC2034`; the init script's `description` `SC2034` (read by
+      the OpenRC framework) silenced inline. Real nits fixed: `SC2223` on the three
+      `: "${VAR:=default}"` defaults (quoted) and `SC2086` on `"${SYNC_DIRECTION}"`
+      (single token, quoted). `${EXTRA_ARGS}` stays unquoted under a targeted
+      `# shellcheck disable=SC2086` — it must word-split to pass multiple args and
+      `openrc-run` is POSIX sh (no arrays). `make lint` now passes end-to-end.
 
 ## Phase 2 — CI  `[ ]`
 

@@ -42,6 +42,11 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    commit/push, run `git branch --show-current` and confirm you're on the intended
    feature branch (never `master`). The branch can change between turns — e.g. after
    a PR is merged — so never assume; verify.
+12. **New file type → consider a linter.** Whenever a new kind or format of file
+   first enters the repo (a new language, config/data format, etc.), evaluate
+   whether a linter or validator exists for it and, if reasonable, add a
+   `lint-<kind>` target wired into `make lint` (and CI). Record the decision —
+   including a deliberate "no linter" — in PLAN.md.
 
 ### Proposed additional rules (pending approval)
 

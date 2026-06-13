@@ -3,11 +3,12 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
+# shellcheck disable=SC2034  # read by the OpenRC framework
 description="Sync Bluetooth pairing keys from Windows registry"
 
-: ${WINDOWS_MOUNT:=/mnt/windows}
-: ${SYNC_DIRECTION:=--windows-keys}
-: ${EXTRA_ARGS:=}
+: "${WINDOWS_MOUNT:=/mnt/windows}"
+: "${SYNC_DIRECTION:=--windows-keys}"
+: "${EXTRA_ARGS:=}"
 
 depend() {
 	need localmount
@@ -26,9 +27,12 @@ start() {
 	fi
 
 	ebegin "Syncing Bluetooth keys from Windows"
+	# EXTRA_ARGS is intentionally unquoted to allow multiple space-separated
+	# arguments (openrc-run is POSIX sh, so no arrays).
+	# shellcheck disable=SC2086
 	yes | /usr/bin/bt-keys-sync \
 		--windows-mount-point "${WINDOWS_MOUNT}" \
-		${SYNC_DIRECTION} \
+		"${SYNC_DIRECTION}" \
 		${EXTRA_ARGS} > /var/log/bt-keys-sync.log 2>&1
 	eend $?
 }

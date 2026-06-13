@@ -2,6 +2,10 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
+# These settings are sourced and used by the init script (bt-keys-sync.initd),
+# so shellcheck cannot see their use from this file.
+# shellcheck disable=SC2034
+
 # Path where the Windows partition is mounted.
 # The init script will look for ${WINDOWS_MOUNT}/Windows/System32/config/SYSTEM
 WINDOWS_MOUNT="/mnt/windows"

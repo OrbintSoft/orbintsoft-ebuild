@@ -3,7 +3,8 @@
 #
 # Developer tooling for the orbintsoft overlay.
 # Requires: app-portage/pkgcheck, app-portage/pkgdev (egencache),
-#           dev-util/shellcheck. See CONTRIBUTING.md.
+#           dev-util/shellcheck, dev-libs/libxml2 (xmllint), checkmake
+#           (go install github.com/checkmake/checkmake@latest). See CONTRIBUTING.md.
 #
 # Quick start:
 #   make lint      # pkgcheck + shellcheck
@@ -18,6 +19,8 @@ PKGCHECK   ?= pkgcheck
 PKGDEV     ?= pkgdev
 EGENCACHE  ?= egencache
 SHELLCHECK ?= shellcheck
+CHECKMAKE  ?= checkmake
+XMLLINT    ?= xmllint
 EBUILD     ?= ebuild
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
@@ -29,17 +32,19 @@ SH_SOURCES := $(sort \
 	$(shell grep -rIlE '^#!.*(\bsh\b|bash|openrc-run)' --exclude-dir=.git . 2>/dev/null) \
 	$(shell find . -path ./.git -prune -o -type f -name '*.confd' -print))
 
+# XML sources: every *.xml in the tree (currently all metadata.xml).
+XML_SOURCES := $(shell find . -path ./.git -prune -o -name '*.xml' -print)
+
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ebuild lint-sh test manifest metadata \
-        install uninstall clean
+.PHONY: help lint lint-ebuild lint-sh lint-make lint-xml test manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-lint: lint-ebuild lint-sh ## Run all linters (pkgcheck + shellcheck)
+lint: lint-ebuild lint-sh lint-make lint-xml ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan
@@ -50,6 +55,20 @@ lint-sh: ## Run shellcheck on scripts under files/
 		$(SHELLCHECK) $(SHELLCHECK_OPTS) $(SH_SOURCES); \
 	else \
 		echo "no shell sources to check"; \
+	fi
+
+lint-make: ## Lint the Makefile itself (checkmake)
+	$(CHECKMAKE) --config=checkmake.ini Makefile
+
+# Well-formedness only, offline (--nonet): pkgcheck (lint-ebuild) does the
+# DTD/semantic validation of metadata.xml, so we don't duplicate it here and
+# stay machine-agnostic (no dependency on a local copy of the gentoo DTD).
+lint-xml: ## Check all *.xml are well-formed (xmllint; DTD checks done by pkgcheck)
+	@if [ -n "$(strip $(XML_SOURCES))" ]; then \
+		echo "xmllint --noout --nonet $(XML_SOURCES)"; \
+		$(XMLLINT) --noout --nonet $(XML_SOURCES); \
+	else \
+		echo "no xml sources to check"; \
 	fi
 
 manifest: ## Regenerate thin Manifests for all packages (pkgdev)
