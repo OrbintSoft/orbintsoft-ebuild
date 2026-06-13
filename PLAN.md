@@ -109,10 +109,19 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `freed` is not a Gentoo license token (`pkgcheck` → `UnknownLicense`); upstream
       `COPYRIGHT` is MIT for magiblot's code + the original Borland Turbo Vision released
       "gratuitously" (freely distributable). Fixed `MIT freed` → `MIT freedist`.
-- [ ] **1.10** Bump all ebuilds EAPI 8 → 9 (released 2025-12-14, supported by Portage).
-      No banned commands in use (`assert`/`domo` absent); verify the "variables no
-      longer exported" change doesn't bite. Bump while touching each package, or in
-      one pass once CI can verify. [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
+- [x] **1.10** Bump ebuilds EAPI 8 → 9 (released 2025-12-14) — **partial, eclass-gated.**
+      An ebuild can only be EAPI 9 if *none* of its inherited eclasses caps at EAPI 8
+      (an eclass `die`s on an unsupported EAPI; `inherit` is textual inclusion, not a
+      dependency — runtime/build deps carry no EAPI constraint). Bumped the 5 packages
+      with no blocking eclass: `claude-desktop`, `shellcheck`, `ksshaskpass` (no
+      inherit) + `ssh-profile-config`, `bt-keys-sync` (`git-r3`, already EAPI-9-ready).
+      Verified safe under EAPI 9: `assert`/`domo` absent; the `${D}` uses are explicit
+      (`emake DESTDIR="${D}"`, `cp … "${D}/"`) so the "variables no longer exported"
+      and trailing-slash changes don't bite; `bt-keys-sync`'s `dosym` target is
+      relative (absolute-symlink merge change N/A). pkgcheck: no new issues vs EAPI 8
+      (verified by stash compare). The other 6 inherit eclasses still capped at EAPI 8
+      (`cargo`/`rust`, `cmake`, `meson`, `font`, `xdg`) → deferred to **Phase 5**.
+      [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
 - [ ] **1.11** Lint the `Makefile` itself (e.g. `checkmake`): add a `lint-make`
       target and wire it into `lint` (and CI). Tool not yet chosen/installed.
 - [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
@@ -122,6 +131,14 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `NonPosixHeadTailUsage` (`head -1` → `head -n1`) and `UnknownRestrict`
       (`RESTRICT="network-sandbox"` — likely redundant given `PROPERTIES="live"`;
       verify whether it's needed at all and drop or correct it).
+- [ ] **1.14** `dev-util/shellcheck` — still a fake-live ebuild (manual `git clone` +
+      checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild;
+      that also clears the pkgcheck findings surfaced in 1.10: `UnknownRestrict`
+      (`network-sandbox`), `VariableOrderWrong` (`S` before `RESTRICT`) and
+      `VariableScope` (`${S}` used in `pkg_postinst`).
+- [ ] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
+      `BadHomepage` (`https://gentoo.org`) and `VariableOrderWrong` (`S` before
+      `KEYWORDS`).
 
 ## Phase 2 — CI  `[ ]`
 
@@ -144,6 +161,19 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 - [ ] **4.1** README instructions to add the overlay via `repos.conf`
 - [ ] **4.2** (Optional) PR to the official `repo/proj/overlays` list for `eselect repository`
 
+## Phase 5 — EAPI 9 migration (eclass-gated)  `[ ]`
+
+Finish 1.10 for the packages whose inherited eclasses still cap at EAPI 8 in the
+Gentoo tree (snapshot 2026-06-12). Each unblocks when its eclass gains EAPI 9 support
+upstream (a future `emerge --sync` away). **No eclass forking, no reverting to manual
+builds** — that would undo 1.4/1.5/1.6.
+
+- [ ] **5.1** `app-admin/pamtester`, `sys-apps/fsearch` — blocked by `meson` (7 8)
+- [ ] **5.2** `dev-libs/tvision` — blocked by `cmake` (8)
+- [ ] **5.3** `dev-util/fnm` — blocked by `cargo`/`rust` (8)
+- [ ] **5.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
+- [ ] **5.5** `x11-misc/polo` — blocked by `xdg` (7 8)
+
 ---
 
 ## Known issues inventory (resume-friendly)
@@ -165,4 +195,6 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 | 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage`, `UnknownRestrict` (found in 1.8) | 1.13 |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
-| 15 | all ebuilds | still EAPI 8; bump to EAPI 9 (released 2025-12-14) | 1.10 |
+| 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
+| 17 | `dev-util/shellcheck` | fake-live (manual clone) + UnknownRestrict/VariableOrderWrong/VariableScope | 1.14 |
+| 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong` | 1.15 |
