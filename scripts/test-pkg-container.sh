@@ -8,8 +8,8 @@
 #
 # Configuration arrives as environment variables (set by test-pkg.sh via the
 # container engine's --env): PKG, REPO_NAME, TREE_MODE are required;
-# EMERGE_OPTS and FEATURES_DISABLE are optional. Assigning from self both
-# documents the contract and satisfies shellcheck (vars are env-injected).
+# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG and BINHOST are optional. Assigning
+# from self documents the contract and satisfies shellcheck (env-injected).
 
 set -eu
 
@@ -18,6 +18,8 @@ REPO_NAME="${REPO_NAME:?REPO_NAME is required}"
 TREE_MODE="${TREE_MODE:?TREE_MODE is required}"
 EMERGE_OPTS="${EMERGE_OPTS:-}"
 FEATURES_DISABLE="${FEATURES_DISABLE:-}"
+GETBINPKG="${GETBINPKG:-}"
+BINHOST="${BINHOST:-}"
 
 echo ">> registering overlay '${REPO_NAME}'"
 mkdir -p /etc/portage/repos.conf
@@ -45,10 +47,27 @@ if [ "${TREE_MODE}" = "webrsync" ]; then
 	emerge-webrsync
 fi
 
-echo ">> emerge -v ${EMERGE_OPTS} ${PKG}"
+# Binary packages: off by default (full source build). When GETBINPKG is set we
+# pull prebuilt packages from a binhost; BINHOST overrides the sync-uri the
+# stage3 image already ships in binrepos.conf. --binpkg-respect-use makes Portage
+# fall back to building from source when no binpkg matches the requested USE.
+emerge_opts=()
+if [ -n "${GETBINPKG}" ]; then
+	echo ">> binary packages enabled (getbinpkg)"
+	if [ -n "${BINHOST}" ]; then
+		mkdir -p /etc/portage/binrepos.conf
+		cat > /etc/portage/binrepos.conf/test-binhost.conf <<EOF
+[test-binhost]
+sync-uri = ${BINHOST}
+EOF
+	fi
+	emerge_opts+=(--getbinpkg=y --binpkg-respect-use=y)
+fi
+
+echo ">> emerge -v ${emerge_opts[*]} ${EMERGE_OPTS} ${PKG}"
 # EMERGE_OPTS must word-split into separate emerge arguments.
 # shellcheck disable=SC2086
-emerge -v ${EMERGE_OPTS} "${PKG}"
+emerge -v "${emerge_opts[@]}" ${EMERGE_OPTS} "${PKG}"
 
 echo ">> verifying ${PKG} is installed"
 if command -v qlist >/dev/null 2>&1; then

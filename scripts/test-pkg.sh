@@ -23,6 +23,13 @@
 #   CONTAINER_OPTS    extra args for `<engine> run`       (default: empty)
 #   FEATURES_DISABLE  Portage FEATURES to turn off        (default: the namespace
 #                     sandboxes that need privileges unavailable in plain docker)
+#   GETBINPKG         pull binary packages from a binhost (default: empty = full
+#                     source build; set e.g. GETBINPKG=1, as CI does, for speed)
+#   BINHOST           binhost sync-uri to use with GETBINPKG (default: empty =
+#                     whatever the stage3 image already ships in binrepos.conf)
+#
+# Binary packages are never required: locally you choose source (default) or, by
+# setting GETBINPKG, the binpkg-accelerated path. CI sets GETBINPKG for speed.
 #
 # TREE_MODE explained:
 #   bind      bind-mount the host gentoo tree read-only at /var/db/repos/gentoo
@@ -40,6 +47,8 @@ TREE_MODE="${TREE_MODE:-auto}"
 EMERGE_OPTS="${EMERGE_OPTS:-}"
 CONTAINER_OPTS="${CONTAINER_OPTS:-}"
 FEATURES_DISABLE="${FEATURES_DISABLE:--network-sandbox -ipc-sandbox -pid-sandbox}"
+GETBINPKG="${GETBINPKG:-}"
+BINHOST="${BINHOST:-}"
 
 die() { echo "test-pkg: $*" >&2; exit 1; }
 log() { echo ">> $*"; }
@@ -92,6 +101,8 @@ engine_args+=(--env "REPO_NAME=${REPO_NAME}")
 engine_args+=(--env "TREE_MODE=${TREE_MODE}")
 engine_args+=(--env "EMERGE_OPTS=${EMERGE_OPTS}")
 engine_args+=(--env "FEATURES_DISABLE=${FEATURES_DISABLE}")
+engine_args+=(--env "GETBINPKG=${GETBINPKG}")
+engine_args+=(--env "BINHOST=${BINHOST}")
 engine_args+=(--volume "${OVERLAY_ROOT}:/var/db/repos/${REPO_NAME}:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-pkg-container.sh:/test-pkg-container.sh:ro")
 if [ "${TREE_MODE}" = "bind" ]; then
@@ -105,7 +116,7 @@ engine_args+=("${STAGE3_IMAGE}")
 engine_args+=(bash /test-pkg-container.sh)
 
 # --- run -------------------------------------------------------------------
-log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | pkg: ${PKG}"
+log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | binpkg: ${GETBINPKG:-no} | pkg: ${PKG}"
 if "${CONTAINER_ENGINE}" "${engine_args[@]}"; then
 	log "PASS ${PKG}"
 else

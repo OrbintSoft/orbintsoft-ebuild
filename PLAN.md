@@ -37,8 +37,9 @@ done. Large items are broken into sub-steps tracked in a gitignored
   headers (verified 2026-06-12), so the open question on this is resolved.
 
 ## Open questions
-- Heavy builds (shellcheck→GHC, fnm→Rust) in CI: allowlist / on-demand / timeout?
-  (tracked as Phase 2.5; resolve when building the local test runner.)
+- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust): **resolved in Phase 2.5.**
+  Binpkgs are optional via the `GETBINPKG` knob (no skip-list); CI uses them for
+  speed, local runs default to a full source build.
 
 ---
 
@@ -262,9 +263,16 @@ the next package.
       Verified the orchestration (discovery, loop, fail-fast, summary, exit codes) with
       a stub engine (`CONTAINER_ENGINE=true`/`false`); shellcheck + checkmake clean.
       Requires a container engine (noted in the Makefile header + CONTRIBUTING pointer).
-- [ ] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
-      → GHC, `dev-util/fnm` → Rust. Decide allowlist / timeout / binhost cache so the
-      full local run is bearable.
+- [x] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
+      → GHC, `dev-util/fnm` → Rust. **Decision: binpkgs optional, never a skip-list.**
+      No package is excluded. Added a `GETBINPKG` knob (+ optional `BINHOST` sync-uri)
+      to `test-pkg.sh`/`test-pkg-container.sh`: unset ⇒ full source build (compile GHC/
+      Rust and all); set ⇒ pull prebuilt packages from a binhost with `--getbinpkg=y
+      --binpkg-respect-use=y`, falling back to source when no binpkg matches the USE.
+      Locally the user chooses source (default) or binpkg-accelerated; CI will set
+      `GETBINPKG` for speed (wired in 2.8). When `BINHOST` is empty we reuse whatever
+      binrepos.conf the stage3 image ships. No forced timeout (left as a future
+      nice-to-have). shellcheck clean; verified both modes with a stub engine.
 
 ### Phase 2C — Fix packages locally (one at a time)
 
