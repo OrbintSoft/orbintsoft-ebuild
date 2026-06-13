@@ -172,6 +172,16 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       (size + BLAKE2B + SHA512, computed from the v3.2.1 raw file). Package now
       scans **fully clean**. Long-term, Manifest generation should move to a
       `make`/CI target (Phase 0.8 / Phase 2) per the proposed no-hand-commit rule.
+- [x] **1.17** Rule 12 evaluation — INI files (`checkmake.ini`, introduced by 1.11):
+      **no dedicated INI linter.** Only one INI file exists, it is tiny and static,
+      and its sole consumer (`checkmake`) parses it on every `make lint-make`. A
+      malformed config does not pass silently: `checkmake` falls back to its built-in
+      defaults, whose stricter rules (`all` target required, `maxbodylength` 5) then
+      fail `lint-make` (exit 1) — caught by the existing lint, though the message
+      points at the default-rule violations rather than the broken `.ini`. Generic
+      INI linters are immature and none matches go-ini's exact dialect, so a
+      standalone validator would risk false positives for little gain.
+      (`metadata/layout.conf`, also INI-ish, is already validated by Portage/pkgcheck.)
 
 ## Phase 2 — CI  `[ ]`
 
