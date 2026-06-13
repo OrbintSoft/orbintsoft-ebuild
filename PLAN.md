@@ -131,9 +131,13 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       onto a single line — checkmake doesn't parse `\` continuations and was falsely
       flagging `clean` as not declared PHONY. CI wiring deferred to Phase 2 (no CI
       yet). Per new rule 12, future file types get the same linter evaluation.
-- [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
-      DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
-      it into `lint` + CI.
+- [x] **1.12** XML lint via `xmllint --noout --nonet` (`dev-libs/libxml2`): added a
+      `lint-xml` target (wired into `lint`) that checks every `*.xml` (currently all
+      `metadata.xml`) for well-formedness, **offline**. DTD/semantic validation of
+      `metadata.xml` against the gentoo `metadata.dtd` is intentionally left to
+      `pkgcheck` (`lint-ebuild`), which already does it — duplicating it here would
+      need a local DTD copy and tie the target to a machine-specific path. CI wiring
+      deferred to Phase 2.
 - [x] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
       `NonPosixHeadTailUsage` (`head -1` → `head -n1`) fixed. `UnknownRestrict`
       (`RESTRICT="network-sandbox"`) **kept**: verified it is *not* redundant —
