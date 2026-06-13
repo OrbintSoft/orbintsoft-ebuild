@@ -248,9 +248,20 @@ the next package.
       *Rule 12:* `scripts/*.sh` is the same shell language already linted — `make
       lint-sh` globs by shebang and auto-picked up both new files (confirmed clean),
       so no new linter is needed.
-- [ ] **2.4** Makefile: `make test PKG=cat/name` → one package (replaces today's
-      host-local `ebuild` target); `make test` → **all** packages, each in its own
-      fresh container, sequentially.
+- [x] **2.4** Makefile: `make test PKG=cat/name` → one package, `make test` → the
+      whole overlay, each package in its own fresh container. The loop logic lives in
+      a shellcheck-linted script, **not** the Makefile: `scripts/test-all.sh` discovers
+      packages (`find -mindepth 3 -maxdepth 3 -name '*.ebuild'`, or takes atoms as
+      args), calls `test-pkg.sh` per package, and prints a pass/fail summary.
+      **Fail-fast by default** (stop at the first failure, matching 2.6 "one problem at
+      a time"); `make test KEEP_GOING=1` tests every package despite failures, then
+      exits non-zero if any failed (make exports command-line vars to the recipe env,
+      so the knob reaches the script). The Makefile target is one line —
+      `@$(TEST_RUNNER) $(PKG)` with `TEST_RUNNER ?= scripts/test-all.sh` (empty `PKG`
+      ⇒ whole overlay) — replacing the host-local `ebuild` target (dropped `EBUILD`).
+      Verified the orchestration (discovery, loop, fail-fast, summary, exit codes) with
+      a stub engine (`CONTAINER_ENGINE=true`/`false`); shellcheck + checkmake clean.
+      Requires a container engine (noted in the Makefile header + CONTRIBUTING pointer).
 - [ ] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
       → GHC, `dev-util/fnm` → Rust. Decide allowlist / timeout / binhost cache so the
       full local run is bearable.
