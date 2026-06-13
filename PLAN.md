@@ -150,6 +150,12 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       surfaced `MissingRemoteId` (Info), cleared by adding
       `<remote-id type="github">OrbintSoft/orbintsoft-ebuild</remote-id>` to
       `metadata.xml`. Package now scans **fully clean**.
+- [x] **1.16** `media-fonts/nerd-fonts` `MissingManifest` (surfaced by a full-repo
+      scan): the `symbols-only?` distfile `10-nerd-font-symbols-3.2.1.conf` was in
+      `SRC_URI` but absent from the `Manifest`. Added its `DIST` line by hand
+      (size + BLAKE2B + SHA512, computed from the v3.2.1 raw file). Package now
+      scans **fully clean**. Long-term, Manifest generation should move to a
+      `make`/CI target (Phase 0.8 / Phase 2) per the proposed no-hand-commit rule.
 
 ## Phase 2 — CI  `[ ]`
 
@@ -227,3 +233,4 @@ finding without dropping functionality:
 | 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
 | 17 | `dev-util/shellcheck` | fake-live (manual clone) + UnknownRestrict/VariableOrderWrong/VariableScope | 1.14 |
 | 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong`, `MissingRemoteId` → fully clean | 1.15 ✅ |
+| 19 | `media-fonts/nerd-fonts` | `MissingManifest` — `symbols-only?` `.conf` distfile absent from `Manifest` → fully clean | 1.16 ✅ |
