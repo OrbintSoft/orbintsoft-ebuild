@@ -38,6 +38,7 @@ done. Large items are broken into sub-steps tracked in a gitignored
 
 ## Open questions
 - Heavy builds (shellcheck→GHC, fnm→Rust) in CI: allowlist / on-demand / timeout?
+  (tracked as Phase 2.5; resolve when building the local test runner.)
 
 ---
 
@@ -194,9 +195,55 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 
 ## Phase 2 — CI  `[ ]`
 
-- [ ] **2.1** Workflow: compute changed packages from the PR diff → dynamic matrix
-- [ ] **2.2** Run `pkgcheck scan` on changed packages
-- [ ] **2.3** `emerge` changed packages in `gentoo/stage3` (binpkg cache; heavy-build policy)
+Two tracks, **strictly ordered**. The *quality track* (lint/validation) is safe and
+lands first. The *test track* (containerized `emerge`) must work **locally** first,
+then move to CI, and only at the very end gain the change-detection matrix. Do not
+build the matrix before the tests pass locally and in CI on the full set.
+
+### Phase 2A — Quality CI (safe, first)
+
+- [ ] **2.1** GitHub Actions workflow running `make lint` (pkgcheck + shellcheck +
+      checkmake + xmllint) on **push to any branch**, **pull_request**, and
+      **workflow_dispatch** (manual). No container needed — just install the linters.
+- [ ] **2.2** *Rule 12*: the workflow YAML is a new file type. Evaluate `actionlint`
+      (+ optionally `yamllint`); wire a `lint-yaml`/`lint-actions` target into
+      `make lint`, or record a deliberate "no linter" decision here.
+
+### Phase 2B — Local containerized test infrastructure (before any test CI)
+
+Goal: `make test` builds+installs packages in a throwaway Gentoo container, **one
+package per fresh container** — full isolation: start → emerge → verify → stop, then
+the next package.
+
+- [ ] **2.3** Runner script (`scripts/test-pkg.sh`, shellcheck-clean) that, for one
+      `cat/pkg`: ① starts a fresh `gentoo/stage3` container (`CONTAINER_ENGINE ?=
+      docker`, configurable); ② provides the gentoo ebuild tree (local: bind-mount the
+      host tree read-only for speed; CI: `gentoo/portage` image layer /
+      `emerge-webrsync`); ③ mounts this overlay and registers it in repos.conf;
+      ④ `emerge -v cat/pkg`; ⑤ verifies success (emerge exit 0 **+** `qlist -I
+      cat/pkg`); ⑥ stops and removes the container.
+- [ ] **2.4** Makefile: `make test PKG=cat/name` → one package (replaces today's
+      host-local `ebuild` target); `make test` → **all** packages, each in its own
+      fresh container, sequentially.
+- [ ] **2.5** Heavy-build policy (resolves the open question): `dev-util/shellcheck`
+      → GHC, `dev-util/fnm` → Rust. Decide allowlist / timeout / binhost cache so the
+      full local run is bearable.
+
+### Phase 2C — Fix packages locally (one at a time)
+
+- [ ] **2.6** Test each package individually; when one breaks, fix that package (one
+      problem at a time), re-test, commit.
+- [ ] **2.7** When all pass individually, run the full local suite (`make test`) green.
+
+### Phase 2D — Test CI (no matrix yet)
+
+- [ ] **2.8** Add a CI job running the container tests (**full suite**) on
+      pull_request / workflow_dispatch; confirm it is green in CI before optimizing.
+
+### Phase 2E — Change-detection matrix (last)
+
+- [ ] **2.9** Compute changed packages from the PR diff → dynamic matrix that tests
+      **only changed packages** (faster CI, no full retest every time).
 
 ## Phase 3 — Automation  `[ ]`
 
