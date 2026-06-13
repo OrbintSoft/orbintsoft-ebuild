@@ -1,0 +1,6 @@
+# Registers this overlay as a Portage repo. Written by `make install` from
+# scripts/install-repos.conf.in (@TOKEN@ -> value via sed). `masters` is omitted
+# on purpose: it is declared in the overlay's own metadata/layout.conf.
+[@REPO_NAME@]
+location = @LOCATION@
+auto-sync = no

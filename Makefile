@@ -30,6 +30,7 @@ XMLLINT    ?= xmllint
 YAMLLINT   ?= yamllint
 ACTIONLINT ?= actionlint
 TEST_RUNNER ?= scripts/test-all.sh
+REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
@@ -117,8 +118,8 @@ test: ## Build+install package(s) in fresh stage3 containers: make test [PKG=cat
 install: ## Register this tree in $(REPOS_CONF_DIR) as '$(REPO_NAME)' (needs root)
 	@test -n "$(REPO_NAME)" || { echo "profiles/repo_name is empty"; exit 2; }
 	install -d -m0755 $(REPOS_CONF_DIR)
-	@printf '[%s]\nlocation = %s\nauto-sync = no\n' \
-		'$(REPO_NAME)' '$(CURDIR)' > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
+	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(CURDIR)|g' \
+		$(REPOS_CONF_TEMPLATE) > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
 	@echo "Registered '$(REPO_NAME)' -> $(CURDIR)"
 
 uninstall: ## Remove the repos.conf entry created by `make install`

@@ -66,6 +66,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OVERLAY_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 [ -f "${SCRIPT_DIR}/test-pkg-container.sh" ] \
 	|| die "missing companion script ${SCRIPT_DIR}/test-pkg-container.sh"
+[ -d "${SCRIPT_DIR}/test-portage" ] \
+	|| die "missing portage-config templates dir ${SCRIPT_DIR}/test-portage"
 [ -f "${OVERLAY_ROOT}/profiles/repo_name" ] \
 	|| die "no profiles/repo_name under ${OVERLAY_ROOT} — is this the overlay root?"
 REPO_NAME="$(cat "${OVERLAY_ROOT}/profiles/repo_name")"
@@ -105,6 +107,7 @@ engine_args+=(--env "GETBINPKG=${GETBINPKG}")
 engine_args+=(--env "BINHOST=${BINHOST}")
 engine_args+=(--volume "${OVERLAY_ROOT}:/var/db/repos/${REPO_NAME}:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-pkg-container.sh:/test-pkg-container.sh:ro")
+engine_args+=(--volume "${SCRIPT_DIR}/test-portage:/test-portage:ro")
 if [ "${TREE_MODE}" = "bind" ]; then
 	engine_args+=(--volume "${GENTOO_REPO}:/var/db/repos/gentoo:ro")
 fi

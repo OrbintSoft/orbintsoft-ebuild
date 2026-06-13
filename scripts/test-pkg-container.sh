@@ -6,6 +6,11 @@
 # driven by scripts/test-pkg.sh (PLAN.md Phase 2B). It is mounted read-only at
 # /test-pkg-container.sh and invoked there; do not run it on the host.
 #
+# The Portage config it installs lives in real files — scripts/test-portage/*.in,
+# mounted read-only at /test-portage — not in heredocs: this script only fills
+# their @TOKEN@ placeholders with sed, so each config is authored/linted as its
+# own format instead of as a string embedded in bash.
+#
 # Configuration arrives as environment variables (set by test-pkg.sh via the
 # container engine's --env): PKG, REPO_NAME, TREE_MODE are required;
 # EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG and BINHOST are optional. Assigning
@@ -21,26 +26,21 @@ FEATURES_DISABLE="${FEATURES_DISABLE:-}"
 GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
 
+# Portage-config templates mounted read-only by test-pkg.sh; the sed calls below
+# fill their @TOKEN@ placeholders. Config syntax lives in these files, not here.
+CONF_DIR=/test-portage
+
 echo ">> registering overlay '${REPO_NAME}'"
 mkdir -p /etc/portage/repos.conf
-cat > "/etc/portage/repos.conf/${REPO_NAME}.conf" <<EOF
-[${REPO_NAME}]
-location = /var/db/repos/${REPO_NAME}
-masters = gentoo
-auto-sync = no
-EOF
+sed "s|@REPO_NAME@|${REPO_NAME}|g" \
+	"${CONF_DIR}/repos.conf.in" > "/etc/portage/repos.conf/${REPO_NAME}.conf"
 
-# Live ebuilds carry empty KEYWORDS (== **); accept them for this overlay only.
 mkdir -p /etc/portage/package.accept_keywords
-echo "*/*::${REPO_NAME} **" > "/etc/portage/package.accept_keywords/${REPO_NAME}"
+sed "s|@REPO_NAME@|${REPO_NAME}|g" \
+	"${CONF_DIR}/package.accept_keywords.in" > "/etc/portage/package.accept_keywords/${REPO_NAME}"
 
-# Throwaway container: accept any licence and relax the namespace sandboxes that
-# need privileges plain docker does not grant. ${FEATURES} stays literal so
-# Portage expands it; FEATURES_DISABLE is substituted here.
-{
-	echo 'ACCEPT_LICENSE="*"'
-	echo "FEATURES=\"\${FEATURES} ${FEATURES_DISABLE}\""
-} >> /etc/portage/make.conf
+sed "s|@FEATURES_DISABLE@|${FEATURES_DISABLE}|g" \
+	"${CONF_DIR}/make.conf.in" >> /etc/portage/make.conf
 
 if [ "${TREE_MODE}" = "webrsync" ]; then
 	echo ">> fetching gentoo tree (emerge-webrsync)"
@@ -56,10 +56,8 @@ if [ -n "${GETBINPKG}" ]; then
 	echo ">> binary packages enabled (getbinpkg)"
 	if [ -n "${BINHOST}" ]; then
 		mkdir -p /etc/portage/binrepos.conf
-		cat > /etc/portage/binrepos.conf/test-binhost.conf <<EOF
-[test-binhost]
-sync-uri = ${BINHOST}
-EOF
+		sed "s|@BINHOST@|${BINHOST}|g" \
+			"${CONF_DIR}/binrepos.conf.in" > /etc/portage/binrepos.conf/test-binhost.conf
 	fi
 	emerge_opts+=(--getbinpkg=y --binpkg-respect-use=y)
 fi

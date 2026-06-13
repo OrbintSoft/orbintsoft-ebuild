@@ -273,6 +273,15 @@ the next package.
       `GETBINPKG` for speed (wired in 2.8). When `BINHOST` is empty we reuse whatever
       binrepos.conf the stage3 image ships. No forced timeout (left as a future
       nice-to-have). shellcheck clean; verified both modes with a stub engine.
+      Follow-up (Rule 13): the Portage config the container script used to emit via
+      heredocs now lives in real files `scripts/test-portage/*.in` (repos.conf,
+      package.accept_keywords, make.conf, binrepos.conf), filled with `sed` from
+      `@TOKEN@` placeholders — no language embedded in bash. **Rule 12 decision for
+      the new `*.in` template type: no linter** — there is no standard validator for
+      Portage repos.conf/make.conf/binrepos.conf, and the files are tiny; they are
+      not wired into `make lint`. The `make install` target was rewritten the same
+      way: it now fills `scripts/install-repos.conf.in` with `sed` instead of an
+      inline `printf` (functionally tested into a temp dir; checkmake clean).
 
 ### Phase 2C — Fix packages locally (one at a time)
 

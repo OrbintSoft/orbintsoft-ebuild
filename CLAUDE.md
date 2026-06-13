@@ -47,6 +47,16 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    whether a linter or validator exists for it and, if reasonable, add a
    `lint-<kind>` target wired into `make lint` (and CI). Record the decision —
    including a deliberate "no linter" — in PLAN.md.
+13. **Don't embed one language inside another.** Never inline foreign-syntax
+   content — a config-file body, another script, SQL, etc. — inside a heredoc or
+   string literal of the host language. Author it as its own file of the proper
+   type (so it can be read, diffed, and linted as that language) and have the host
+   reference it: mount it, `source` it, or `sed`-substitute a committed template
+   (`@TOKEN@` placeholders). Extends Rule 12. Writing a single literal value
+   (`echo "x" > f`) is fine; a multi-line or structured fragment of another format
+   is not. Examples: the in-container provisioning script (Phase 2.3) and the
+   Portage `*.conf` templates under `scripts/test-portage/` (Phase 2.5), both
+   extracted from bash heredocs.
 
 ### Proposed additional rules (pending approval)
 
