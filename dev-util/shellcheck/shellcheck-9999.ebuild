@@ -1,7 +1,7 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 
-EAPI=8
+EAPI=9
 
 # Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"

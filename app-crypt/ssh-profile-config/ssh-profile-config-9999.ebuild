@@ -1,7 +1,7 @@
 # Copyright 2025-2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 
-EAPI=8
+EAPI=9
 
 DESCRIPTION="Easy scripts to auto-configure ssh agent and load keys and passwords"
 HOMEPAGE="https://github.com/OrbintSoft/ssh-profile-config"

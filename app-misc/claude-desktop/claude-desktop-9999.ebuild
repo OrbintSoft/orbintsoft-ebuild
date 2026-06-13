@@ -2,7 +2,7 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=8
+EAPI=9
 
 # Thanks to Anthropic for Claude Desktop and to aaddrick for the Linux
 # repackage (https://github.com/aaddrick/claude-desktop-debian).
