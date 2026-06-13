@@ -5,6 +5,9 @@
 		<email>stefano.balzarotti@orbintsoft.net</email>
 		<name>Stefano Balzarotti</name>
 	</maintainer>
+	<upstream>
+		<remote-id type="github">OrbintSoft/orbintsoft-ebuild</remote-id>
+	</upstream>
 	<longdescription lang="en">
 		Empty placeholder for kde-plasma/ksshaskpass. Installs nothing; it
 		exists only to satisfy packages that depend on ksshaskpass when the

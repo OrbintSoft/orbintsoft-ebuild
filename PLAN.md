@@ -127,18 +127,29 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 - [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
       DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
       it into `lint` + CI.
-- [ ] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
-      `NonPosixHeadTailUsage` (`head -1` → `head -n1`) and `UnknownRestrict`
-      (`RESTRICT="network-sandbox"` — likely redundant given `PROPERTIES="live"`;
-      verify whether it's needed at all and drop or correct it).
+- [x] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
+      `NonPosixHeadTailUsage` (`head -1` → `head -n1`) fixed. `UnknownRestrict`
+      (`RESTRICT="network-sandbox"`) **kept**: verified it is *not* redundant —
+      `PROPERTIES="live"` does not relax the network namespace, and `src_unpack`
+      runs `curl` against the GitHub API at build time, so the network sandbox must
+      be restricted or the build fails. `network-sandbox` is a valid Portage
+      `RESTRICT` (see `ebuild(5)`) but `pkgcheck` flags it as unknown because the
+      manpage says "Should not be used in the main Gentoo tree" — a structural
+      false positive for this overlay. How to remove the finding without dropping
+      required functionality is tracked in **Phase 6**.
 - [ ] **1.14** `dev-util/shellcheck` — still a fake-live ebuild (manual `git clone` +
       checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild;
       that also clears the pkgcheck findings surfaced in 1.10: `UnknownRestrict`
       (`network-sandbox`), `VariableOrderWrong` (`S` before `RESTRICT`) and
       `VariableScope` (`${S}` used in `pkg_postinst`).
-- [ ] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
-      `BadHomepage` (`https://gentoo.org`) and `VariableOrderWrong` (`S` before
-      `KEYWORDS`).
+- [x] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
+      `BadHomepage` (`https://gentoo.org`) fixed → `HOMEPAGE` now points at the
+      overlay repo (the placeholder's actual home; it has no other upstream).
+      `VariableOrderWrong` fixed by reordering to the canonical
+      `DESCRIPTION/HOMEPAGE/S/LICENSE/SLOT/KEYWORDS`. The GitHub `HOMEPAGE` then
+      surfaced `MissingRemoteId` (Info), cleared by adding
+      `<remote-id type="github">OrbintSoft/orbintsoft-ebuild</remote-id>` to
+      `metadata.xml`. Package now scans **fully clean**.
 
 ## Phase 2 — CI  `[ ]`
 
@@ -174,6 +185,24 @@ builds** — that would undo 1.4/1.5/1.6.
 - [ ] **5.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
 - [ ] **5.5** `x11-misc/polo` — blocked by `xdg` (7 8)
 
+## Phase 6 — Resolve the `UnknownRestrict` false positive  `[ ]`
+
+`app-misc/claude-desktop` keeps `RESTRICT="network-sandbox"` (required: `src_unpack`
+fetches the latest release from the GitHub API at build time). It is a valid Portage
+`RESTRICT` but `pkgcheck` flags it `UnknownRestrict` because `ebuild(5)` says it
+"Should not be used in the main Gentoo tree" (see 1.13). Evaluate how to remove the
+finding without dropping functionality:
+
+- [ ] **6.1** Evaluate whether `make lint` can suppress `UnknownRestrict` *scoped to
+      this package* (e.g. a `metadata/pkgcheck.conf` filter), rather than disabling
+      the check repo-wide — and whether that scoping is even expressible in pkgcheck.
+- [ ] **6.2** Evaluate redesigning the ebuild to avoid build-time network entirely
+      (a real `SRC_URI` pinned to a version instead of fetching "latest" via
+      `curl`/`jq`), trading the live auto-latest behaviour for a sandbox-clean build.
+      Cross-check against the same pattern in `shellcheck` (1.14).
+- [ ] **6.3** Decide and apply: suppress (6.1), redesign (6.2), or accept as a
+      documented structural false positive.
+
 ---
 
 ## Known issues inventory (resume-friendly)
@@ -192,9 +221,9 @@ builds** — that would undo 1.4/1.5/1.6.
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
 | 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 ✅ |
-| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage`, `UnknownRestrict` (found in 1.8) | 1.13 |
+| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage` fixed; `UnknownRestrict` (`network-sandbox`) kept — required, structural false positive | 1.13 ✅ |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
 | 17 | `dev-util/shellcheck` | fake-live (manual clone) + UnknownRestrict/VariableOrderWrong/VariableScope | 1.14 |
-| 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong` | 1.15 |
+| 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong`, `MissingRemoteId` → fully clean | 1.15 ✅ |
