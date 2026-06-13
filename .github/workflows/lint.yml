@@ -1,0 +1,44 @@
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
+#
+# Quality CI: the container-free linters (shellcheck + checkmake + xmllint),
+# i.e. `make lint-ci`. pkgcheck needs the gentoo ebuild tree and is wired in
+# later together with the containerized test infrastructure (PLAN.md Phase 2B/2D).
+
+name: lint
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same ref supersedes in-flight runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the overlay
+        uses: actions/checkout@v4
+
+      - name: Set up Go (for checkmake)
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install linters
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends shellcheck libxml2-utils
+          go install github.com/checkmake/checkmake/cmd/checkmake@latest
+          echo "$(go env GOPATH)/bin" >> "${GITHUB_PATH}"
+
+      - name: Run linters (no gentoo tree needed)
+        run: make lint-ci

@@ -4,7 +4,8 @@
 # Developer tooling for the orbintsoft overlay.
 # Requires: app-portage/pkgcheck, app-portage/pkgdev (egencache),
 #           dev-util/shellcheck, dev-libs/libxml2 (xmllint), checkmake
-#           (go install github.com/checkmake/checkmake@latest). See CONTRIBUTING.md.
+#           (go install github.com/checkmake/checkmake/cmd/checkmake@latest).
+#           See CONTRIBUTING.md.
 #
 # Quick start:
 #   make lint      # pkgcheck + shellcheck
@@ -37,7 +38,7 @@ XML_SOURCES := $(shell find . -path ./.git -prune -o -name '*.xml' -print)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ebuild lint-sh lint-make lint-xml test manifest metadata install uninstall clean
+.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml test manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
@@ -45,6 +46,8 @@ help: ## Show this help
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
 lint: lint-ebuild lint-sh lint-make lint-xml ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint)
+
+lint-ci: lint-sh lint-make lint-xml ## CI subset: linters needing no gentoo tree (pkgcheck added later, PLAN.md 2B/2D)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan

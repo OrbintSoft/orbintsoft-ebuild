@@ -202,9 +202,13 @@ build the matrix before the tests pass locally and in CI on the full set.
 
 ### Phase 2A — Quality CI (safe, first)
 
-- [ ] **2.1** GitHub Actions workflow running `make lint` (pkgcheck + shellcheck +
-      checkmake + xmllint) on **push to any branch**, **pull_request**, and
-      **workflow_dispatch** (manual). No container needed — just install the linters.
+- [x] **2.1** GitHub Actions workflow (`.github/workflows/lint.yml`) running
+      `make lint-ci` on **push to any branch**, **pull_request**, and
+      **workflow_dispatch** (manual), with `concurrency` cancelling superseded runs.
+      `lint-ci` is the **container-free** subset (shellcheck + checkmake + xmllint):
+      linters that install with apt/go and need no gentoo tree. **pkgcheck is
+      deferred** — it requires the gentoo ebuild tree (eclass/`masters` resolution)
+      and is wired in later with the container infra (2B/2D).
 - [ ] **2.2** *Rule 12*: the workflow YAML is a new file type. Evaluate `actionlint`
       (+ optionally `yamllint`); wire a `lint-yaml`/`lint-actions` target into
       `make lint`, or record a deliberate "no linter" decision here.
