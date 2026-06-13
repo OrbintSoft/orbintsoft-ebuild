@@ -226,13 +226,28 @@ Goal: `make test` builds+installs packages in a throwaway Gentoo container, **on
 package per fresh container** — full isolation: start → emerge → verify → stop, then
 the next package.
 
-- [ ] **2.3** Runner script (`scripts/test-pkg.sh`, shellcheck-clean) that, for one
-      `cat/pkg`: ① starts a fresh `gentoo/stage3` container (`CONTAINER_ENGINE ?=
-      docker`, configurable); ② provides the gentoo ebuild tree (local: bind-mount the
-      host tree read-only for speed; CI: `gentoo/portage` image layer /
-      `emerge-webrsync`); ③ mounts this overlay and registers it in repos.conf;
-      ④ `emerge -v cat/pkg`; ⑤ verifies success (emerge exit 0 **+** `qlist -I
-      cat/pkg`); ⑥ stops and removes the container.
+- [x] **2.3** Runner script (`scripts/test-pkg.sh`, shellcheck-clean) that, for one
+      `cat/pkg`: ① starts a fresh `gentoo/stage3` container (`CONTAINER_ENGINE`,
+      configurable); ② provides the gentoo ebuild tree (`TREE_MODE=bind` bind-mounts
+      the host tree read-only for speed, `=webrsync` runs `emerge-webrsync` inside the
+      container for CI/non-Gentoo hosts, `=auto` picks bind iff `GENTOO_REPO` is a
+      tree); ③ bind-mounts this overlay read-only and writes its `repos.conf`
+      (`masters = gentoo`); ④ `emerge -v cat/pkg`; ⑤ verifies install (emerge exit 0
+      **+** `qlist -I`, falling back to a `/var/db/pkg` check when portage-utils is
+      absent from the stage3); ⑥ removes the container (foreground `run --rm`).
+      Decisions: it sets `*/*::<repo> **` (live ebuilds have empty `KEYWORDS`) and
+      `ACCEPT_LICENSE="*"` (throwaway container — we test the build, not licence
+      policy), and disables the privilege-needing namespace sandboxes
+      (`FEATURES_DISABLE` default `-network-sandbox -ipc-sandbox -pid-sandbox`) since
+      plain unprivileged docker can't `unshare` them; override via `--privileged` in
+      `CONTAINER_OPTS` + empty `FEATURES_DISABLE`. Other knobs: `STAGE3_IMAGE`,
+      `EMERGE_OPTS`. The in-container provisioning/build is a second script
+      (`scripts/test-pkg-container.sh`, mounted read-only and run inside the
+      container) rather than an inline heredoc, so it is shellcheck-linted too.
+      Makefile wiring is 2.4; heavy-build policy (GHC/Rust) is 2.5.
+      *Rule 12:* `scripts/*.sh` is the same shell language already linted — `make
+      lint-sh` globs by shebang and auto-picked up both new files (confirmed clean),
+      so no new linter is needed.
 - [ ] **2.4** Makefile: `make test PKG=cat/name` → one package (replaces today's
       host-local `ebuild` target); `make test` → **all** packages, each in its own
       fresh container, sequentially.
