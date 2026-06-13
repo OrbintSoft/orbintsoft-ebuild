@@ -135,13 +135,18 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       be restricted or the build fails. `network-sandbox` is a valid Portage
       `RESTRICT` (see `ebuild(5)`) but `pkgcheck` flags it as unknown because the
       manpage says "Should not be used in the main Gentoo tree" — a structural
-      false positive for this overlay. How to remove the finding without dropping
-      required functionality is tracked in **Phase 6**.
-- [ ] **1.14** `dev-util/shellcheck` — still a fake-live ebuild (manual `git clone` +
-      checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild;
-      that also clears the pkgcheck findings surfaced in 1.10: `UnknownRestrict`
-      (`network-sandbox`), `VariableOrderWrong` (`S` before `RESTRICT`) and
-      `VariableScope` (`${S}` used in `pkg_postinst`).
+      false positive for this overlay, **resolved** by declaring
+      `restrict-allowed = network-sandbox` in `metadata/layout.conf` (pkgcheck
+      unions it with the masters' list; also clears `shellcheck`, see 1.14).
+- [x] **1.14** `dev-util/shellcheck` pkgcheck fixes surfaced in 1.10. The
+      `UnknownRestrict` (`network-sandbox`) is **resolved** by the `restrict-allowed`
+      declaration in `metadata/layout.conf` (same mechanism as 1.13; `cabal` needs
+      build-time network, so the restrict is required). The two remaining findings,
+      `VariableOrderWrong` (`S` before `RESTRICT`) and `VariableScope` (`${S}` in
+      `pkg_postinst`, line 62 — dead code at that phase), are inherent to the
+      fake-live design (manual `git clone` + checkout, like `fnm` before 1.6) and are
+      cleared only by a proper-live rewrite (`git-r3` + `haskell-cabal`), which is too
+      large for this minor-fix batch → deferred to **Phase 6**.
 - [x] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
       `BadHomepage` (`https://gentoo.org`) fixed → `HOMEPAGE` now points at the
       overlay repo (the placeholder's actual home; it has no other upstream).
@@ -191,23 +196,19 @@ builds** — that would undo 1.4/1.5/1.6.
 - [ ] **5.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
 - [ ] **5.5** `x11-misc/polo` — blocked by `xdg` (7 8)
 
-## Phase 6 — Resolve the `UnknownRestrict` false positive  `[ ]`
+## Phase 6 — Deferred complex items  `[ ]`
 
-`app-misc/claude-desktop` keeps `RESTRICT="network-sandbox"` (required: `src_unpack`
-fetches the latest release from the GitHub API at build time). It is a valid Portage
-`RESTRICT` but `pkgcheck` flags it `UnknownRestrict` because `ebuild(5)` says it
-"Should not be used in the main Gentoo tree" (see 1.13). Evaluate how to remove the
-finding without dropping functionality:
+Bucket for work that surfaced during earlier phases but is too large to do inline.
+Tackled after the main phases (ordering respected); items may grow as more is found.
 
-- [ ] **6.1** Evaluate whether `make lint` can suppress `UnknownRestrict` *scoped to
-      this package* (e.g. a `metadata/pkgcheck.conf` filter), rather than disabling
-      the check repo-wide — and whether that scoping is even expressible in pkgcheck.
-- [ ] **6.2** Evaluate redesigning the ebuild to avoid build-time network entirely
-      (a real `SRC_URI` pinned to a version instead of fetching "latest" via
-      `curl`/`jq`), trading the live auto-latest behaviour for a sandbox-clean build.
-      Cross-check against the same pattern in `shellcheck` (1.14).
-- [ ] **6.3** Decide and apply: suppress (6.1), redesign (6.2), or accept as a
-      documented structural false positive.
+- [ ] **6.1** `dev-util/shellcheck` proper live rewrite (deferred from 1.14 — too
+      complex for the minor-fix batch). Still a fake-live ebuild (manual `git clone` +
+      checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild
+      (`git-r3` + `haskell-cabal`), which clears the two remaining findings:
+      `VariableOrderWrong` (`S` before `RESTRICT`) and `VariableScope` (`${S}` in
+      `pkg_postinst`, line 62 — dead code: `${S}` no longer exists at that phase).
+      `UnknownRestrict` is already resolved (1.14, via `layout.conf`); `cabal` still
+      needs build-time network, so `network-sandbox` stays.
 
 ---
 
@@ -227,10 +228,10 @@ finding without dropping functionality:
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
 | 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 ✅ |
-| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage` fixed; `UnknownRestrict` (`network-sandbox`) kept — required, structural false positive | 1.13 ✅ |
+| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage` fixed; `UnknownRestrict` resolved via `restrict-allowed` in layout.conf | 1.13 ✅ |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
-| 17 | `dev-util/shellcheck` | fake-live (manual clone) + UnknownRestrict/VariableOrderWrong/VariableScope | 1.14 |
+| 17 | `dev-util/shellcheck` | `UnknownRestrict` resolved via layout.conf; fake-live + `VariableOrderWrong`/`VariableScope` deferred to rewrite | 1.14 ✅ / Phase 6 |
 | 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong`, `MissingRemoteId` → fully clean | 1.15 ✅ |
 | 19 | `media-fonts/nerd-fonts` | `MissingManifest` — `symbols-only?` `.conf` distfile absent from `Manifest` → fully clean | 1.16 ✅ |
