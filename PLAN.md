@@ -182,6 +182,15 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       INI linters are immature and none matches go-ini's exact dialect, so a
       standalone validator would risk false positives for little gain.
       (`metadata/layout.conf`, also INI-ish, is already validated by Portage/pkgcheck.)
+- [x] **1.18** `net-wireless/bt-keys-sync` OpenRC scripts — `make lint-sh` was red
+      (discovered once 1.12 made the full `lint` chain run). conf.d `SC2034` (the three
+      vars are sourced and consumed by the init script) silenced with a file-level
+      `# shellcheck disable=SC2034`; the init script's `description` `SC2034` (read by
+      the OpenRC framework) silenced inline. Real nits fixed: `SC2223` on the three
+      `: "${VAR:=default}"` defaults (quoted) and `SC2086` on `"${SYNC_DIRECTION}"`
+      (single token, quoted). `${EXTRA_ARGS}` stays unquoted under a targeted
+      `# shellcheck disable=SC2086` — it must word-split to pass multiple args and
+      `openrc-run` is POSIX sh (no arrays). `make lint` now passes end-to-end.
 
 ## Phase 2 — CI  `[ ]`
 
