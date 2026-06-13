@@ -3,8 +3,12 @@
 #
 # Developer tooling for the orbintsoft overlay.
 # Requires: app-portage/pkgcheck, app-portage/pkgdev (egencache),
-#           dev-util/shellcheck, dev-libs/libxml2 (xmllint), checkmake
-#           (go install github.com/checkmake/checkmake@latest). See CONTRIBUTING.md.
+#           dev-util/shellcheck, dev-libs/libxml2 (xmllint),
+#           dev-python/yamllint, checkmake
+#           (go install github.com/checkmake/checkmake/cmd/checkmake@latest),
+#           actionlint
+#           (go install github.com/rhysd/actionlint/cmd/actionlint@latest).
+#           See CONTRIBUTING.md.
 #
 # Quick start:
 #   make lint      # pkgcheck + shellcheck
@@ -21,6 +25,8 @@ EGENCACHE  ?= egencache
 SHELLCHECK ?= shellcheck
 CHECKMAKE  ?= checkmake
 XMLLINT    ?= xmllint
+YAMLLINT   ?= yamllint
+ACTIONLINT ?= actionlint
 EBUILD     ?= ebuild
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
@@ -35,16 +41,24 @@ SH_SOURCES := $(sort \
 # XML sources: every *.xml in the tree (currently all metadata.xml).
 XML_SOURCES := $(shell find . -path ./.git -prune -o -name '*.xml' -print)
 
+# YAML sources: every *.yml / *.yaml (the .yamllint config is extensionless on
+# purpose, so it is config — not a lint target). GitHub Actions workflows get an
+# extra, Actions-specific pass from actionlint.
+YAML_SOURCES := $(shell find . -path ./.git -prune -o \( -name '*.yml' -o -name '*.yaml' \) -print)
+WORKFLOW_SOURCES := $(wildcard .github/workflows/*.yml .github/workflows/*.yaml)
+
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ebuild lint-sh lint-make lint-xml test manifest metadata install uninstall clean
+.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions test manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-lint: lint-ebuild lint-sh lint-make lint-xml ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint)
+lint: lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint)
+
+lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions ## CI subset: linters needing no gentoo tree (pkgcheck added later, PLAN.md 2B/2D)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan
@@ -69,6 +83,22 @@ lint-xml: ## Check all *.xml are well-formed (xmllint; DTD checks done by pkgche
 		$(XMLLINT) --noout --nonet $(XML_SOURCES); \
 	else \
 		echo "no xml sources to check"; \
+	fi
+
+lint-yaml: ## Lint all *.yml/*.yaml (yamllint; config in .yamllint)
+	@if [ -n "$(strip $(YAML_SOURCES))" ]; then \
+		echo "yamllint $(YAML_SOURCES)"; \
+		$(YAMLLINT) $(YAML_SOURCES); \
+	else \
+		echo "no yaml sources to check"; \
+	fi
+
+lint-actions: ## Validate GitHub Actions workflows (actionlint)
+	@if [ -n "$(strip $(WORKFLOW_SOURCES))" ]; then \
+		echo "actionlint $(WORKFLOW_SOURCES)"; \
+		$(ACTIONLINT) $(WORKFLOW_SOURCES); \
+	else \
+		echo "no workflows to check"; \
 	fi
 
 manifest: ## Regenerate thin Manifests for all packages (pkgdev)

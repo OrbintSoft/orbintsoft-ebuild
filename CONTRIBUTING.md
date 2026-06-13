@@ -24,15 +24,17 @@ are welcome.
 
 ## Before opening a pull request
 
-Run the available quality checks (tooling is being added incrementally — see
-[PLAN.md](PLAN.md)):
+Run the linters via the [Makefile](Makefile) (it documents each tool and how to
+install it; tooling is added incrementally — see [PLAN.md](PLAN.md)):
 
 ```sh
-pkgcheck scan <category>/<package>     # QA scan
-shellcheck path/to/script              # for scripts under files/
+make lint       # pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint
+make lint-ci    # the container-free subset CI runs today (everything but pkgcheck)
 ```
 
-Keep changes **minimal and focused** — ideally one package per pull request.
+`make lint` needs the gentoo ebuild tree for `pkgcheck`; `make lint-ci` runs
+anywhere and is exactly what CI runs. Keep changes **minimal and focused** —
+ideally one package per pull request.
 
 ## Reporting issues
 

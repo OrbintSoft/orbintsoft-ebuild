@@ -1,0 +1,19 @@
+# yamllint configuration for the orbintsoft overlay.
+# Upstream: https://github.com/adrienverge/yamllint
+#
+# Extensionless on purpose: this is config, not a lint target (the Makefile's
+# YAML glob matches only *.yml / *.yaml). Deviations from the built-in
+# "default" preset, with rationale:
+extends: default
+
+rules:
+  # GitHub Actions uses `on:` as a mapping key; yamllint's truthy check would
+  # otherwise flag it as a stray boolean. Keep value checks, skip keys.
+  truthy:
+    check-keys: false
+  # A `---` marker adds nothing here: single documents, with a leading
+  # copyright header that reads fine without it.
+  document-start: disable
+  # 80 is too tight for workflow expressions and prose comments; 120 is plenty.
+  line-length:
+    max: 120
