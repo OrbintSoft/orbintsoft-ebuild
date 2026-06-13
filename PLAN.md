@@ -127,18 +127,40 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
 - [ ] **1.12** Add an XML linter for `metadata.xml` (e.g. `xmllint --noout` with
       DTD validation, or `pkgcheck`'s XML checks): add a `lint-xml` target and wire
       it into `lint` + CI.
-- [ ] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
-      `NonPosixHeadTailUsage` (`head -1` → `head -n1`) and `UnknownRestrict`
-      (`RESTRICT="network-sandbox"` — likely redundant given `PROPERTIES="live"`;
-      verify whether it's needed at all and drop or correct it).
-- [ ] **1.14** `dev-util/shellcheck` — still a fake-live ebuild (manual `git clone` +
-      checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild;
-      that also clears the pkgcheck findings surfaced in 1.10: `UnknownRestrict`
-      (`network-sandbox`), `VariableOrderWrong` (`S` before `RESTRICT`) and
-      `VariableScope` (`${S}` used in `pkg_postinst`).
-- [ ] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
-      `BadHomepage` (`https://gentoo.org`) and `VariableOrderWrong` (`S` before
-      `KEYWORDS`).
+- [x] **1.13** `app-misc/claude-desktop` minor pkgcheck fixes (surfaced during 1.8):
+      `NonPosixHeadTailUsage` (`head -1` → `head -n1`) fixed. `UnknownRestrict`
+      (`RESTRICT="network-sandbox"`) **kept**: verified it is *not* redundant —
+      `PROPERTIES="live"` does not relax the network namespace, and `src_unpack`
+      runs `curl` against the GitHub API at build time, so the network sandbox must
+      be restricted or the build fails. `network-sandbox` is a valid Portage
+      `RESTRICT` (see `ebuild(5)`) but `pkgcheck` flags it as unknown because the
+      manpage says "Should not be used in the main Gentoo tree" — a structural
+      false positive for this overlay, **resolved** by declaring
+      `restrict-allowed = network-sandbox` in `metadata/layout.conf` (pkgcheck
+      unions it with the masters' list; also clears `shellcheck`, see 1.14).
+- [x] **1.14** `dev-util/shellcheck` pkgcheck fixes surfaced in 1.10. The
+      `UnknownRestrict` (`network-sandbox`) is **resolved** by the `restrict-allowed`
+      declaration in `metadata/layout.conf` (same mechanism as 1.13; `cabal` needs
+      build-time network, so the restrict is required). The two remaining findings,
+      `VariableOrderWrong` (`S` before `RESTRICT`) and `VariableScope` (`${S}` in
+      `pkg_postinst`, line 62 — dead code at that phase), are inherent to the
+      fake-live design (manual `git clone` + checkout, like `fnm` before 1.6) and are
+      cleared only by a proper-live rewrite (`git-r3` + `haskell-cabal`), which is too
+      large for this minor-fix batch → deferred to **Phase 6**.
+- [x] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
+      `BadHomepage` (`https://gentoo.org`) fixed → `HOMEPAGE` now points at the
+      overlay repo (the placeholder's actual home; it has no other upstream).
+      `VariableOrderWrong` fixed by reordering to the canonical
+      `DESCRIPTION/HOMEPAGE/S/LICENSE/SLOT/KEYWORDS`. The GitHub `HOMEPAGE` then
+      surfaced `MissingRemoteId` (Info), cleared by adding
+      `<remote-id type="github">OrbintSoft/orbintsoft-ebuild</remote-id>` to
+      `metadata.xml`. Package now scans **fully clean**.
+- [x] **1.16** `media-fonts/nerd-fonts` `MissingManifest` (surfaced by a full-repo
+      scan): the `symbols-only?` distfile `10-nerd-font-symbols-3.2.1.conf` was in
+      `SRC_URI` but absent from the `Manifest`. Added its `DIST` line by hand
+      (size + BLAKE2B + SHA512, computed from the v3.2.1 raw file). Package now
+      scans **fully clean**. Long-term, Manifest generation should move to a
+      `make`/CI target (Phase 0.8 / Phase 2) per the proposed no-hand-commit rule.
 
 ## Phase 2 — CI  `[ ]`
 
@@ -174,6 +196,20 @@ builds** — that would undo 1.4/1.5/1.6.
 - [ ] **5.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
 - [ ] **5.5** `x11-misc/polo` — blocked by `xdg` (7 8)
 
+## Phase 6 — Deferred complex items  `[ ]`
+
+Bucket for work that surfaced during earlier phases but is too large to do inline.
+Tackled after the main phases (ordering respected); items may grow as more is found.
+
+- [ ] **6.1** `dev-util/shellcheck` proper live rewrite (deferred from 1.14 — too
+      complex for the minor-fix batch). Still a fake-live ebuild (manual `git clone` +
+      checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild
+      (`git-r3` + `haskell-cabal`), which clears the two remaining findings:
+      `VariableOrderWrong` (`S` before `RESTRICT`) and `VariableScope` (`${S}` in
+      `pkg_postinst`, line 62 — dead code: `${S}` no longer exists at that phase).
+      `UnknownRestrict` is already resolved (1.14, via `layout.conf`); `cabal` still
+      needs build-time network, so `network-sandbox` stays.
+
 ---
 
 ## Known issues inventory (resume-friendly)
@@ -192,9 +228,10 @@ builds** — that would undo 1.4/1.5/1.6.
 | 10 | `dev-util/fnm` | ignores cargo eclass; manual git clone; installs to `/opt`; wrong `LICENSE` | 1.6 ✅ |
 | 11 | live ebuilds | non-empty `KEYWORDS` + redundant empty assignments (stray path comments removed in 1.1) | 1.7 ✅ / 1.1 ✅ |
 | 12 | `app-misc/claude-desktop` | Italian text in `pkg_postinst` | 1.8 ✅ |
-| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage`, `UnknownRestrict` (found in 1.8) | 1.13 |
+| 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage` fixed; `UnknownRestrict` resolved via `restrict-allowed` in layout.conf | 1.13 ✅ |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
 | 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
-| 17 | `dev-util/shellcheck` | fake-live (manual clone) + UnknownRestrict/VariableOrderWrong/VariableScope | 1.14 |
-| 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong` | 1.15 |
+| 17 | `dev-util/shellcheck` | `UnknownRestrict` resolved via layout.conf; fake-live + `VariableOrderWrong`/`VariableScope` deferred to rewrite | 1.14 ✅ / Phase 6 |
+| 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong`, `MissingRemoteId` → fully clean | 1.15 ✅ |
+| 19 | `media-fonts/nerd-fonts` | `MissingManifest` — `symbols-only?` `.conf` distfile absent from `Manifest` → fully clean | 1.16 ✅ |

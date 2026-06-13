@@ -35,7 +35,7 @@ src_unpack() {
 	einfo "Querying latest release..."
 	local deb_url=$(curl -sL --fail "${api_url}" \
 		| jq -r '.assets[] | select(.name | endswith("_amd64.deb")) | .browser_download_url' \
-		| head -1)
+		| head -n1)
 
 	[[ -z "${deb_url}" ]] && die "Could not determine latest .deb URL"
 	einfo "Downloading: ${deb_url}"
