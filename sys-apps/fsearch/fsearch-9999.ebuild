@@ -17,11 +17,15 @@ KEYWORDS=""
 
 DEPEND="
 	dev-libs/glib:2
-	x11-libs/gtk+:3
+	dev-libs/icu
 	dev-libs/libpcre2
+	x11-libs/gtk+:3
 "
 RDEPEND="${DEPEND}"
-BDEPEND="virtual/pkgconfig"
+BDEPEND="
+	virtual/pkgconfig
+	dev-util/itstool
+"
 
 src_unpack() {
 	git-r3_src_unpack
