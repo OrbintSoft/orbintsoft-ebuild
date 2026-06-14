@@ -32,6 +32,9 @@ src_unpack() {
 	latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")" || die
 	einfo "Checking out latest tag: ${latest_tag}"
 	git checkout "${latest_tag}" || die
+	# persist the tag for pkg_postinst: the build tree is not reliably
+	# available there, but ${T} survives across all phases of this build.
+	echo "${latest_tag}" > "${T}/built-tag" || die
 }
 
 src_compile() {
@@ -60,5 +63,5 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "shellcheck built from tag: $(git -C "${S}" describe --tags --abbrev=0 2>/dev/null)"
+	elog "shellcheck built from tag: $(cat "${T}/built-tag" 2>/dev/null)"
 }
