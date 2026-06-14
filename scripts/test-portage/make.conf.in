@@ -1,6 +1,10 @@
 # Template appended to the container's make.conf by scripts/test-pkg-container.sh
-# (@TOKEN@ -> value via sed). Throwaway container: accept any licence and relax
-# the namespace sandboxes that need privileges plain docker does not grant.
+# (@TOKEN@ -> value via sed). Throwaway container: accept any licence, relax the
+# namespace sandboxes that need privileges plain docker does not grant, and let
+# autounmask writes apply directly (no config protection to dispatch-conf).
 # ${FEATURES} stays literal so Portage expands it; @FEATURES_DISABLE@ is filled in.
 ACCEPT_LICENSE="*"
 FEATURES="${FEATURES} @FEATURES_DISABLE@"
+# Disposable box: don't shield config files, so --autounmask-write changes land
+# immediately instead of as ._cfg* files awaiting dispatch-conf.
+CONFIG_PROTECT="-*"
