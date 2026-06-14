@@ -59,4 +59,16 @@ src_compile() {
 
 src_install() {
 	PATH="${T}/vala-bin:${PATH}" emake DESTDIR="${D}" install
+
+	# Upstream installs the AppStream metadata under the legacy
+	# /usr/share/appdata; relocate it to the modern /usr/share/metainfo.
+	if [[ -d "${ED}/usr/share/appdata" ]]; then
+		dodir /usr/share/metainfo
+		mv "${ED}"/usr/share/appdata/*.xml "${ED}"/usr/share/metainfo/ || die
+		rmdir "${ED}/usr/share/appdata" || die
+	fi
+
+	# Upstream creates an empty /var/log/polo; keep it so Portage does not
+	# prune the empty directory (QA: empty directory in /var).
+	keepdir /var/log/polo
 }
