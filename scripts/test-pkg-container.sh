@@ -62,6 +62,13 @@ if [ -n "${GETBINPKG}" ]; then
 	emerge_opts+=(--getbinpkg=y --binpkg-respect-use=y)
 fi
 
+# Throwaway container: let Portage auto-apply the USE/keyword changes its
+# dependency graph needs (e.g. a GTK/Qt chain wants cairo[X], freetype[harfbuzz])
+# and carry on, instead of stopping at "USE changes necessary to proceed". Safe
+# because the container is disposable and CONFIG_PROTECT is disabled (make.conf.in),
+# so the writes land immediately. Licences are already opened via ACCEPT_LICENSE.
+emerge_opts+=(--autounmask=y --autounmask-use=y --autounmask-write=y --autounmask-continue=y)
+
 echo ">> emerge -v ${emerge_opts[*]} ${EMERGE_OPTS} ${PKG}"
 # EMERGE_OPTS must word-split into separate emerge arguments.
 # shellcheck disable=SC2086

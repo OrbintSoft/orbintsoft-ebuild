@@ -3,6 +3,8 @@
 
 EAPI=9
 
+inherit git-r3
+
 # Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"
@@ -20,17 +22,19 @@ DEPEND="
 	dev-haskell/cabal-install
 "
 
-S="${WORKDIR}/shellcheck"
-
 src_unpack() {
-	cd "${WORKDIR}" || die
-	# shallow clone to save time
-	git clone --depth 1 "${EGIT_REPO_URI}" "${S}" || die
+	# git-r3 guarantees dev-vcs/git and performs the clone; then pin to the
+	# latest release tag (mirrors sys-apps/fsearch).
+	git-r3_src_unpack
 	cd "${S}" || die
-	git fetch --tags --depth 1 || die
-	latest_tag="$(git tag --sort=-version:refname | head -n1)" || die
+	einfo "Fetching tags..."
+	git fetch --tags || die
+	latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")" || die
 	einfo "Checking out latest tag: ${latest_tag}"
 	git checkout "${latest_tag}" || die
+	# persist the tag for pkg_postinst: the build tree is not reliably
+	# available there, but ${T} survives across all phases of this build.
+	echo "${latest_tag}" > "${T}/built-tag" || die
 }
 
 src_compile() {
@@ -59,5 +63,5 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "shellcheck built from tag: $(git -C "${S}" describe --tags --abbrev=0 2>/dev/null)"
+	elog "shellcheck built from tag: $(cat "${T}/built-tag" 2>/dev/null)"
 }

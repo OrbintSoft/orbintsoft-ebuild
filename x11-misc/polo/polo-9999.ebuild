@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit git-r3 xdg
+inherit git-r3 vala xdg
 
 # Thanks to teejee2008 (Tony George), author of the original Polo File Manager;
 # maintained here as the OrbintSoft fork (https://github.com/OrbintSoft/polo).
@@ -33,17 +33,42 @@ RDEPEND="
 	dev-util/desktop-file-utils
 "
 
-# Build-time dependencies
-DEPEND="${RDEPEND}
-	dev-lang/vala
+DEPEND="${RDEPEND}"
+
+# Build-time tools (native): the Vala compiler, xgettext and pkg-config.
+BDEPEND="
+	$(vala_depend)
 	sys-devel/gettext
 	virtual/pkgconfig
 "
 
+src_configure() {
+	vala_setup
+	# Upstream's hand-written makefile invokes the compiler by its bare name
+	# `valac` (both in compile recipes and in a parse-time `valac --version`
+	# probe the install target also triggers), but Gentoo installs only the
+	# slotted valac-${version} (the bare symlink is eselect-vala's job). Expose
+	# the version vala_setup picked under that name; both emakes prepend it to PATH.
+	mkdir -p "${T}/vala-bin" || die
+	ln -sf "${VALAC}" "${T}/vala-bin/valac" || die
+}
+
 src_compile() {
-	emake
+	PATH="${T}/vala-bin:${PATH}" emake
 }
 
 src_install() {
-	emake DESTDIR="${D}" install
+	PATH="${T}/vala-bin:${PATH}" emake DESTDIR="${D}" install
+
+	# Upstream installs the AppStream metadata under the legacy
+	# /usr/share/appdata; relocate it to the modern /usr/share/metainfo.
+	if [[ -d "${ED}/usr/share/appdata" ]]; then
+		dodir /usr/share/metainfo
+		mv "${ED}"/usr/share/appdata/*.xml "${ED}"/usr/share/metainfo/ || die
+		rmdir "${ED}/usr/share/appdata" || die
+	fi
+
+	# Upstream creates an empty /var/log/polo; keep it so Portage does not
+	# prune the empty directory (QA: empty directory in /var).
+	keepdir /var/log/polo
 }
