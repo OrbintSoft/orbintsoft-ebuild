@@ -1,0 +1,60 @@
+# Copyright 2026 Stefano Balzarotti
+# Distributed under the terms of the GNU General Public License v3
+#
+# Test CI: build+install every overlay package from source, each in its own
+# throwaway gentoo/stage3 container (PLAN.md Phase 2D / 2.8). A static
+# per-package matrix — every package, every run, in parallel so each job gets its
+# own time budget — distinct from the dynamic change-detection matrix (2.9). The
+# builds are heavy (GHC, Rust, GTK from source), so this runs on pull_request and
+# manual dispatch, not on every push.
+
+name: test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same ref supersedes in-flight runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Emit the package list once so the test job can fan out over it. Keeping the
+  # discovery in scripts/list-packages.sh (shared with the local suite) avoids a
+  # hardcoded list drifting out of sync with the overlay.
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.list.outputs.packages }}
+    steps:
+      - name: Check out the overlay
+        uses: actions/checkout@v4
+
+      - name: List overlay packages for the matrix
+        id: list
+        run: echo "packages=$(scripts/list-packages.sh --json)" >> "${GITHUB_OUTPUT}"
+
+  # One fresh container per package, full source. fail-fast: false so every
+  # package is exercised even when one fails (we want the whole picture). docker
+  # is preinstalled on ubuntu-latest; TREE_MODE=webrsync fetches the gentoo tree
+  # inside the container since the runner has no host /var/db/repos/gentoo.
+  test:
+    needs: discover
+    runs-on: ubuntu-latest
+    name: ${{ matrix.package }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.discover.outputs.packages) }}
+    steps:
+      - name: Check out the overlay
+        uses: actions/checkout@v4
+
+      - name: Build + install ${{ matrix.package }} from source
+        env:
+          TREE_MODE: webrsync
+        run: make test PKG='${{ matrix.package }}'

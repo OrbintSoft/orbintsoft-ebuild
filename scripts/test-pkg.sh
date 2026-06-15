@@ -24,12 +24,13 @@
 #   FEATURES_DISABLE  Portage FEATURES to turn off        (default: the namespace
 #                     sandboxes that need privileges unavailable in plain docker)
 #   GETBINPKG         pull binary packages from a binhost (default: empty = full
-#                     source build; set e.g. GETBINPKG=1, as CI does, for speed)
+#                     source build; set e.g. GETBINPKG=1 for a faster local run)
 #   BINHOST           binhost sync-uri to use with GETBINPKG (default: empty =
 #                     whatever the stage3 image already ships in binrepos.conf)
 #
 # Binary packages are never required: locally you choose source (default) or, by
-# setting GETBINPKG, the binpkg-accelerated path. CI sets GETBINPKG for speed.
+# setting GETBINPKG, the binpkg-accelerated path. CI builds from source — the
+# official binhost can't serve the GUI/X chain (freetype<->harfbuzz; PLAN.md 2.7).
 #
 # TREE_MODE explained:
 #   bind      bind-mount the host gentoo tree read-only at /var/db/repos/gentoo
