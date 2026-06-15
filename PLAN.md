@@ -194,7 +194,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `# shellcheck disable=SC2086` — it must word-split to pass multiple args and
       `openrc-run` is POSIX sh (no arrays). `make lint` now passes end-to-end.
 
-## Phase 2 — CI  `[ ]`
+## Phase 2 — CI  `[x]`
 
 Two tracks, **strictly ordered**. The *quality track* (lint/validation) is safe and
 lands first. The *test track* (containerized `emerge`) must work **locally** first,
@@ -301,7 +301,7 @@ the next package.
 
 ### Phase 2D — Test CI (static matrix; change-detection deferred to 2E)
 
-- [ ] **2.8** CI running the container tests over the **full suite** on
+- [x] **2.8** CI running the container tests over the **full suite** on
       pull_request / workflow_dispatch. Implemented in `.github/workflows/test.yml` as a
       **static per-package matrix**: a `discover` job emits the package list
       (`scripts/list-packages.sh --json`, shared with the local suite) and the `test`
@@ -309,13 +309,27 @@ the next package.
       (`make test PKG=… TREE_MODE=webrsync`, `fail-fast: false`). Parallel jobs so each
       package gets its own GitHub 6h budget — a single sequential job can't fit the
       full-source GHC/Rust/GTK builds. This is the **static** fan-out (every package,
-      every run); the **dynamic** change-detection matrix is 2.9. **Stays open until a
-      real PR run is green in CI** ("confirm green before optimizing").
+      every run); the **dynamic** change-detection matrix is 2.9. **Green in CI**
+      (2026-06-15): a real PR run passed the full per-package matrix, confirming the
+      static fan-out before optimizing into the dynamic matrix (2.9).
 
 ### Phase 2E — Change-detection matrix (last)
 
-- [ ] **2.9** Compute changed packages from the PR diff → dynamic matrix that tests
+- [x] **2.9** Compute changed packages from the PR diff → dynamic matrix that tests
       **only changed packages** (faster CI, no full retest every time).
+      `scripts/changed-packages.sh` (shellcheck-clean, same `--lines`/`--json`
+      interface as `list-packages.sh`) reads changed paths on stdin and maps each:
+      `category/package/…` → that package; build-affecting infra (`profiles/`,
+      `metadata/`, `eclass/`, `scripts/`, `Makefile`, `.github/workflows/test.yml`)
+      or any unrecognized path → **all** packages (safe default); docs (`*.md`,
+      `LICENSE`) and lint-only config (`.yamllint`, `checkmake.ini`, `lint.yml`,
+      dotfiles) → ignored. In `test.yml` the `discover` job checks out with
+      `fetch-depth: 0` and, on `pull_request`, pipes `git diff --name-only
+      BASE...HEAD` into the script; `workflow_dispatch` keeps the full list. An
+      empty result (`[]`, e.g. a docs-only PR) makes the test matrix expand to zero
+      jobs. The mapping logic lives in the linted script, not YAML; `make lint-sh`
+      auto-covers it (shebang glob). Verified: 19/19 behavioral cases +
+      actionlint/yamllint clean.
 
 ## Phase 3 — Automation  `[ ]`
 
