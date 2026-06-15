@@ -285,14 +285,32 @@ the next package.
 
 ### Phase 2C — Fix packages locally (one at a time)
 
-- [ ] **2.6** Test each package individually; when one breaks, fix that package (one
-      problem at a time), re-test, commit.
-- [ ] **2.7** When all pass individually, run the full local suite (`make test`) green.
+- [x] **2.6** Tested each package individually in a throwaway stage3 container; fixed
+      breakages one at a time, re-tested, committed (Phase 2C, PR #14). Fixes: test
+      harness auto-applies USE changes (`356ea40`); `sys-apps/fsearch` missing
+      itstool + icu deps (`66464a2`); `x11-misc/polo` slotted valac (`c77e65e`) and
+      metainfo + `/var/log/polo` keepdir (`cd9eb33`); `dev-util/shellcheck` fetch via
+      git-r3 (`6d2852a`) + built-tag elog (`f5529f6`).
+- [x] **2.7** Full local suite green from source: `make test` (all 11 packages, each in
+      a fresh `--rm` container) = **11 passed, 0 failed**. Decision: local and CI
+      package testing is **full source**. The official Gentoo binhost ships no desktop/X
+      profile and a binary `pango` hard-requires `freetype[harfbuzz]`, which autounmask
+      can't satisfy without breaking the `freetype`↔`harfbuzz` bootstrap cycle (source
+      mode breaks it by building freetype twice). This supersedes 2.5's note that CI
+      would set `GETBINPKG` for speed — `GETBINPKG` stays an opt-in knob, off by default.
 
-### Phase 2D — Test CI (no matrix yet)
+### Phase 2D — Test CI (static matrix; change-detection deferred to 2E)
 
-- [ ] **2.8** Add a CI job running the container tests (**full suite**) on
-      pull_request / workflow_dispatch; confirm it is green in CI before optimizing.
+- [ ] **2.8** CI running the container tests over the **full suite** on
+      pull_request / workflow_dispatch. Implemented in `.github/workflows/test.yml` as a
+      **static per-package matrix**: a `discover` job emits the package list
+      (`scripts/list-packages.sh --json`, shared with the local suite) and the `test`
+      job fans out one full-source `gentoo/stage3` container per package
+      (`make test PKG=… TREE_MODE=webrsync`, `fail-fast: false`). Parallel jobs so each
+      package gets its own GitHub 6h budget — a single sequential job can't fit the
+      full-source GHC/Rust/GTK builds. This is the **static** fan-out (every package,
+      every run); the **dynamic** change-detection matrix is 2.9. **Stays open until a
+      real PR run is green in CI** ("confirm green before optimizing").
 
 ### Phase 2E — Change-detection matrix (last)
 

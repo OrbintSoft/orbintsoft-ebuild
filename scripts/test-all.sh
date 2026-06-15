@@ -17,19 +17,17 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OVERLAY_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RUNNER="${SCRIPT_DIR}/test-pkg.sh"
 KEEP_GOING="${KEEP_GOING:-}"
 
 [ -x "${RUNNER}" ] || { echo "test-all: missing runner ${RUNNER}" >&2; exit 1; }
 
-# Packages: the atoms passed as arguments, else every cat/pkg dir (depth 3)
-# holding at least one *.ebuild. cd keeps find's output as bare cat/pkg paths.
+# Packages: the atoms passed as arguments, else the whole overlay as listed by
+# the shared discovery script (single source of truth, also used by the CI matrix).
 if [ "$#" -gt 0 ]; then
 	packages=("$@")
 else
-	cd "${OVERLAY_ROOT}"
-	mapfile -t packages < <(find . -mindepth 3 -maxdepth 3 -name '*.ebuild' -printf '%h\n' | sed 's,^\./,,' | sort -u)
+	mapfile -t packages < <("${SCRIPT_DIR}/list-packages.sh")
 fi
 [ "${#packages[@]}" -gt 0 ] || { echo "test-all: no packages found" >&2; exit 1; }
 
