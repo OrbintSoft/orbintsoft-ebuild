@@ -1,12 +1,12 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 #
-# Test CI: build+install every overlay package from source, each in its own
-# throwaway gentoo/stage3 container (PLAN.md Phase 2D / 2.8). A static
-# per-package matrix — every package, every run, in parallel so each job gets its
-# own time budget — distinct from the dynamic change-detection matrix (2.9). The
-# builds are heavy (GHC, Rust, GTK from source), so this runs on pull_request and
-# manual dispatch, not on every push.
+# Test CI: build+install overlay packages from source, each in its own throwaway
+# gentoo/stage3 container (PLAN.md Phase 2D/2E). On pull_request the discover job
+# computes a DYNAMIC matrix of just the packages the diff affects (2.9); on
+# workflow_dispatch it fans out the full suite (2.8). One package per parallel
+# job so each gets its own time budget. The builds are heavy (GHC, Rust, GTK from
+# source), so this runs on pull_request and manual dispatch, not on every push.
 
 name: test
 
@@ -23,9 +23,11 @@ permissions:
   contents: read
 
 jobs:
-  # Emit the package list once so the test job can fan out over it. Keeping the
-  # discovery in scripts/list-packages.sh (shared with the local suite) avoids a
-  # hardcoded list drifting out of sync with the overlay.
+  # Decide which packages the test job fans out over. On a PR that's the dynamic
+  # set computed from the diff (scripts/changed-packages.sh); otherwise the full
+  # overlay (scripts/list-packages.sh). Both keep the package logic in shared,
+  # shellcheck-linted scripts rather than hardcoded here. An empty result ("[]",
+  # e.g. a docs-only PR) makes the test matrix expand to zero jobs.
   discover:
     runs-on: ubuntu-latest
     outputs:
@@ -33,10 +35,27 @@ jobs:
     steps:
       - name: Check out the overlay
         uses: actions/checkout@v4
+        with:
+          # Full history so a pull_request can be diffed against its merge-base.
+          fetch-depth: 0
 
-      - name: List overlay packages for the matrix
+      - name: Select packages to test
         id: list
-        run: echo "packages=$(scripts/list-packages.sh --json)" >> "${GITHUB_OUTPUT}"
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "${EVENT_NAME}" = pull_request ]; then
+            # Dynamic matrix (2.9): only the packages the diff affects.
+            packages="$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" \
+              | scripts/changed-packages.sh --json)"
+          else
+            # workflow_dispatch (no diff to compute against): full suite.
+            packages="$(scripts/list-packages.sh --json)"
+          fi
+          echo "Selected packages: ${packages}"
+          echo "packages=${packages}" >> "${GITHUB_OUTPUT}"
 
   # One fresh container per package, full source. fail-fast: false so every
   # package is exercised even when one fails (we want the whole picture). docker
