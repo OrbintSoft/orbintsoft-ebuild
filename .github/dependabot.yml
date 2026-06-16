@@ -1,0 +1,24 @@
+# Dependabot — keeps the GitHub Actions pins up to date (PLAN.md 3.2).
+#
+# Scope: Dependabot bumps the action versions in .github/workflows/
+# (actions/checkout, actions/setup-go), which are pinned to full versions so builds
+# stay reproducible. It cannot see the Go tools (checkmake/actionlint, installed via
+# `go install @latest` — that needs a go.mod) or the gentoo/stage3 image (a shell
+# variable, not a Dockerfile); those stay @latest and are handled, together with
+# SHA-pinning the actions, by Renovate's custom managers (PLAN.md 3.3). Ebuild
+# dependencies are out of scope entirely (the bump bot's job, 3.4).
+#
+# Runs weekly; an on-demand run is available from the repo's Insights ->
+# Dependency graph -> Dependabot tab. All action bumps are grouped into one PR.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

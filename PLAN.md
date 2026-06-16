@@ -353,11 +353,19 @@ live→versioned conversion rides on top of it.
       duplicating templates, so they can't drift. *Rule 12:* SKILL.md is markdown (already
       in the repo, no linter) — no new linter; its YAML frontmatter is validated by Claude
       Code's skill loader. First real exercise: Phase 4.1 (redo-backups).
-- [ ] **3.2** Dependabot for GitHub Actions pins (`actions/checkout`, `actions/setup-go`)
-      on a **weekly** schedule + manual trigger. Only the action pins are in scope — the
-      Go tools (`checkmake`/`actionlint`) and `gentoo/stage3` are `@latest` (unpinned);
-      pinning them so the bot can bump them too is an optional follow-up (reproducibility
-      vs `@latest` trade-off).
+- [x] **3.2** Dependabot for GitHub Actions pins, **weekly**. Pinned the actions to full
+      versions for **reproducible builds** (`actions/checkout@v4.3.1`,
+      `actions/setup-go@v5.6.0` — kept the existing major, no silent major bump);
+      Dependabot keeps them current. Deliberately left `@latest` (out of Dependabot's reach
+      here): the Go tools (`checkmake`/`actionlint`, `go install @latest` → would need a
+      go.mod) and `gentoo/stage3` (a shell var, not a Dockerfile). Those — plus SHA-pinning
+      the actions — are deferred to **Renovate's custom managers (3.3)**, which reach the
+      inline/shell-var cases Dependabot can't, so the two bots are *not* redundant here.
+      Config in `.github/dependabot.yml`: all action bumps **grouped into one PR**, commit
+      prefix `ci`. Manual runs from Insights → Dependency graph → Dependabot (not a config
+      key); activates once on the default branch. *Rule 12:* YAML, covered by `lint-yaml`
+      (no new linter); verified via PyYAML + `.yamllint` rules (yamllint not installed
+      locally; CI's `lint-ci` is the gate).
 - [ ] **3.3** Renovate — same scope as 3.2, **weekly**. Dependabot and Renovate overlap
       fully here (both can only bump the action pins), so this is **compare-then-keep-one**:
       try both briefly, keep whichever fits, and don't leave both opening duplicate PRs in
