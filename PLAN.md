@@ -20,8 +20,15 @@ done. Large items are broken into sub-steps tracked in a gitignored
 - Linters: **pkgcheck** + **pkgdev** (canonical Gentoo QA) + **shellcheck** for scripts.
 - CI: GitHub Actions, **test only packages changed in the PR**, in a `gentoo/stage3` container.
 - Publishing: as a **git overlay on GitHub, no server needed**.
-- Version-bump automation: **custom bot** (nvchecker-based) — Dependabot/Renovate
-  cannot bump ebuilds, only GitHub Actions pins.
+- Version-bump automation: **two layers.** (1) **Dependabot/Renovate** for GitHub
+  Actions pins only — they cannot parse ebuilds. In this repo the only pins they can
+  follow are the action versions (`actions/checkout`, `actions/setup-go`); the Go
+  tools and `gentoo/stage3` are `@latest` (unpinned). The two bots overlap fully
+  here, so the plan is **compare-then-keep-one**, not both forever. (2) An **ebuild
+  bump bot**: evaluate **[Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
+  (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
+  integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before
+  building a custom nvchecker-based bot.
 - **Live `-9999` ebuilds stay as-is for now** (all packages are live, that's fine).
   Live→versioned conversion is future, per-package, decided dep by dep — only after
   CI + bump automation exist.
@@ -122,7 +129,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       and trailing-slash changes don't bite; `bt-keys-sync`'s `dosym` target is
       relative (absolute-symlink merge change N/A). pkgcheck: no new issues vs EAPI 8
       (verified by stash compare). The other 6 inherit eclasses still capped at EAPI 8
-      (`cargo`/`rust`, `cmake`, `meson`, `font`, `xdg`) → deferred to **Phase 5**.
+      (`cargo`/`rust`, `cmake`, `meson`, `font`, `xdg`) → deferred to **Phase 6**.
       [Cheatsheet](https://projects.gentoo.org/pms/9/eapi-cheatsheet.pdf)
 - [x] **1.11** Lint the `Makefile` itself with `checkmake` (not in the Gentoo
       tree; `go install github.com/checkmake/checkmake@latest`). Added a `lint-make`
@@ -159,7 +166,7 @@ Low risk, no build logic. Unblocks publishing as a real overlay.
       `pkg_postinst`, line 62 — dead code at that phase), are inherent to the
       fake-live design (manual `git clone` + checkout, like `fnm` before 1.6) and are
       cleared only by a proper-live rewrite (`git-r3` + `haskell-cabal`), which is too
-      large for this minor-fix batch → deferred to **Phase 6**.
+      large for this minor-fix batch → deferred to **Phase 7**.
 - [x] **1.15** `kde-plasma/ksshaskpass` (dummy) pkgcheck fixes surfaced in 1.10:
       `BadHomepage` (`https://gentoo.org`) fixed → `HOMEPAGE` now points at the
       overlay repo (the placeholder's actual home; it has no other upstream).
@@ -333,38 +340,79 @@ the next package.
 
 ## Phase 3 — Automation  `[ ]`
 
-- [ ] **3.1** Renovate/Dependabot for GitHub Actions pins only
-- [ ] **3.2** (Future, optional, per-package) Convert live `-9999` → versioned
-      ebuilds where it makes sense and upstream has releases. Decided dep by dep,
-      only after CI + bump automation. Not a goal in itself — live is fine.
-- [ ] **3.3** nvchecker-based bot: on new upstream release, open a PR adding the new
-      versioned ebuild + regenerated Manifest
-- [ ] **3.4** (Optional) `/new-ebuild` and `/bump` Claude skills reused by the bot
+Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
+in Phase 4), then the GitHub-Actions-pin bots, then the ebuild bump bot, then the
+`/bump` skill wraps whatever bump engine we pick, and finally per-package
+live→versioned conversion rides on top of it.
 
-## Phase 4 — Publishing  `[ ]`
+- [ ] **3.1** `/new-ebuild` Claude skill — scaffold a new ebuild following repo
+      conventions (EAPI 9, correct copyright tier, tabs, `metadata.xml` with maintainer
+      + GitHub `remote-id`, upstream-credit comment). Exercised immediately on Phase 4's
+      new packages, so it earns its keep at once.
+- [ ] **3.2** Dependabot for GitHub Actions pins (`actions/checkout`, `actions/setup-go`)
+      on a **weekly** schedule + manual trigger. Only the action pins are in scope — the
+      Go tools (`checkmake`/`actionlint`) and `gentoo/stage3` are `@latest` (unpinned);
+      pinning them so the bot can bump them too is an optional follow-up (reproducibility
+      vs `@latest` trade-off).
+- [ ] **3.3** Renovate — same scope as 3.2, **weekly**. Dependabot and Renovate overlap
+      fully here (both can only bump the action pins), so this is **compare-then-keep-one**:
+      try both briefly, keep whichever fits, and don't leave both opening duplicate PRs in
+      steady state. (Renovate's custom managers *could* also bump the pinned Go tools /
+      stage3 tag if we pin them — Dependabot can't, for `go install` inside a `run:`.)
+- [ ] **3.4** Ebuild bump bot: weekly job that detects new upstream releases and opens a
+      PR updating the ebuild + Manifest. **Evaluate [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
+      first (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
+      integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before building a
+      custom nvchecker-based bot. livecheck can also census which packages have a tagged
+      upstream — direct input for 3.6.
+- [ ] **3.5** `/bump` Claude skill — wraps the bump engine chosen in 3.4 (run it + review
+      the resulting PR), rather than reimplementing version detection. Final shape depends
+      on 3.4's outcome; if livecheck covers the mechanics, this stays thin.
+- [ ] **3.6** (Future, optional, per-package) Convert live `-9999` → versioned ebuilds
+      where upstream has releases/tags. Decided dep by dep, only after the bump bot exists.
+      Not a goal in itself — live is fine. (e.g. `dev-libs/tvision` has no tags → stays live.)
 
-- [ ] **4.1** README instructions to add the overlay via `repos.conf`
-- [ ] **4.2** (Optional) PR to the official `repo/proj/overlays` list for `eselect repository`
+## Phase 4 — New packages  `[ ]`
 
-## Phase 5 — EAPI 9 migration (eclass-gated)  `[ ]`
+Add two more packages before publishing, using the `/new-ebuild` skill (3.1) and the
+full lint+test CI from Phase 2. **One package per step** (Rule 1), EAPI 9, each with
+`metadata.xml` (maintainer + `remote-id`) and the upstream-credit comment.
+
+- [ ] **4.1** `redo-backups` (category TBD, likely `app-backup`) — OrbintSoft's own backup
+      tool ([OrbintSoft/redo-backups](https://github.com/OrbintSoft/redo-backups)). Upstream
+      is OrbintSoft, so **no** third-party upstream-credit comment (CLAUDE.md convention).
+- [ ] **4.2** `turbo` (category TBD, likely `app-editors`) — magiblot's Turbo, a terminal
+      text editor built on Turbo Vision ([magiblot/turbo](https://github.com/magiblot/turbo)).
+      Depends on `dev-libs/tvision`, already in this overlay. Add the upstream-credit comment
+      for magiblot.
+
+## Phase 5 — Publishing  `[ ]`
+
+- [ ] **5.1** README instructions to add the overlay via `repos.conf`
+- [ ] **5.2** README EAPI review — the badge still says **EAPI 8** ([README.md:7](README.md#L7));
+      reflect the real state (EAPI 9 for new/migrated packages, EAPI 8 for the eclass-gated
+      remainder per 1.10). Sweep the rest of the README for other stale claims while here.
+- [ ] **5.3** (Optional) PR to the official `repo/proj/overlays` list for `eselect repository`
+
+## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
 Finish 1.10 for the packages whose inherited eclasses still cap at EAPI 8 in the
 Gentoo tree (snapshot 2026-06-12). Each unblocks when its eclass gains EAPI 9 support
 upstream (a future `emerge --sync` away). **No eclass forking, no reverting to manual
 builds** — that would undo 1.4/1.5/1.6.
 
-- [ ] **5.1** `app-admin/pamtester`, `sys-apps/fsearch` — blocked by `meson` (7 8)
-- [ ] **5.2** `dev-libs/tvision` — blocked by `cmake` (8)
-- [ ] **5.3** `dev-util/fnm` — blocked by `cargo`/`rust` (8)
-- [ ] **5.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
-- [ ] **5.5** `x11-misc/polo` — blocked by `xdg` (7 8)
+- [ ] **6.1** `app-admin/pamtester`, `sys-apps/fsearch` — blocked by `meson` (7 8)
+- [ ] **6.2** `dev-libs/tvision` — blocked by `cmake` (8)
+- [ ] **6.3** `dev-util/fnm` — blocked by `cargo`/`rust` (8)
+- [ ] **6.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
+- [ ] **6.5** `x11-misc/polo` — blocked by `xdg` (7 8)
 
-## Phase 6 — Deferred complex items  `[ ]`
+## Phase 7 — Deferred complex items  `[ ]`
 
 Bucket for work that surfaced during earlier phases but is too large to do inline.
 Tackled after the main phases (ordering respected); items may grow as more is found.
 
-- [ ] **6.1** `dev-util/shellcheck` proper live rewrite (deferred from 1.14 — too
+- [ ] **7.1** `dev-util/shellcheck` proper live rewrite (deferred from 1.14 — too
       complex for the minor-fix batch). Still a fake-live ebuild (manual `git clone` +
       checkout latest tag, like `fnm` before 1.6). Rewrite as a proper live ebuild
       (`git-r3` + `haskell-cabal`), which clears the two remaining findings:
@@ -394,7 +442,7 @@ Tackled after the main phases (ordering respected); items may grow as more is fo
 | 16 | `app-misc/claude-desktop` | `NonPosixHeadTailUsage` fixed; `UnknownRestrict` resolved via `restrict-allowed` in layout.conf | 1.13 ✅ |
 | 13 | `dev-libs/tvision` | `LICENSE="MIT freed"` → invalid token, fixed to `MIT freedist` | 1.9 ✅ |
 | 14 | repo | README/CONTRIBUTING/.editorconfig/.gitignore + Makefile added; CI still missing | 0 ✅ / 1.0 ✅ / 2 |
-| 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 5 |
-| 17 | `dev-util/shellcheck` | `UnknownRestrict` resolved via layout.conf; fake-live + `VariableOrderWrong`/`VariableScope` deferred to rewrite | 1.14 ✅ / Phase 6 |
+| 15 | 5/11 ebuilds | bumped to EAPI 9; other 6 eclass-gated (cargo/cmake/meson/font/xdg) | 1.10 ✅ / Phase 6 |
+| 17 | `dev-util/shellcheck` | `UnknownRestrict` resolved via layout.conf; fake-live + `VariableOrderWrong`/`VariableScope` deferred to rewrite | 1.14 ✅ / Phase 7 |
 | 18 | `kde-plasma/ksshaskpass` | `BadHomepage` (gentoo.org), `VariableOrderWrong`, `MissingRemoteId` → fully clean | 1.15 ✅ |
 | 19 | `media-fonts/nerd-fonts` | `MissingManifest` — `symbols-only?` `.conf` distfile absent from `Manifest` → fully clean | 1.16 ✅ |
