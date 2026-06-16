@@ -338,17 +338,21 @@ the next package.
       auto-covers it (shebang glob). Verified: 19/19 behavioral cases +
       actionlint/yamllint clean.
 
-## Phase 3 — Automation  `[ ]`
+## Phase 3 — Automation  `[~]`
 
 Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
 in Phase 4), then the GitHub-Actions-pin bots, then the ebuild bump bot, then the
 `/bump` skill wraps whatever bump engine we pick, and finally per-package
 live→versioned conversion rides on top of it.
 
-- [ ] **3.1** `/new-ebuild` Claude skill — scaffold a new ebuild following repo
-      conventions (EAPI 9, correct copyright tier, tabs, `metadata.xml` with maintainer
-      + GitHub `remote-id`, upstream-credit comment). Exercised immediately on Phase 4's
-      new packages, so it earns its keep at once.
+- [x] **3.1** `/new-ebuild` Claude skill — scaffolds a new ebuild + `metadata.xml`
+      following repo conventions (EAPI 9/eclass-gated, copyright tier, upstream-credit,
+      canonical variable order, GLEP 68, tabs/LF). Lives in
+      `.claude/skills/new-ebuild/SKILL.md`; **references the canonical in-repo example
+      ebuilds** (ssh-profile-config, tvision, fnm, nerd-fonts, claude-desktop) instead of
+      duplicating templates, so they can't drift. *Rule 12:* SKILL.md is markdown (already
+      in the repo, no linter) — no new linter; its YAML frontmatter is validated by Claude
+      Code's skill loader. First real exercise: Phase 4.1 (redo-backups).
 - [ ] **3.2** Dependabot for GitHub Actions pins (`actions/checkout`, `actions/setup-go`)
       on a **weekly** schedule + manual trigger. Only the action pins are in scope — the
       Go tools (`checkmake`/`actionlint`) and `gentoo/stage3` are `@latest` (unpinned);
