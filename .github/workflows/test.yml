@@ -34,7 +34,7 @@ jobs:
       packages: ${{ steps.list.outputs.packages }}
     steps:
       - name: Check out the overlay
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@v6.0.3
         with:
           # Full history so a pull_request can be diffed against its merge-base.
           fetch-depth: 0
@@ -71,7 +71,7 @@ jobs:
         package: ${{ fromJSON(needs.discover.outputs.packages) }}
     steps:
       - name: Check out the overlay
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@v6.0.3
 
       - name: Build + install ${{ matrix.package }} from source
         env:
