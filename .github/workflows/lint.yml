@@ -9,8 +9,11 @@
 name: lint
 
 on:
+  # push only on master (post-merge); feature branches are linted through their
+  # PR — pull_request re-fires on every push to an open PR. This avoids the
+  # duplicate run that push:'**' + pull_request produced on every PR branch.
   push:
-    branches: ['**']
+    branches: [master]
   pull_request:
   workflow_dispatch:
 

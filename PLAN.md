@@ -416,6 +416,20 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
 - [ ] **3.7** (Future, optional, per-package) Convert live `-9999` → versioned ebuilds
       where upstream has releases/tags. Decided dep by dep, only after the bump bot exists.
       Not a goal in itself — live is fine. (e.g. `dev-libs/tvision` has no tags → stays live.)
+- [x] **3.8** CI hardening — least-privilege tokens + lint dedup. Audited every
+      workflow's `GITHUB_TOKEN`: both `lint.yml` and `test.yml` already declare an
+      explicit top-level `permissions: contents: read` (only `actions/checkout` needs
+      it), so they are already minimal — codified as a standing requirement
+      (CLAUDE.md **Rule 14**: explicit minimal `permissions:` per workflow, widened
+      only per-job where a writing step needs it; re-audit on PR/release/packages/pages
+      steps). Also fixed the duplicate lint run: `lint.yml` fired on both
+      `push: ['**']` and `pull_request`, so every PR branch linted twice — restricted
+      `push` to `[master]` (post-merge gate); feature branches now lint through their
+      PR (`pull_request` re-fires on each push to an open PR) and via
+      `workflow_dispatch`. `test.yml` was already `pull_request`+`dispatch` only (no
+      push trigger), so unaffected. Added **Rule 15** (every new *kind* of dependency
+      must be kept current by Dependabot/Renovate, or its absence justified) —
+      companion to Rule 12.
 
 ## Phase 4 — New packages  `[ ]`
 
