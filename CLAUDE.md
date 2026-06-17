@@ -57,6 +57,17 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    is not. Examples: the in-container provisioning script (Phase 2.3) and the
    Portage `*.conf` templates under `scripts/test-portage/` (Phase 2.5), both
    extracted from bash heredocs.
+14. **Least-privilege `GITHUB_TOKEN`.** Every GitHub Actions workflow declares an
+   explicit top-level `permissions:` block granting only the scopes its steps use
+   (default `permissions: contents: read`); grant any wider scope at the narrowest
+   level (per-job) and only where a step needs it — never leave the token at the
+   repository default. Re-audit whenever a workflow gains a step that writes (opens
+   PRs, cuts releases, pushes packages/pages). See PLAN.md Phase 3.8.
+15. **New dependency → keep it bump-automatable.** Whenever a new *kind* of
+   dependency enters the repo (a pinned action, a CLI tool, a container image, a
+   language package, …), make sure it can be kept current automatically: wire it
+   into Dependabot or Renovate, or record in PLAN.md why neither can and how it
+   will be updated instead. Companion to Rule 12 (new file type → linter).
 
 ### Proposed additional rules (pending approval)
 
