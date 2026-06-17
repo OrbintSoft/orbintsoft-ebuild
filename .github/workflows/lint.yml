@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4.3.1
 
       - name: Set up Go (for checkmake)
-        uses: actions/setup-go@v5.6.0
+        uses: actions/setup-go@v6.4.0
         with:
           go-version: stable
 
