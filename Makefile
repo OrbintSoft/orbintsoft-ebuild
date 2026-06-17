@@ -7,7 +7,9 @@
 #           dev-python/yamllint, checkmake
 #           (go install github.com/checkmake/checkmake/cmd/checkmake@latest),
 #           actionlint
-#           (go install github.com/rhysd/actionlint/cmd/actionlint@latest).
+#           (go install github.com/rhysd/actionlint/cmd/actionlint@latest),
+#           renovate-config-validator (optional; via `npx --package renovate`,
+#           skipped by `make lint` when npx is absent).
 #           `make test` additionally needs a container engine (docker/podman).
 #           See CONTRIBUTING.md.
 #
@@ -31,6 +33,7 @@ YAMLLINT   ?= yamllint
 ACTIONLINT ?= actionlint
 TEST_RUNNER ?= scripts/test-all.sh
 REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
+RENOVATE_CONFIG ?= renovate.json5
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
@@ -52,16 +55,16 @@ WORKFLOW_SOURCES := $(wildcard .github/workflows/*.yml .github/workflows/*.yaml)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions test manifest metadata install uninstall clean
+.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate test manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-lint: lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint)
+lint: lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint + renovate-config-validator)
 
-lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions ## CI subset: linters needing no gentoo tree (pkgcheck added later, PLAN.md 2B/2D)
+lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## CI subset: linters needing no gentoo tree (pkgcheck added later, PLAN.md 2B/2D)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan
@@ -102,6 +105,18 @@ lint-actions: ## Validate GitHub Actions workflows (actionlint)
 		$(ACTIONLINT) $(WORKFLOW_SOURCES); \
 	else \
 		echo "no workflows to check"; \
+	fi
+
+# renovate-config-validator ships in the renovate npm package; run it via npx so
+# there is no committed node project. Needs npx (Node) — skipped with a notice
+# when absent, so a Node-less checkout still passes `make lint`; CI has Node and
+# enforces it. The Mend app also validates the live config on every push.
+lint-renovate: ## Validate $(RENOVATE_CONFIG) (renovate-config-validator; needs npx)
+	@if command -v npx >/dev/null 2>&1; then \
+		echo "npx renovate-config-validator --strict $(RENOVATE_CONFIG)"; \
+		npx --yes --package renovate -- renovate-config-validator --strict $(RENOVATE_CONFIG); \
+	else \
+		echo "npx not found — skipping renovate config validation (CI enforces it)"; \
 	fi
 
 manifest: ## Regenerate thin Manifests for all packages (pkgdev)

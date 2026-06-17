@@ -16,7 +16,8 @@
 #
 # Environment knobs (all optional):
 #   CONTAINER_ENGINE  container CLI                       (default: docker)
-#   STAGE3_IMAGE      stage3 image to run                 (default: gentoo/stage3:latest)
+#   STAGE3_IMAGE      stage3 image to run                 (default: gentoo/stage3:latest,
+#                     digest-pinned in-script; Renovate keeps the digest current)
 #   GENTOO_REPO       host gentoo ebuild tree to bind     (default: /var/db/repos/gentoo)
 #   TREE_MODE         bind | webrsync | auto              (default: auto)
 #   EMERGE_OPTS       extra args appended to `emerge -v`  (default: empty)
@@ -42,7 +43,10 @@
 set -euo pipefail
 
 CONTAINER_ENGINE="${CONTAINER_ENGINE:-docker}"
-STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest}"
+# Digest-pinned for reproducible test containers; Renovate bumps the digest of the
+# rolling `latest` tag (datasource=docker annotation below; see renovate.json5).
+# renovate: datasource=docker depName=gentoo/stage3
+STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:91134e1375edb5d0b69951bab06d229e6695b66ce9726d46a5a4293fc305eb34}"
 GENTOO_REPO="${GENTOO_REPO:-/var/db/repos/gentoo}"
 TREE_MODE="${TREE_MODE:-auto}"
 EMERGE_OPTS="${EMERGE_OPTS:-}"
