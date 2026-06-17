@@ -382,11 +382,14 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       updates grouped into one PR (`ci:` semantic prefix). yamllint
       `comments.min-spaces-from-content` relaxed to 1 so Dependabot's single-space version
       comments stay lint-clean. *Rule 12* (new json5 file type): added `lint-renovate`
-      running `renovate-config-validator --strict` via `npx --package renovate` (wired into
-      `make lint` + `lint-ci`; skipped when npx is absent so Node-less checkouts still pass,
-      CI enforces it; the heavy renovate npm package is the accepted cost, and the Mend app
-      also validates the live config). `.editorconfig` gained `[*.{json,json5}]`. Config
-      validated clean (renovate-config-validator, renovate 37.440.7).
+      running `renovate-config-validator --strict` via `npx --package $(RENOVATE_PKG)` (wired
+      into `make lint` + `lint-ci`; skipped when npx is absent so Node-less checkouts still
+      pass, CI enforces it; the heavy renovate npm package is the accepted cost, and the Mend
+      app also validates the live config). The validator's major is **pinned**
+      (`RENOVATE_PKG ?= renovate@43`) so local and CI agree on the schema: custom managers use
+      `managerFilePatterns` (renovate ≥39; an unpinned `npx` had validated a stale cached
+      37.x that still wanted the old `fileMatch`, disagreeing with CI's fresh 43.x and failing
+      the lint). `.editorconfig` gained `[*.{json,json5}]`. Validated clean on renovate 43.x.
 - [x] **3.4** CI cost — harness-only diffs test **one random package**, not the full suite
       (refines the Phase 2E change-detection matrix, 2.9). Motivation: every
       Dependabot/Renovate PR (stage3 digest in `test-pkg.sh`, action SHA in `test.yml`) used

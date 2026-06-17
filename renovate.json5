@@ -39,7 +39,7 @@
       // Go lint tools installed via `go install …@vX.Y.Z` in the lint workflow.
       // Each is tagged in-file with `# renovate: datasource=… depName=…`.
       "customType": "regex",
-      "fileMatch": ["/^\\.github/workflows/lint\\.yml$/"],
+      "managerFilePatterns": ["/^\\.github/workflows/lint\\.yml$/"],
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+go install \\S+@(?<currentValue>v[0-9]\\S*)",
       ],
@@ -48,7 +48,7 @@
       // gentoo/stage3 image, digest-pinned in the test runner. The rolling
       // `latest` tag keeps its name, so Renovate just refreshes the pinned digest.
       "customType": "regex",
-      "fileMatch": ["/^scripts/test-pkg\\.sh$/"],
+      "managerFilePatterns": ["/^scripts/test-pkg\\.sh$/"],
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+STAGE3_IMAGE=\"\\$\\{STAGE3_IMAGE:-[^:\"]+:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\\}\"",
       ],

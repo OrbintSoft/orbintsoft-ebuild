@@ -8,7 +8,7 @@
 #           (go install github.com/checkmake/checkmake/cmd/checkmake@latest),
 #           actionlint
 #           (go install github.com/rhysd/actionlint/cmd/actionlint@latest),
-#           renovate-config-validator (optional; via `npx --package renovate`,
+#           renovate-config-validator (optional; via `npx --package $(RENOVATE_PKG)`,
 #           skipped by `make lint` when npx is absent).
 #           `make test` additionally needs a container engine (docker/podman).
 #           See CONTRIBUTING.md.
@@ -34,6 +34,11 @@ ACTIONLINT ?= actionlint
 TEST_RUNNER ?= scripts/test-all.sh
 REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
 RENOVATE_CONFIG ?= renovate.json5
+# Pin the validator's major so local and CI agree on the config schema (the
+# fileMatch -> managerFilePatterns rename means an unpinned npx can validate a
+# stale cached major and disagree with CI's fresh install). Tracks the renovate
+# the Mend app runs (stable 43.x).
+RENOVATE_PKG ?= renovate@43
 
 # shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
@@ -113,8 +118,8 @@ lint-actions: ## Validate GitHub Actions workflows (actionlint)
 # enforces it. The Mend app also validates the live config on every push.
 lint-renovate: ## Validate $(RENOVATE_CONFIG) (renovate-config-validator; needs npx)
 	@if command -v npx >/dev/null 2>&1; then \
-		echo "npx renovate-config-validator --strict $(RENOVATE_CONFIG)"; \
-		npx --yes --package renovate -- renovate-config-validator --strict $(RENOVATE_CONFIG); \
+		echo "npx --package $(RENOVATE_PKG) renovate-config-validator --strict $(RENOVATE_CONFIG)"; \
+		npx --yes --package $(RENOVATE_PKG) -- renovate-config-validator --strict $(RENOVATE_CONFIG); \
 	else \
 		echo "npx not found — skipping renovate config validation (CI enforces it)"; \
 	fi
