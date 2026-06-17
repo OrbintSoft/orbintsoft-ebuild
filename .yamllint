@@ -17,3 +17,8 @@ rules:
   # 80 is too tight for workflow expressions and prose comments; 120 is plenty.
   line-length:
     max: 120
+  # Dependabot maintains SHA-pinned actions with a single-space version comment
+  # (`uses: foo/bar@<sha> # v1.2.3`); the default requires 2 and would flag every
+  # bot edit. Accept 1 so the pins stay lint-clean as Dependabot updates them.
+  comments:
+    min-spaces-from-content: 1

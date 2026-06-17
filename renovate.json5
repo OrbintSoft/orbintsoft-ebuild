@@ -1,0 +1,57 @@
+{
+  // Renovate config for the orbintsoft overlay — PLAN.md 3.3.
+  //
+  // Scope: ONLY what Dependabot can't reach. Dependabot owns the GitHub Actions
+  // pins (SHA + version comment, .github/dependabot.yml); Renovate owns the Go
+  // lint tools (`go install …@vX.Y.Z`) and the gentoo/stage3 container digest.
+  // The github-actions manager is disabled below so the two bots never collide.
+  //
+  // json5 (not json) so each custom manager can be documented inline. Validated
+  // by `make lint-renovate` (renovate-config-validator) and by the Mend app.
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": ["config:recommended"],
+
+  // Once a week (PLAN.md 3.3). The Dependency Dashboard issue lets us force an
+  // out-of-schedule run/PR by ticking a box, so a manual run can always open PRs.
+  "schedule": ["before 6am on monday"],
+  "dependencyDashboard": true,
+
+  // Conventional Commits: everything Renovate touches here is CI tooling.
+  "semanticCommits": "enabled",
+  "semanticCommitType": "ci",
+
+  // Dependabot owns the GitHub Actions pins — keep Renovate out of that lane.
+  "github-actions": {
+    "enabled": false,
+  },
+
+  "packageRules": [
+    {
+      // One grouped, weekly PR for everything Renovate manages here.
+      "matchManagers": ["custom.regex"],
+      "groupName": "ci tooling",
+    },
+  ],
+
+  "customManagers": [
+    {
+      // Go lint tools installed via `go install …@vX.Y.Z` in the lint workflow.
+      // Each is tagged in-file with `# renovate: datasource=… depName=…`.
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/lint\\.yml$/"],
+      "matchStrings": [
+        "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+go install \\S+@(?<currentValue>v[0-9]\\S*)",
+      ],
+    },
+    {
+      // gentoo/stage3 image, digest-pinned in the test runner. The rolling
+      // `latest` tag keeps its name, so Renovate just refreshes the pinned digest.
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/test-pkg\\.sh$/"],
+      "matchStrings": [
+        "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+STAGE3_IMAGE=\"\\$\\{STAGE3_IMAGE:-[^:\"]+:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\\}\"",
+      ],
+    },
+  ],
+}

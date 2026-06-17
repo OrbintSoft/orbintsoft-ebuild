@@ -12,13 +12,20 @@
 #
 # Each changed path is classified as:
 #   * category/package/...           -> that package
-#   * build-affecting infrastructure -> ALL packages (a fresh full matrix):
-#         profiles/  metadata/  eclass/  scripts/  Makefile
-#         .github/workflows/test.yml   (the test workflow itself)
-#   * docs / lint-only config         -> ignored (cannot change a build):
+#   * overlay-semantics infra        -> ALL packages (can change any build):
+#         profiles/  metadata/  eclass/
+#   * test-harness / CI infra        -> ONE random package (PLAN.md 3.4): a smoke
+#         test that the container test path still works, without the full matrix:
+#         scripts/  Makefile  .github/workflows/test.yml
+#   * docs / lint-only / bot config   -> ignored (cannot change a build):
 #         *.md  LICENSE  .editorconfig  .gitignore  .gitattributes
 #         .yamllint  checkmake.ini  .github/workflows/lint.yml
+#         renovate.json  renovate.json5  .github/dependabot.yml
 #   * anything else (unrecognized)    -> ALL packages (safe default)
+#
+# When a PR changes both a package and harness infra, the changed package already
+# smoke-tests the harness, so the random pick only kicks in for harness-only PRs
+# (e.g. Dependabot/Renovate bumping the stage3 digest or an action SHA).
 #
 # Output mirrors list-packages.sh: one "category/package" per line, or a compact
 # JSON array with --json. An empty result (only docs/config changed) prints
@@ -45,6 +52,7 @@ done
 
 declare -A selected=()
 test_all=
+test_one=
 
 while IFS= read -r file; do
 	[ -n "${file}" ] || continue
@@ -65,11 +73,16 @@ while IFS= read -r file; do
 
 	# Not inside a known package — classify the path.
 	case "${file}" in
-		# Build-affecting infrastructure -> retest everything.
-		profiles/*|metadata/*|eclass/*|scripts/*|Makefile|.github/workflows/test.yml)
+		# Overlay-semantics infrastructure -> retest everything (any build).
+		profiles/*|metadata/*|eclass/*)
 			test_all=1 ;;
-		# Docs and lint-only config -> cannot affect a build, ignore.
-		*.md|LICENSE|.editorconfig|.gitignore|.gitattributes|.yamllint|checkmake.ini|.github/workflows/lint.yml)
+		# Test-harness / CI infrastructure -> smoke-test ONE random package
+		# (PLAN.md 3.4): proves the container test path still works without the
+		# full matrix. Subsumed when specific packages are already selected.
+		scripts/*|Makefile|.github/workflows/test.yml)
+			test_one=1 ;;
+		# Docs, lint-only config and bot config -> cannot affect a build, ignore.
+		*.md|LICENSE|.editorconfig|.gitignore|.gitattributes|.yamllint|checkmake.ini|.github/workflows/lint.yml|renovate.json|renovate.json5|.github/dependabot.yml)
 			: ;;
 		# Unrecognized -> safe default: retest everything.
 		*)
@@ -80,7 +93,12 @@ done
 if [ -n "${test_all}" ]; then
 	packages=("${all_packages[@]}")
 elif [ "${#selected[@]}" -gt 0 ]; then
+	# Specific packages changed — they also exercise the test harness, so a
+	# concurrent harness-infra change (test_one) needs no extra random pick.
 	mapfile -t packages < <(printf '%s\n' "${!selected[@]}" | sort -u)
+elif [ -n "${test_one}" ] && [ "${#all_packages[@]}" -gt 0 ]; then
+	# Harness-only change: one random package, just to confirm CI isn't broken.
+	mapfile -t packages < <(printf '%s\n' "${all_packages[@]}" | shuf -n1)
 else
 	packages=()
 fi

@@ -20,11 +20,11 @@ done. Large items are broken into sub-steps tracked in a gitignored
 - Linters: **pkgcheck** + **pkgdev** (canonical Gentoo QA) + **shellcheck** for scripts.
 - CI: GitHub Actions, **test only packages changed in the PR**, in a `gentoo/stage3` container.
 - Publishing: as a **git overlay on GitHub, no server needed**.
-- Version-bump automation: **two layers.** (1) **Dependabot/Renovate** for GitHub
-  Actions pins only — they cannot parse ebuilds. In this repo the only pins they can
-  follow are the action versions (`actions/checkout`, `actions/setup-go`); the Go
-  tools and `gentoo/stage3` are `@latest` (unpinned). The two bots overlap fully
-  here, so the plan is **compare-then-keep-one**, not both forever. (2) An **ebuild
+- Version-bump automation: **two layers.** (1) **Dependabot + Renovate** for the
+  non-ebuild pins they can parse (they cannot parse ebuilds). **Both kept, split
+  scope** (decided in 3.3): Dependabot owns the GitHub Actions (SHA-pinned + `# vX.Y.Z`
+  version comment); Renovate owns what Dependabot can't reach — the Go lint tools
+  (`go install …@vX.Y.Z`) and the `gentoo/stage3` digest. (2) An **ebuild
   bump bot**: evaluate **[Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
   (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
   integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before
@@ -341,9 +341,9 @@ the next package.
 ## Phase 3 — Automation  `[~]`
 
 Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
-in Phase 4), then the GitHub-Actions-pin bots, then the ebuild bump bot, then the
-`/bump` skill wraps whatever bump engine we pick, and finally per-package
-live→versioned conversion rides on top of it.
+in Phase 4), then the GitHub-Actions-pin bots and a CI-cost guard so their PRs don't
+retest everything, then the ebuild bump bot, then the `/bump` skill wraps whatever
+bump engine we pick, and finally per-package live→versioned conversion rides on top.
 
 - [x] **3.1** `/new-ebuild` Claude skill — scaffolds a new ebuild + `metadata.xml`
       following repo conventions (EAPI 9/eclass-gated, copyright tier, upstream-credit,
@@ -358,29 +358,62 @@ live→versioned conversion rides on top of it.
       `actions/setup-go@v5.6.0` — kept the existing major, no silent major bump);
       Dependabot keeps them current. Deliberately left `@latest` (out of Dependabot's reach
       here): the Go tools (`checkmake`/`actionlint`, `go install @latest` → would need a
-      go.mod) and `gentoo/stage3` (a shell var, not a Dockerfile). Those — plus SHA-pinning
-      the actions — are deferred to **Renovate's custom managers (3.3)**, which reach the
-      inline/shell-var cases Dependabot can't, so the two bots are *not* redundant here.
+      go.mod) and `gentoo/stage3` (a shell var, not a Dockerfile). Those are deferred to
+      **Renovate (3.3)**. (3.3 update: kept BOTH bots with split scope — Dependabot now
+      SHA-pins the actions `@<sha> # vX.Y.Z` (since bumped to v6, then SHA-pinned); Renovate
+      owns the Go tools + stage3 digest.)
       Config in `.github/dependabot.yml`: all action bumps **grouped into one PR**, commit
       prefix `ci`. Manual runs from Insights → Dependency graph → Dependabot (not a config
       key); activates once on the default branch. *Rule 12:* YAML, covered by `lint-yaml`
       (no new linter); verified via PyYAML + `.yamllint` rules (yamllint not installed
       locally; CI's `lint-ci` is the gate).
-- [ ] **3.3** Renovate — same scope as 3.2, **weekly**. Dependabot and Renovate overlap
-      fully here (both can only bump the action pins), so this is **compare-then-keep-one**:
-      try both briefly, keep whichever fits, and don't leave both opening duplicate PRs in
-      steady state. (Renovate's custom managers *could* also bump the pinned Go tools /
-      stage3 tag if we pin them — Dependabot can't, for `go install` inside a `run:`.)
-- [ ] **3.4** Ebuild bump bot: weekly job that detects new upstream releases and opens a
+- [x] **3.3** Renovate — **weekly**, config in **renovate.json5** (json5 so each custom
+      manager is documented inline). Instead of compare-then-keep-one, **kept BOTH bots with
+      non-overlapping scope**: Dependabot owns the GitHub Actions (SHA-pinned
+      `@<sha> # vX.Y.Z`, it maintains both SHA and comment); Renovate owns what Dependabot
+      can't reach, so its `github-actions` manager is **disabled** and it runs two regex
+      custom managers — the Go lint tools in `lint.yml` (`go install …@vX.Y.Z`, version
+      only; `# renovate: datasource=github-tags depName=…` annotations, since SHA-pinning a
+      `go install` isn't clean) and the `gentoo/stage3` image in `test-pkg.sh`
+      (digest-pinned `latest@sha256:…`; Renovate refreshes the rolling tag's digest). All
+      deps pinned in-tree to current values (checkout/setup-go SHAs, checkmake v0.3.2,
+      actionlint v1.7.12, stage3 digest). Schedule `before 6am on monday`;
+      `dependencyDashboard: true` so a manual run can force out-of-schedule PRs anytime;
+      updates grouped into one PR (`ci:` semantic prefix). yamllint
+      `comments.min-spaces-from-content` relaxed to 1 so Dependabot's single-space version
+      comments stay lint-clean. *Rule 12* (new json5 file type): added `lint-renovate`
+      running `renovate-config-validator --strict` via `npx --package $(RENOVATE_PKG)` (wired
+      into `make lint` + `lint-ci`; skipped when npx is absent so Node-less checkouts still
+      pass, CI enforces it; the heavy renovate npm package is the accepted cost, and the Mend
+      app also validates the live config). The validator's major is **pinned**
+      (`RENOVATE_PKG ?= renovate@43`) so local and CI agree on the schema: custom managers use
+      `managerFilePatterns` (renovate ≥39; an unpinned `npx` had validated a stale cached
+      37.x that still wanted the old `fileMatch`, disagreeing with CI's fresh 43.x and failing
+      the lint). `.editorconfig` gained `[*.{json,json5}]`. Validated clean on renovate 43.x.
+- [x] **3.4** CI cost — harness-only diffs test **one random package**, not the full suite
+      (refines the Phase 2E change-detection matrix, 2.9). Motivation: every
+      Dependabot/Renovate PR (stage3 digest in `test-pkg.sh`, action SHA in `test.yml`) used
+      to rerun the whole heavy matrix. `changed-packages.sh` now splits its old "ALL infra"
+      bucket: **overlay-semantics** infra (`profiles/`, `metadata/`, `eclass/`, unrecognized)
+      still → ALL; **test-harness / CI** infra (`scripts/`, `Makefile`,
+      `.github/workflows/test.yml`) → ONE random package (`list-packages.sh | shuf -n1`) as a
+      smoke test. Precedence: ALL dominates; else specifically-changed ebuilds (which already
+      exercise the harness); else one random; else empty. Bot configs
+      (`renovate.json`/`renovate.json5`, `.github/dependabot.yml`) moved to the ignored
+      bucket so a config tweak retests nothing. Tradeoff: random ⇒ non-deterministic re-runs
+      (accepted for a smoke test; seeding by HEAD sha is a possible later refinement).
+      Verified behaviorally (harness→1, ebuild→that pkg, ebuild+harness→that pkg,
+      profiles→all, docs/bot-config→none) + shellcheck clean.
+- [ ] **3.5** Ebuild bump bot: weekly job that detects new upstream releases and opens a
       PR updating the ebuild + Manifest. **Evaluate [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
       first (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
       integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before building a
       custom nvchecker-based bot. livecheck can also census which packages have a tagged
-      upstream — direct input for 3.6.
-- [ ] **3.5** `/bump` Claude skill — wraps the bump engine chosen in 3.4 (run it + review
+      upstream — direct input for 3.7.
+- [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
       the resulting PR), rather than reimplementing version detection. Final shape depends
-      on 3.4's outcome; if livecheck covers the mechanics, this stays thin.
-- [ ] **3.6** (Future, optional, per-package) Convert live `-9999` → versioned ebuilds
+      on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
+- [ ] **3.7** (Future, optional, per-package) Convert live `-9999` → versioned ebuilds
       where upstream has releases/tags. Decided dep by dep, only after the bump bot exists.
       Not a goal in itself — live is fine. (e.g. `dev-libs/tvision` has no tags → stays live.)
 
