@@ -45,10 +45,14 @@
       ],
     },
     {
-      // gentoo/stage3 image, digest-pinned in the test runner. The rolling
-      // `latest` tag keeps its name, so Renovate just refreshes the pinned digest.
+      // gentoo/stage3 image, digest-pinned in the container launchers (the test
+      // runner + the livecheck bump runner). The rolling `latest` tag keeps its
+      // name, so Renovate just refreshes the pinned digest in both files.
       "customType": "regex",
-      "managerFilePatterns": ["/^scripts/test-pkg\\.sh$/"],
+      "managerFilePatterns": [
+        "/^scripts/test-pkg\\.sh$/",
+        "/^scripts/livecheck-ci\\.sh$/",
+      ],
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+STAGE3_IMAGE=\"\\$\\{STAGE3_IMAGE:-[^:\"]+:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\\}\"",
       ],

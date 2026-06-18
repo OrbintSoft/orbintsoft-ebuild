@@ -25,10 +25,10 @@ done. Large items are broken into sub-steps tracked in a gitignored
   scope** (decided in 3.3): Dependabot owns the GitHub Actions (SHA-pinned + `# vX.Y.Z`
   version comment); Renovate owns what Dependabot can't reach — the Go lint tools
   (`go install …@vX.Y.Z`) and the `gentoo/stage3` digest. (2) An **ebuild
-  bump bot**: evaluate **[Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
-  (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
-  integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before
-  building a custom nvchecker-based bot.
+  bump bot**: **adopted [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
+  (decided 3.5) over a custom nvchecker bot — both a local `make livecheck` and a
+  weekly CI job that opens a bump PR. Keys off `SRC_URI`, so only versioned ebuilds
+  are in scope (today just `media-fonts/nerd-fonts`); live `-9999` ebuilds are skipped.
 - **Live `-9999` ebuilds stay as-is for now** (all packages are live, that's fine).
   Live→versioned conversion is future, per-package, decided dep by dep — only after
   CI + bump automation exist.
@@ -404,18 +404,38 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       (accepted for a smoke test; seeding by HEAD sha is a possible later refinement).
       Verified behaviorally (harness→1, ebuild→that pkg, ebuild+harness→that pkg,
       profiles→all, docs/bot-config→none) + shellcheck clean.
-- [ ] **3.5** Ebuild bump bot: weekly job that detects new upstream releases and opens a
-      PR updating the ebuild + Manifest. **Evaluate [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
-      first (nvchecker-inspired; `--auto-update --git`, GitHub/PyPI/Repology/…, pkgdev
-      integration, handles live `-9999` via commit SHA; v0.2.4 2026-05-31) before building a
-      custom nvchecker-based bot. livecheck can also census which packages have a tagged
-      upstream — direct input for 3.7.
+- [x] **3.5** Ebuild bump bot — **adopted [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
+      (v0.2.4) as the engine; no custom nvchecker bot needed. Two delivery paths (decided: both):
+      (a) **local** `make livecheck` — `scripts/livecheck.sh` is a thin wrapper, report-only by
+      default, `AUTO=1` rewrites ebuilds, `GIT=1` also commits + regenerates the Manifest via
+      pkgdev; it bounds itself to this overlay via `list-packages.sh` and needs the overlay
+      registered (`make install`). The `/bump` skill (3.6) wraps this. (b) **weekly CI bump bot**
+      — `.github/workflows/livecheck.yml` (cron Mon 05:00 UTC + `workflow_dispatch`) runs livecheck
+      in a throwaway `gentoo/stage3` container (`scripts/livecheck-ci.sh` launcher +
+      `scripts/livecheck-container.sh`, mirroring the test harness; overlay mounted **read-write**)
+      with `--auto` + `pkgdev manifest`, leaving the bump uncommitted for
+      `peter-evans/create-pull-request` (GITHUB_TOKEN) to commit + open a PR (`livecheck/bump`).
+      **Scope reality (verified locally):** livecheck keys off the first `SRC_URI` URL, so only the
+      one versioned ebuild — `media-fonts/nerd-fonts` (detected 3.2.1 → 3.4.0 with **zero**
+      `livecheck.json`) — is bumpable today; the 10 live `-9999`/`-99999999` ebuilds have no
+      `SRC_URI` version and are skipped. The hoped-for **tag census does NOT materialize** via
+      livecheck (it sees only the 1 ebuild) → 3.7 must query tags via the `metadata.xml`
+      `remote-id` instead. Most weeks the job is a no-op (no diff → no PR). *Rule 12:* no
+      `livecheck.json` was needed → no new JSON file type entered the repo → no `lint-json` (revisit
+      when one is first required). *Rule 15:* the stage3 digest in `livecheck-ci.sh` is tracked by
+      Renovate (added to the stage3 custom manager); the new `peter-evans` action by Dependabot;
+      `livecheck`/`packaging` are pip-installed unpinned in the throwaway container (always latest —
+      justified, nothing to pin). **Manual prereq:** repo *Settings → Actions →* "Allow GitHub
+      Actions to create and approve pull requests" must be ON (else peter-evans 403s);
+      GITHUB_TOKEN-opened PRs don't trigger `test.yml` (noted in the PR body).
 - [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
       the resulting PR), rather than reimplementing version detection. Final shape depends
       on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
 - [ ] **3.7** (Future, optional, per-package) Convert live `-9999` → versioned ebuilds
       where upstream has releases/tags. Decided dep by dep, only after the bump bot exists.
       Not a goal in itself — live is fine. (e.g. `dev-libs/tvision` has no tags → stays live.)
+      Tag census input: livecheck can't provide it (3.5 verified it skips SRC_URI-less live
+      ebuilds), so query each package's tags via its `metadata.xml` `<remote-id>` instead.
 - [x] **3.8** CI hardening — least-privilege tokens + lint dedup. Audited every
       workflow's `GITHUB_TOKEN`: both `lint.yml` and `test.yml` already declare an
       explicit top-level `permissions: contents: read` (only `actions/checkout` needs
