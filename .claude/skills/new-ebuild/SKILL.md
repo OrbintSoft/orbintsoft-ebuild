@@ -117,8 +117,8 @@ Don't emit redundant empty global assignments (`IUSE=""`, `SRC_URI=""`, etc.) �
 	</upstream>
 </pkgmetadata>
 ```
-- Pick the right `remote-id type` (`github`, `gitlab`, …); the bump bot (PLAN.md 3.4)
-  relies on it.
+- Pick the right `remote-id type` (`github`, `gitlab`, …); Repology and the future
+  tag census (PLAN.md 3.7) rely on it.
 - Document every **local** USE flag with `<use><flag name="…">…</flag></use>` or
   `pkgcheck` raises `UnknownUseFlags` (PLAN.md 1.3).
 
@@ -128,7 +128,10 @@ Don't emit redundant empty global assignments (`IUSE=""`, `SRC_URI=""`, etc.) �
    before declaring done; this is the gate `pkgcheck scan category/package` enforces.
 2. **`make test PKG=category/package`** — build+install in a fresh stage3 container.
 3. **Versioned only:** generate the Manifest (`make manifest` / `pkgdev manifest`).
-   Live ebuilds have no DIST artifacts → no Manifest (PLAN.md 1.16).
+   Live ebuilds have no DIST artifacts → no Manifest (PLAN.md 1.16). A versioned
+   ebuild whose first `SRC_URI` points at a recognized host (GitHub releases, PyPI,
+   …) is auto-bumpable by `make livecheck` (PLAN.md 3.5) with no `livecheck.json` —
+   prefer such a `SRC_URI` so future bumps stay automatic.
 4. Add the package to the README list if there is one (PLAN.md 0.5).
 5. If you created a new **category**, update [profiles/categories](../../../profiles/categories).
 6. Stop and **ask before committing** (Rule 10); confirm the branch is not `master`

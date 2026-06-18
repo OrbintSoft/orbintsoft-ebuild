@@ -2,16 +2,13 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 #
-# livecheck-ci.sh — host-side launcher for the weekly ebuild bump job (PLAN.md
-# Phase 3.5). Runs livecheck in a throwaway gentoo/stage3 container with the
-# overlay mounted READ-WRITE, so the bumped ebuilds + regenerated Manifest land
-# back in the workspace for the workflow's create-pull-request step to commit.
+# livecheck-ci.sh — run the bump engine in a throwaway gentoo/stage3 container
+# with the overlay mounted READ-WRITE, so the bumped ebuilds + regenerated
+# Manifest land back in the workspace for the caller to open a PR. In-container
+# provisioning lives in the companion scripts/livecheck-container.sh.
 #
-# CI-only: it needs a container engine and an x86_64 gentoo/stage3 image. Local
-# bumps don't need any of this — run `make livecheck` (scripts/livecheck.sh)
-# directly on a Gentoo host instead. The in-container provisioning lives in the
-# companion scripts/livecheck-container.sh (mounted read-only), shellcheck-linted
-# instead of hidden in a heredoc (CLAUDE.md Rule 13).
+# CI-only: needs a container engine and an x86_64 gentoo/stage3 image. For a local
+# bump run `make livecheck` (scripts/livecheck.sh) directly on a Gentoo host.
 #
 # Environment knobs (all optional):
 #   CONTAINER_ENGINE  container CLI                  (default: docker)
@@ -23,9 +20,8 @@
 set -euo pipefail
 
 CONTAINER_ENGINE="${CONTAINER_ENGINE:-docker}"
-# Digest-pinned for a reproducible container; Renovate bumps the digest of the
-# rolling `latest` tag (same datasource=docker annotation as scripts/test-pkg.sh,
-# both files matched by the stage3 custom manager in renovate.json5).
+# Digest-pinned; Renovate refreshes the rolling `latest` tag's digest (also pinned
+# the same way in scripts/test-pkg.sh; both matched by the manager in renovate.json5).
 # renovate: datasource=docker depName=gentoo/stage3
 STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:91134e1375edb5d0b69951bab06d229e6695b66ce9726d46a5a4293fc305eb34}"
 CONTAINER_OPTS="${CONTAINER_OPTS:-}"
@@ -46,9 +42,8 @@ REPO_NAME="$(cat "${OVERLAY_ROOT}/profiles/repo_name")"
 command -v "${CONTAINER_ENGINE}" >/dev/null 2>&1 \
 	|| die "container engine '${CONTAINER_ENGINE}' not found on PATH"
 
-# Knobs travel into the container as env vars. The overlay is mounted READ-WRITE
-# (the bump must persist back to the workspace); the templates and the companion
-# script are read-only.
+# Overlay mounted READ-WRITE so the bump persists back to the workspace; the
+# templates and the companion script are read-only.
 engine_args=(run --rm)
 engine_args+=(--env "REPO_NAME=${REPO_NAME}")
 # Forward the GitHub token (if any) so livecheck authenticates its API calls.
