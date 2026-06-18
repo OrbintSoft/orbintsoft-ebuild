@@ -428,11 +428,6 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       justified, nothing to pin). **Manual prereq:** repo *Settings → Actions →* "Allow GitHub
       Actions to create and approve pull requests" must be ON (else peter-evans 403s);
       GITHUB_TOKEN-opened PRs don't trigger `test.yml` (noted in the PR body).
-      Also **generalized `scripts/changed-packages.sh`** (refines 3.4): any
-      `.github/workflows/*` other than `test.yml` → **ignored** (a workflow only
-      orchestrates CI, it can't change a package build; `test.yml` alone drives the
-      harness and keeps its one-random smoke). So the new bump workflow doesn't fan
-      the test matrix out to all packages, and future workflows need no allow-list entry.
 - [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
       the resulting PR), rather than reimplementing version detection. Final shape depends
       on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
