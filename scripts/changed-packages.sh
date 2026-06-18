@@ -17,10 +17,13 @@
 #   * test-harness / CI infra        -> ONE random package (PLAN.md 3.4): a smoke
 #         test that the container test path still works, without the full matrix:
 #         scripts/  Makefile  .github/workflows/test.yml
+#   * any other .github/workflows/*   -> ignored: a workflow only orchestrates CI
+#         and cannot change a package build (test.yml above is the sole build
+#         driver). Generic, so new workflows need no allow-list entry.
 #   * docs / lint-only / bot config   -> ignored (cannot change a build):
 #         *.md  LICENSE  .editorconfig  .gitignore  .gitattributes
-#         .yamllint  checkmake.ini  .github/workflows/lint.yml
-#         renovate.json  renovate.json5  .github/dependabot.yml
+#         .yamllint  checkmake.ini  renovate.json  renovate.json5
+#         .github/dependabot.yml
 #   * anything else (unrecognized)    -> ALL packages (safe default)
 #
 # When a PR changes both a package and harness infra, the changed package already
@@ -78,11 +81,17 @@ while IFS= read -r file; do
 			test_all=1 ;;
 		# Test-harness / CI infrastructure -> smoke-test ONE random package
 		# (PLAN.md 3.4): proves the container test path still works without the
-		# full matrix. Subsumed when specific packages are already selected.
+		# full matrix. Subsumed when specific packages are already selected. Only
+		# test.yml drives the build harness, so only it gets the smoke.
 		scripts/*|Makefile|.github/workflows/test.yml)
 			test_one=1 ;;
+		# Any OTHER workflow only orchestrates CI; it cannot change a package build
+		# (test.yml above is the sole build driver, and gets the smoke). Ignore it
+		# generically so new workflows are covered without growing an allow-list.
+		.github/workflows/*)
+			: ;;
 		# Docs, lint-only config and bot config -> cannot affect a build, ignore.
-		*.md|LICENSE|.editorconfig|.gitignore|.gitattributes|.yamllint|checkmake.ini|.github/workflows/lint.yml|renovate.json|renovate.json5|.github/dependabot.yml)
+		*.md|LICENSE|.editorconfig|.gitignore|.gitattributes|.yamllint|checkmake.ini|renovate.json|renovate.json5|.github/dependabot.yml)
 			: ;;
 		# Unrecognized -> safe default: retest everything.
 		*)
