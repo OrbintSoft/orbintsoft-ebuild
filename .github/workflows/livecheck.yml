@@ -1,21 +1,18 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 #
-# Ebuild bump bot (PLAN.md Phase 3.5). Weekly, livecheck (Tatsh/livecheck) checks
-# the overlay's packages for new upstream releases and, when it finds one, rewrites
-# the ebuild + regenerates the Manifest; the changes are opened as a pull request.
-# livecheck needs a Gentoo environment, so the work runs in a throwaway gentoo/stage3
-# container (scripts/livecheck-ci.sh + scripts/livecheck-container.sh) with the
-# overlay mounted read-write; the PR is opened from the runner with the built-in
-# GITHUB_TOKEN. Today only media-fonts/nerd-fonts is versioned (everything else is a
-# live -9999 ebuild livecheck skips), so most weeks this is a no-op (no diff -> no PR).
+# Weekly ebuild bump bot: livecheck (Tatsh/livecheck) checks the overlay for new
+# upstream releases and, when it finds one, opens a PR with the bumped ebuild +
+# regenerated Manifest. The work runs in a throwaway gentoo/stage3 container
+# (scripts/livecheck-ci.sh), since livecheck needs a Gentoo environment; the PR is
+# opened from the runner with the built-in GITHUB_TOKEN. Most weeks it is a no-op
+# (only versioned ebuilds are bumpable; the live -9999 ones are skipped).
 
 name: livecheck
 
 on:
   schedule:
-    # Weekly, Monday 05:00 UTC — roughly aligned with the other weekly bots
-    # (Dependabot/Renovate "before 6am on monday").
+    # Weekly, Monday 05:00 UTC.
     - cron: '0 5 * * 1'
   workflow_dispatch:
 
@@ -30,8 +27,8 @@ permissions:
 jobs:
   bump:
     runs-on: ubuntu-latest
-    # Widened past the top-level read-only default (CLAUDE.md Rule 14) only here:
-    # create-pull-request pushes a branch (contents) and opens the PR (pull-requests).
+    # create-pull-request pushes a branch (contents) and opens the PR
+    # (pull-requests); the top-level default is read-only.
     permissions:
       contents: write
       pull-requests: write
@@ -41,14 +38,14 @@ jobs:
 
       - name: Run livecheck in a stage3 container
         env:
-          # Forwarded into the container so livecheck authenticates its GitHub API
-          # calls (read-only public data) and avoids the unauthenticated rate limit.
+          # Authenticates livecheck's GitHub API calls (avoids the unauthenticated
+          # rate limit, which is shared per-IP on Actions runners).
           GITHUB_TOKEN: ${{ github.token }}
         run: scripts/livecheck-ci.sh
 
       - name: Normalize ownership of container-written files
-        # The container runs as root, so any bumped files come back root-owned;
-        # hand them back to the runner user before create-pull-request commits.
+        # Container runs as root → bumped files come back root-owned; hand them
+        # back to the runner user before create-pull-request commits.
         run: sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Open or update the bump pull request

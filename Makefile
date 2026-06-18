@@ -136,9 +136,8 @@ metadata: ## Regenerate the gitignored md5-cache (needs `make install` first)
 test: ## Build+install package(s) in fresh stage3 containers: make test [PKG=cat/name] [KEEP_GOING=1]
 	@$(TEST_RUNNER) $(PKG)
 
-# Ebuild bump engine (PLAN.md Phase 3.5). Logic lives in scripts/livecheck.sh;
-# PKG empty => whole overlay. AUTO=1 rewrites ebuilds, GIT=1 also commits +
-# regenerates the Manifest via pkgdev (implies AUTO). Needs livecheck installed.
+# Bump engine; logic in scripts/livecheck.sh. PKG empty => whole overlay. AUTO=1
+# rewrites ebuilds, GIT=1 also commits + regenerates the Manifest (implies AUTO).
 livecheck: ## Check upstream releases (Tatsh/livecheck): make livecheck [PKG=cat/name] [AUTO=1] [GIT=1]
 	@$(LIVECHECK_RUNNER) $(if $(AUTO),--auto) $(if $(GIT),--git) $(PKG)
 

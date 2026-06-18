@@ -2,24 +2,20 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 #
-# livecheck.sh — thin wrapper around Tatsh/livecheck (the ebuild bump engine,
-# PLAN.md Phase 3.5). Runs livecheck against THIS overlay only: with no package
-# arguments it enumerates the overlay via scripts/list-packages.sh (the single
-# source of truth) so it never wanders into the gentoo tree. Report-only by
-# default; --auto rewrites ebuilds, --git additionally commits + regenerates the
-# Manifest via pkgdev (implies --auto). The /bump skill (Phase 3.6) and the
-# weekly CI job both call this wrapper instead of invoking livecheck directly.
+# livecheck.sh — check the overlay's packages for new upstream releases with
+# Tatsh/livecheck. With no package arguments it checks every overlay package
+# (enumerated via list-packages.sh, so it never wanders into the gentoo tree).
+# Report-only by default; --auto rewrites the bumped ebuilds, --git also commits
+# and regenerates the Manifest via pkgdev (implies --auto).
 #
 # Usage:   scripts/livecheck.sh [--auto] [--git] [cat/pkg ...]
-#          scripts/livecheck.sh                 # report new versions, whole overlay
+#          scripts/livecheck.sh                       # report, whole overlay
 #          scripts/livecheck.sh media-fonts/nerd-fonts
-#          scripts/livecheck.sh --git           # bump every overlay package + commit
+#          scripts/livecheck.sh --git                 # bump everything + commit
 #
-# livecheck reads the overlay through Portage, so the overlay must be a repo
-# configured in repos.conf — register it once with `make install`. livecheck is
-# distributed via tatsh-overlay or PyPI (`pip install livecheck`) and needs a
-# configured Portage environment + pkgdev (both present on a Gentoo host).
-# LIVECHECK_WORKDIR overrides the tree root passed via -W (defaults to overlay root).
+# Requires livecheck (pip install livecheck, or tatsh-overlay) and the overlay
+# registered as a Portage repo (make install). LIVECHECK_WORKDIR overrides the
+# tree root passed to livecheck via -W (default: the overlay root).
 
 set -euo pipefail
 
@@ -27,7 +23,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OVERLAY_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKDIR="${LIVECHECK_WORKDIR:-${OVERLAY_ROOT}}"
 
-usage() { sed -n '5,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '5,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 auto=0
 git=0

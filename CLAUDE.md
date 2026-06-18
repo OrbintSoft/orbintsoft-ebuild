@@ -68,6 +68,12 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    language package, …), make sure it can be kept current automatically: wire it
    into Dependabot or Renovate, or record in PLAN.md why neither can and how it
    will be updated instead. Companion to Rule 12 (new file type → linter).
+16. **Comments explain the code, not its history.** A comment (and `--help`/`elog`
+   text) states what the code does, how to use it, and any non-obvious *why* needed
+   to maintain it safely (e.g. a workaround that must not be removed). It does **not**
+   narrate how the code came to be — no change log, no "we used to…", no PR/phase
+   storytelling. The commit message and PLAN.md hold the history; in-code
+   cross-references stay terse (a bare `PLAN.md 3.x` pointer at most).
 
 ### Proposed additional rules (pending approval)
 
