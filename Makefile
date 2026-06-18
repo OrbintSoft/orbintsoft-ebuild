@@ -32,6 +32,7 @@ XMLLINT    ?= xmllint
 YAMLLINT   ?= yamllint
 ACTIONLINT ?= actionlint
 TEST_RUNNER ?= scripts/test-all.sh
+LIVECHECK_RUNNER ?= scripts/livecheck.sh
 REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
 RENOVATE_CONFIG ?= renovate.json5
 # Pin the validator's major so local and CI agree on the config schema (the
@@ -60,7 +61,7 @@ WORKFLOW_SOURCES := $(wildcard .github/workflows/*.yml .github/workflows/*.yaml)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate test manifest metadata install uninstall clean
+.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate test livecheck manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
@@ -134,6 +135,12 @@ metadata: ## Regenerate the gitignored md5-cache (needs `make install` first)
 # PKG=cat/name => one package. Pass KEEP_GOING=1 to test all despite failures.
 test: ## Build+install package(s) in fresh stage3 containers: make test [PKG=cat/name] [KEEP_GOING=1]
 	@$(TEST_RUNNER) $(PKG)
+
+# Ebuild bump engine (PLAN.md Phase 3.5). Logic lives in scripts/livecheck.sh;
+# PKG empty => whole overlay. AUTO=1 rewrites ebuilds, GIT=1 also commits +
+# regenerates the Manifest via pkgdev (implies AUTO). Needs livecheck installed.
+livecheck: ## Check upstream releases (Tatsh/livecheck): make livecheck [PKG=cat/name] [AUTO=1] [GIT=1]
+	@$(LIVECHECK_RUNNER) $(if $(AUTO),--auto) $(if $(GIT),--git) $(PKG)
 
 install: ## Register this tree in $(REPOS_CONF_DIR) as '$(REPO_NAME)' (needs root)
 	@test -n "$(REPO_NAME)" || { echo "profiles/repo_name is empty"; exit 2; }
