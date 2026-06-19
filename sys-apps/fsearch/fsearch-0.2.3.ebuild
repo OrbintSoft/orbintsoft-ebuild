@@ -4,16 +4,16 @@
 
 EAPI=8
 
-inherit meson git-r3
+inherit meson
 
 # Thanks to cboxdoerfer, author of FSearch (https://github.com/cboxdoerfer/fsearch).
 DESCRIPTION="A fast file search utility for Unix-like systems"
 HOMEPAGE="https://github.com/cboxdoerfer/fsearch"
-EGIT_REPO_URI="https://github.com/cboxdoerfer/fsearch.git"
+SRC_URI="https://github.com/cboxdoerfer/fsearch/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="~amd64"
 
 DEPEND="
 	dev-libs/glib:2
@@ -26,26 +26,3 @@ BDEPEND="
 	virtual/pkgconfig
 	dev-util/itstool
 "
-
-src_unpack() {
-	git-r3_src_unpack
-	cd "${S}" || die
-
-	einfo "Fetching tags..."
-	git fetch --tags || die
-	latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")" || die
-	einfo "Checking out latest tag: ${latest_tag}"
-	git checkout "${latest_tag}" || die
-}
-
-src_configure() {
-	meson_src_configure
-}
-
-src_compile() {
-	meson_src_compile
-}
-
-src_install() {
-	meson_src_install
-}

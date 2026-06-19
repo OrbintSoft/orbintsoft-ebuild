@@ -137,8 +137,9 @@ metadata: ## Regenerate the gitignored md5-cache (needs `make install` first)
 	$(EGENCACHE) --update --repo $(REPO_NAME) --jobs $(JOBS)
 
 # Logic lives in the (shellcheck-linted) scripts; PKG empty => whole overlay,
-# PKG=cat/name => one package. Pass KEEP_GOING=1 to test all despite failures.
-test: ## Build+install package(s) in fresh stage3 containers: make test [PKG=cat/name] [KEEP_GOING=1]
+# PKG=cat/name => one package, SAMPLE=N => N random packages. KEEP_GOING=1 tests
+# all despite failures; GETBINPKG=1 pulls deps as binpkgs (much faster).
+test: ## Build+install in fresh stage3 containers: make test [PKG=cat/name | SAMPLE=N] [GETBINPKG=1] [KEEP_GOING=1]
 	@$(TEST_RUNNER) $(PKG)
 
 # Bump engine; logic in scripts/livecheck.sh. PKG empty => whole overlay. AUTO=1
