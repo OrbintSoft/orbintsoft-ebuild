@@ -194,7 +194,7 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
 - [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
       the resulting PR), rather than reimplementing version detection. Final shape depends
       on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
-- [~] **3.7** (per-package) Convert live `-9999` → versioned ebuilds where upstream has
+- [x] **3.7** (per-package) Convert live `-9999` → versioned ebuilds where upstream has
       **stable** tags; decided dep by dep (live stays where there are none). Census
       (2026-06-19, via each `metadata.xml` `<remote-id>` — livecheck can't enumerate
       SRC_URI-less live ebuilds, 3.5): `dev-util/fnm` (1.39.0) and `sys-apps/fsearch` (0.2.3,
@@ -211,12 +211,17 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
   - [x] **tvision** — evaluated, **stays live**: its only tag (v2.0) dates to 2019-01 and HEAD is
         1332 commits ahead. magiblot tags rarely → HEAD is the de-facto stable, and turbo (4.2)
         needs it; pinning v2.0 would be a 7-year regression. Revisit if a fresh tag lands.
-  - [ ] **fsearch** 9999 → 0.2.3 — meson build from the GitHub release tarball; drops the live
+  - [x] **fsearch** 9999 → 0.2.3 — meson build from the GitHub release tarball; drops the live
         `git fetch --tags`/checkout dance (it tracked the 0.3 betas). 0.2.3 (2023-08) is the
         latest non-prerelease tag — older than HEAD but stable, which the owner accepts.
-  - [ ] **claude-desktop** — binary repackage; pending upstream + version-scheme decision
-        (aaddrick `2.0.19+claude1.11847.5` dual version, `.deb` only, vs patrickjaja
-        `1.14271.0[-N]` with a plain `linux.tar.gz`). Bump-bot friendliness (Rule 15) drives it.
+        pkgcheck clean.
+  - [x] **claude-desktop** 9999 → 1.14271.0 — switched upstream to **patrickjaja/claude-desktop-bin**
+        (cleaner version = Claude's own, more recent, `.deb` with a complete `/usr` tree incl.
+        launcher + .desktop + icon → dropped the orphaned `files/`). PV = Claude version; the
+        downstream packaging revision (`-N` tag suffix, `CLAUDE_PR`) is bumped by hand (livecheck
+        tracks PV only). Prebuilt binary: `RESTRICT="bindist mirror strip"`, `QA_PREBUILT="*"`,
+        `LICENSE="all-rights-reserved"` (Claude is proprietary; only the packaging is MIT).
+        RDEPEND mapped from the `.deb` `Depends`. pkgcheck clean.
 - [x] **3.8** CI hardening — least-privilege tokens + lint dedup. Audited every
       workflow's `GITHUB_TOKEN`: both `lint.yml` and `test.yml` already declare an
       explicit top-level `permissions: contents: read` (only `actions/checkout` needs
