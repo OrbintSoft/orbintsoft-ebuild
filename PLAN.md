@@ -140,7 +140,10 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       `go install` isn't clean) and the `gentoo/stage3` image in `test-pkg.sh`
       (digest-pinned `latest@sha256:…`; Renovate refreshes the rolling tag's digest). All
       deps pinned in-tree to current values (checkout/setup-go SHAs, checkmake v0.3.2,
-      actionlint v1.7.12, stage3 digest). Schedule `before 6am on monday`;
+      actionlint v1.7.12, stage3 digest). Schedule `after 1pm and before 4pm on wednesday` —
+      the three weekly bots are deliberately staggered across different days and times of day
+      (Dependabot Tue morning, Renovate Wed afternoon, livecheck Thu evening) so they never
+      fire at once;
       `dependencyDashboard: true` so a manual run can force out-of-schedule PRs anytime;
       updates grouped into one PR (`ci:` semantic prefix). yamllint
       `comments.min-spaces-from-content` relaxed to 1 so Dependabot's single-space version
@@ -178,7 +181,7 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       default, `AUTO=1` rewrites ebuilds (livecheck regenerates their Manifests), `GIT=1` also
       commits; it bounds itself to this overlay via `list-packages.sh` and needs the overlay
       registered (`make install`). The `/bump` skill (3.6) wraps this. (b) **weekly CI bump bot**
-      — `.github/workflows/livecheck.yml` (cron Mon 05:00 UTC + `workflow_dispatch`) runs livecheck
+      — `.github/workflows/livecheck.yml` (cron Thu 20:00 UTC + `workflow_dispatch`) runs livecheck
       in a throwaway `gentoo/stage3` container (`scripts/livecheck-ci.sh` launcher +
       `scripts/livecheck-container.sh`, mirroring the test harness; overlay mounted **read-write**)
       with `--auto` (livecheck rewrites the ebuild and regenerates its Manifest), leaving the bump uncommitted for

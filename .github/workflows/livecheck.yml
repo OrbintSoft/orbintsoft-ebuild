@@ -12,8 +12,8 @@ name: livecheck
 
 on:
   schedule:
-    # Weekly, Monday 05:00 UTC.
-    - cron: '0 5 * * 1'
+    # Weekly, Thursday 20:00 UTC.
+    - cron: '0 20 * * 4'
   workflow_dispatch:
 
 # Don't cancel an in-flight bump (it may be fetching distfiles for the Manifest).
