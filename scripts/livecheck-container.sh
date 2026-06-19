@@ -7,8 +7,8 @@
 # run it on the host.
 #
 # The overlay is mounted READ-WRITE at /var/db/repos/${REPO_NAME}. It registers
-# the overlay, installs livecheck + pkgdev, then runs livecheck --auto (rewrites
-# the bumped ebuilds) and `pkgdev manifest` — NOT --git: the changes are left
+# the overlay, installs livecheck, then runs livecheck --auto, which rewrites the
+# bumped ebuilds and regenerates their Manifests — NOT --git: the changes are left
 # uncommitted so the workflow's create-pull-request step commits + opens the PR.
 #
 # Portage config comes from the scripts/test-portage/*.in templates (mounted at
@@ -37,8 +37,8 @@ sed "s|@FEATURES_DISABLE@|${FEATURES_DISABLE}|g" \
 echo ">> fetching gentoo tree (emerge-webrsync)"
 emerge-webrsync
 
-echo ">> installing tooling (pkgdev + pip, then livecheck from PyPI)"
-emerge --oneshot --quiet-build=y dev-python/pip dev-util/pkgdev
+echo ">> installing tooling (pip, then livecheck from PyPI)"
+emerge --oneshot --quiet-build=y dev-python/pip
 # Disposable container: --break-system-packages bypasses PEP 668. livecheck's
 # wheel omits 'packaging'; keyrings.alt provides a keyring backend (see below).
 pip install --break-system-packages --root-user-action=ignore --quiet \
@@ -58,9 +58,5 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
 	python3 -c "import keyring, os; keyring.set_password('github.com', 'livecheck', os.environ['GITHUB_TOKEN'])"
 fi
 
-echo ">> livecheck --auto (rewrite bumped ebuilds, left uncommitted)"
+echo ">> livecheck --auto (rewrite bumped ebuilds + regenerate their Manifests, left uncommitted)"
 "${OVERLAY}/scripts/livecheck.sh" --auto
-
-echo ">> regenerating Manifests (pkgdev manifest)"
-cd "${OVERLAY}"
-pkgdev manifest

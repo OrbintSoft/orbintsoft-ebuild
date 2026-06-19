@@ -170,13 +170,13 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
 - [x] **3.5** Ebuild bump bot — **adopted [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
       (v0.2.4) as the engine; no custom nvchecker bot needed. Two delivery paths (decided: both):
       (a) **local** `make livecheck` — `scripts/livecheck.sh` is a thin wrapper, report-only by
-      default, `AUTO=1` rewrites ebuilds, `GIT=1` also commits + regenerates the Manifest via
-      pkgdev; it bounds itself to this overlay via `list-packages.sh` and needs the overlay
+      default, `AUTO=1` rewrites ebuilds (livecheck regenerates their Manifests), `GIT=1` also
+      commits; it bounds itself to this overlay via `list-packages.sh` and needs the overlay
       registered (`make install`). The `/bump` skill (3.6) wraps this. (b) **weekly CI bump bot**
       — `.github/workflows/livecheck.yml` (cron Mon 05:00 UTC + `workflow_dispatch`) runs livecheck
       in a throwaway `gentoo/stage3` container (`scripts/livecheck-ci.sh` launcher +
       `scripts/livecheck-container.sh`, mirroring the test harness; overlay mounted **read-write**)
-      with `--auto` + `pkgdev manifest`, leaving the bump uncommitted for
+      with `--auto` (livecheck rewrites the ebuild and regenerates its Manifest), leaving the bump uncommitted for
       `peter-evans/create-pull-request` (GITHUB_TOKEN) to commit + open a PR (`livecheck/bump`).
       **Scope reality (verified locally):** livecheck keys off the first `SRC_URI` URL, so only the
       one versioned ebuild — `media-fonts/nerd-fonts` (detected 3.2.1 → 3.4.0 with **zero**

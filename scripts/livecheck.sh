@@ -5,8 +5,8 @@
 # livecheck.sh — check the overlay's packages for new upstream releases with
 # Tatsh/livecheck. With no package arguments it checks every overlay package
 # (enumerated via list-packages.sh, so it never wanders into the gentoo tree).
-# Report-only by default; --auto rewrites the bumped ebuilds, --git also commits
-# and regenerates the Manifest via pkgdev (implies --auto).
+# Report-only by default; --auto rewrites the bumped ebuilds and regenerates their
+# Manifests, --git additionally commits the result (implies --auto).
 #
 # Usage:   scripts/livecheck.sh [--auto] [--git] [cat/pkg ...]
 #          scripts/livecheck.sh                       # report, whole overlay
