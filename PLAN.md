@@ -110,7 +110,7 @@ locally before CI, with the change-detection matrix added last.
   container per package (parallel, `fail-fast: false`); on PRs `scripts/changed-packages.sh`
   narrows the matrix to the packages the diff touches (empty ⇒ zero jobs).
 
-## Phase 3 — Automation  `[~]`
+## Phase 3 — Automation  `[x]`
 
 Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
 in Phase 4), then the GitHub-Actions-pin bots and a CI-cost guard so their PRs don't
@@ -208,9 +208,11 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       justified, nothing to pin). **Manual prereq:** repo *Settings → Actions →* "Allow GitHub
       Actions to create and approve pull requests" must be ON (else peter-evans 403s);
       GITHUB_TOKEN-opened PRs don't trigger `test.yml` (noted in the PR body).
-- [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
-      the resulting PR), rather than reimplementing version detection. Final shape depends
-      on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
+- [x] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
+      the resulting PR), rather than reimplementing version detection. Delivered as a thin
+      `.claude/skills/bump/SKILL.md` over `make livecheck` (livecheck covers the mechanics,
+      so the skill carries no version-detection logic of its own); scope = versioned ebuilds
+      only (live `-9999` skipped, as in 3.5).
 - [x] **3.7** (per-package) Convert live `-9999` → versioned ebuilds where upstream has
       **stable** tags; decided dep by dep (live stays where there are none). Census
       (2026-06-19, via each `metadata.xml` `<remote-id>` — livecheck can't enumerate
