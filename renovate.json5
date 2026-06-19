@@ -14,7 +14,7 @@
 
   // Once a week (PLAN.md 3.3). The Dependency Dashboard issue lets us force an
   // out-of-schedule run/PR by ticking a box, so a manual run can always open PRs.
-  "schedule": ["before 6am on monday"],
+  "schedule": ["after 1pm and before 4pm on wednesday"],
   "dependencyDashboard": true,
 
   // Conventional Commits: everything Renovate touches here is CI tooling.
