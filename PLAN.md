@@ -153,6 +153,11 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       `managerFilePatterns` (renovate ≥39; an unpinned `npx` had validated a stale cached
       37.x that still wanted the old `fileMatch`, disagreeing with CI's fresh 43.x and failing
       the lint). `.editorconfig` gained `[*.{json,json5}]`. Validated clean on renovate 43.x.
+      A **third** custom manager pins the `setup-go`/`setup-node` versions in `lint.yml` to
+      exact values (`go 1.26.4`, `node 22.23.0`) instead of floating `stable`/`'22'`, via
+      `# renovate: datasource=golang-version|node-version` annotations on the line above each
+      `*-version:`; node is held to the v22 LTS line by an `allowedVersions: "<23"` rule
+      (Rule 15: the CI toolchain versions are now bump-automatable, not floating).
 - [x] **3.4** CI cost — harness-only diffs test **one random package**, not the full suite
       (refines the Phase 2E change-detection matrix, 2.9). Motivation: every
       Dependabot/Renovate PR (stage3 digest in `test-pkg.sh`, action SHA in `test.yml`) used

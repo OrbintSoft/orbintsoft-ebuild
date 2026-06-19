@@ -32,6 +32,11 @@
       "matchManagers": ["custom.regex"],
       "groupName": "ci tooling",
     },
+    {
+      // Node stays on the v22 LTS line; bump within 22.x only.
+      "matchDepNames": ["node"],
+      "allowedVersions": "<23",
+    },
   ],
 
   "customManagers": [
@@ -55,6 +60,17 @@
       ],
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+STAGE3_IMAGE=\"\\$\\{STAGE3_IMAGE:-[^:\"]+:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\\}\"",
+      ],
+    },
+    {
+      // setup-go / setup-node versions in the lint workflow, pinned exact and
+      // bumped by Renovate (node held to the v22 LTS line by the packageRule
+      // above; go follows upstream stable). The `# renovate:` annotation sits
+      // on the line directly above each `*-version:` value.
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/lint\\.yml$/"],
+      "matchStrings": [
+        "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\s*\\n\\s*[\\w.-]+:\\s*['\"]?(?<currentValue>[^'\"\\s]+)['\"]?",
       ],
     },
   ],
