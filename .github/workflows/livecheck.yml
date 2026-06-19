@@ -53,6 +53,10 @@ jobs:
         with:
           branch: livecheck/bump
           delete-branch: true
+          # Commit through the GitHub API so it is GPG-signed by GitHub (shows as
+          # Verified, attributed to github-actions[bot]); a plain GITHUB_TOKEN push
+          # produces an unsigned commit.
+          sign-commits: true
           commit-message: "chore(bump): ebuild version bumps via livecheck"
           title: "chore(bump): ebuild version bumps (livecheck)"
           labels: |
