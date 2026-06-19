@@ -257,15 +257,21 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       must be kept current by Dependabot/Renovate, or its absence justified) —
       companion to Rule 12.
 
-## Phase 4 — New packages  `[ ]`
+## Phase 4 — New packages  `[~]`
 
 Add two more packages before publishing, using the `/new-ebuild` skill (3.1) and the
 full lint+test CI from Phase 2. **One package per step** (Rule 1), EAPI 9, each with
 `metadata.xml` (maintainer + `remote-id`) and the upstream-credit comment.
 
-- [ ] **4.1** `redo-backups` (category TBD, likely `app-backup`) — OrbintSoft's own backup
-      tool ([OrbintSoft/redo-backups](https://github.com/OrbintSoft/redo-backups)). Upstream
-      is OrbintSoft, so **no** third-party upstream-credit comment (CLAUDE.md convention).
+- [x] **4.1** `app-backup/redo-backups` (added the `app-backup` category) — OrbintSoft's own
+      backup tool ([OrbintSoft/redo-backups](https://github.com/OrbintSoft/redo-backups)).
+      Upstream is OrbintSoft, so **no** third-party upstream-credit comment (CLAUDE.md
+      convention). Versioned 0.0.15, `EAPI=9` via `go-module` (eclass supports 7 8 9 — no
+      gate); pure-stdlib (no `require` in go.mod → no deps tarball); `LICENSE="EUPL-1.2"`.
+      `BDEPEND=">=dev-lang/go-1.26:="` to match go.mod's `go` directive — the EAPI-9
+      go-module QA check (`install-qa-check.d/60go-module-eclass`) dies otherwise; pkgcheck
+      can't see it (it doesn't run install-qa-check.d), so the container test is the gate.
+      livecheck-bumpable (GitHub release `SRC_URI`); keep BDEPEND's go floor in sync on bumps.
 - [ ] **4.2** `turbo` (category TBD, likely `app-editors`) — magiblot's Turbo, a terminal
       text editor built on Turbo Vision ([magiblot/turbo](https://github.com/magiblot/turbo)).
       Depends on `dev-libs/tvision`, already in this overlay. Add the upstream-credit comment
