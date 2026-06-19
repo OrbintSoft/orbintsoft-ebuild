@@ -28,6 +28,9 @@
 #                     source build; set e.g. GETBINPKG=1 for a faster local run)
 #   BINHOST           binhost sync-uri to use with GETBINPKG (default: empty =
 #                     whatever the stage3 image already ships in binrepos.conf)
+#   BINPKG_RESPECT_USE --binpkg-respect-use with GETBINPKG (default: n = use a
+#                     binpkg despite a USE mismatch; y = rebuild from source on
+#                     mismatch). n lets the binhost serve the desktop/X chain.
 #
 # Binary packages are never required: locally you choose source (default) or, by
 # setting GETBINPKG, the binpkg-accelerated path. CI builds from source — the
@@ -54,6 +57,7 @@ CONTAINER_OPTS="${CONTAINER_OPTS:-}"
 FEATURES_DISABLE="${FEATURES_DISABLE:--network-sandbox -ipc-sandbox -pid-sandbox}"
 GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
+BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
 
 die() { echo "test-pkg: $*" >&2; exit 1; }
 log() { echo ">> $*"; }
@@ -110,6 +114,7 @@ engine_args+=(--env "EMERGE_OPTS=${EMERGE_OPTS}")
 engine_args+=(--env "FEATURES_DISABLE=${FEATURES_DISABLE}")
 engine_args+=(--env "GETBINPKG=${GETBINPKG}")
 engine_args+=(--env "BINHOST=${BINHOST}")
+engine_args+=(--env "BINPKG_RESPECT_USE=${BINPKG_RESPECT_USE}")
 engine_args+=(--volume "${OVERLAY_ROOT}:/var/db/repos/${REPO_NAME}:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-pkg-container.sh:/test-pkg-container.sh:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-portage:/test-portage:ro")

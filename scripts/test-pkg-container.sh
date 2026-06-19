@@ -13,8 +13,9 @@
 #
 # Configuration arrives as environment variables (set by test-pkg.sh via the
 # container engine's --env): PKG, REPO_NAME, TREE_MODE are required;
-# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG and BINHOST are optional. Assigning
-# from self documents the contract and satisfies shellcheck (env-injected).
+# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG, BINHOST and BINPKG_RESPECT_USE are
+# optional. Assigning from self documents the contract and satisfies shellcheck
+# (env-injected).
 
 set -eu
 
@@ -25,6 +26,7 @@ EMERGE_OPTS="${EMERGE_OPTS:-}"
 FEATURES_DISABLE="${FEATURES_DISABLE:-}"
 GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
+BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
 
 # Portage-config templates mounted read-only by test-pkg.sh; the sed calls below
 # fill their @TOKEN@ placeholders. Config syntax lives in these files, not here.
@@ -48,18 +50,22 @@ if [ "${TREE_MODE}" = "webrsync" ]; then
 fi
 
 # Binary packages: off by default (full source build). When GETBINPKG is set we
-# pull prebuilt packages from a binhost; BINHOST overrides the sync-uri the
-# stage3 image already ships in binrepos.conf. --binpkg-respect-use makes Portage
-# fall back to building from source when no binpkg matches the requested USE.
+# pull prebuilt packages from a binhost; BINHOST overrides the sync-uri the stage3
+# image already ships in binrepos.conf. BINPKG_RESPECT_USE (default n) sets
+# --binpkg-respect-use: n accepts a binpkg even when its USE differs from this
+# container's profile, so the binhost's desktop/X chain (gtk+, mesa,
+# freetype[harfbuzz]) — built with richer USE than a base stage3 — is used as-is
+# instead of rebuilt from source; y rejects USE-mismatched binpkgs and falls back
+# to source. Only binhost deps are affected; overlay ebuilds always build from source.
 emerge_opts=()
 if [ -n "${GETBINPKG}" ]; then
-	echo ">> binary packages enabled (getbinpkg)"
+	echo ">> binary packages enabled (getbinpkg, binpkg-respect-use=${BINPKG_RESPECT_USE})"
 	if [ -n "${BINHOST}" ]; then
 		mkdir -p /etc/portage/binrepos.conf
 		sed "s|@BINHOST@|${BINHOST}|g" \
 			"${CONF_DIR}/binrepos.conf.in" > /etc/portage/binrepos.conf/test-binhost.conf
 	fi
-	emerge_opts+=(--getbinpkg=y --binpkg-respect-use=y)
+	emerge_opts+=(--getbinpkg=y "--binpkg-respect-use=${BINPKG_RESPECT_USE}")
 fi
 
 # Throwaway container: let Portage auto-apply the USE/keyword changes its

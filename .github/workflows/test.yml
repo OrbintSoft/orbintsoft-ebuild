@@ -1,12 +1,13 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v3
 #
-# Test CI: build+install overlay packages from source, each in its own throwaway
-# gentoo/stage3 container (PLAN.md Phase 2D/2E). On pull_request the discover job
-# computes a DYNAMIC matrix of just the packages the diff affects (2.9); on
-# workflow_dispatch it fans out the full suite (2.8). One package per parallel
-# job so each gets its own time budget. The builds are heavy (GHC, Rust, GTK from
-# source), so this runs on pull_request and manual dispatch, not on every push.
+# Test CI: build+install each overlay package in its own throwaway gentoo/stage3
+# container (PLAN.md Phase 2D/2E). On pull_request the discover job computes a
+# DYNAMIC matrix of just the packages the diff affects (2.9); on workflow_dispatch
+# it fans out the full suite (2.8). One package per parallel job so each gets its
+# own time budget. Deps come from the gentoo binhost (GETBINPKG) so the heavy
+# GUI/X and toolchain chains are not rebuilt from source — only the overlay ebuilds
+# themselves build. Runs on pull_request and manual dispatch, not on every push.
 
 name: test
 
@@ -73,7 +74,10 @@ jobs:
       - name: Check out the overlay
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - name: Build + install ${{ matrix.package }} from source
+      - name: Build + install ${{ matrix.package }}
         env:
           TREE_MODE: webrsync
+          # Deps from the gentoo binhost (harness uses binpkg-respect-use=n) so the
+          # GUI/X + toolchain chains are not rebuilt from source. PLAN.md 2.7.
+          GETBINPKG: '1'
         run: make test PKG='${{ matrix.package }}'

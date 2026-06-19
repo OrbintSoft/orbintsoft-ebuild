@@ -93,10 +93,19 @@ locally before CI, with the change-detection matrix added last.
   package in its own throwaway `gentoo/stage3` container (`scripts/test-pkg.sh` +
   `scripts/test-pkg-container.sh`; discovery/loop/summary in `scripts/test-all.sh`).
   `TREE_MODE` bind/webrsync; sandboxes relaxed for unprivileged docker; Portage config
-  from `scripts/test-portage/*.in` templates. Heavy builds (GHC/Rust) build from source;
-  `GETBINPKG` is an opt-in binpkg accelerator (no skip-list).
-- **Packages fixed locally (2.6–2.7):** full suite green from source — 11/11. Decision:
-  testing is full-source (the official binhost can't serve the desktop/X chain).
+  from `scripts/test-portage/*.in` templates. `make test` runs all packages, one
+  (`PKG=cat/name`), or N random (`SAMPLE=N`). `GETBINPKG` pulls deps as binpkgs (no
+  skip-list); `BINPKG_RESPECT_USE` (default `n`) lets the gentoo binhost serve the
+  desktop/X chain despite a USE mismatch (see 2.6–2.7).
+- **Packages fixed locally (2.6–2.7):** full suite green — 11/11 (originally all built
+  from source). The "official binhost can't serve the desktop/X chain" was a
+  `--binpkg-respect-use=y` artifact: it rejects the binhost's richly-USE-built binpkgs
+  (cairo[X], freetype[harfbuzz], …) and rebuilds from source. With `BINPKG_RESPECT_USE=n`
+  the binhost serves the whole chain (gtk+, mesa→LLVM, …) — claude-desktop 1.14271.0 went
+  from an hours-long source build to **~13 min**. So CI now uses binpkgs (`GETBINPKG: 1`
+  in `test.yml`); local default stays source, opt into binpkg with `GETBINPKG=1`. Rule 15:
+  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; the stage3
+  digest is already Renovate-tracked).
 - **Test CI + dynamic matrix (2.8–2.9):** `.github/workflows/test.yml` fans out one
   container per package (parallel, `fail-fast: false`); on PRs `scripts/changed-packages.sh`
   narrows the matrix to the packages the diff touches (empty ⇒ zero jobs).
@@ -221,7 +230,8 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
         downstream packaging revision (`-N` tag suffix, `CLAUDE_PR`) is bumped by hand (livecheck
         tracks PV only). Prebuilt binary: `RESTRICT="bindist mirror strip"`, `QA_PREBUILT="*"`,
         `LICENSE="all-rights-reserved"` (Claude is proprietary; only the packaging is MIT).
-        RDEPEND mapped from the `.deb` `Depends`. pkgcheck clean.
+        RDEPEND mapped from the `.deb` `Depends`. pkgcheck clean. CI-testable only via
+        binpkg (2.6–2.7): mesa→LLVM + gtk+:3 from source on the 2-core runner is hours.
 - [x] **3.8** CI hardening — least-privilege tokens + lint dedup. Audited every
       workflow's `GITHUB_TOKEN`: both `lint.yml` and `test.yml` already declare an
       explicit top-level `permissions: contents: read` (only `actions/checkout` needs
