@@ -41,22 +41,27 @@ RENOVATE_CONFIG ?= renovate.json5
 # the Mend app runs (stable 43.x).
 RENOVATE_PKG ?= renovate@43
 
-# shellcheck targets: every file with a shell/openrc shebang, plus OpenRC
+# Lint only files git would track (tracked + untracked, minus gitignored), so
+# scratch/working files (e.g. under .scratch/, *-steps.md — CLAUDE.md rules 7-9)
+# never get linted. Empty outside a git checkout, where the targets then no-op.
+GIT_FILES := $(shell git ls-files --cached --others --exclude-standard 2>/dev/null)
+
+# shellcheck targets: tracked files with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
 # Parsed as bash; per-file `# shellcheck` directives are added when each
 # package is cleaned up (PLAN.md Phase 1).
 SHELLCHECK_OPTS ?= --shell=bash
 SH_SOURCES := $(sort \
-	$(shell grep -rIlE '^#!.*(\bsh\b|bash|openrc-run)' --exclude-dir=.git . 2>/dev/null) \
-	$(shell find . -path ./.git -prune -o -type f -name '*.confd' -print))
+	$(if $(GIT_FILES),$(shell grep -IlE '^#!.*(\bsh\b|bash|openrc-run)' $(GIT_FILES) 2>/dev/null)) \
+	$(filter %.confd,$(GIT_FILES)))
 
-# XML sources: every *.xml in the tree (currently all metadata.xml).
-XML_SOURCES := $(shell find . -path ./.git -prune -o -name '*.xml' -print)
+# XML sources: every tracked *.xml (currently all metadata.xml).
+XML_SOURCES := $(filter %.xml,$(GIT_FILES))
 
-# YAML sources: every *.yml / *.yaml (the .yamllint config is extensionless on
-# purpose, so it is config — not a lint target). GitHub Actions workflows get an
-# extra, Actions-specific pass from actionlint.
-YAML_SOURCES := $(shell find . -path ./.git -prune -o \( -name '*.yml' -o -name '*.yaml' \) -print)
+# YAML sources: every tracked *.yml / *.yaml (the .yamllint config is
+# extensionless on purpose, so it is config — not a lint target). GitHub Actions
+# workflows get an extra, Actions-specific pass from actionlint.
+YAML_SOURCES := $(filter %.yml %.yaml,$(GIT_FILES))
 WORKFLOW_SOURCES := $(wildcard .github/workflows/*.yml .github/workflows/*.yaml)
 
 .DEFAULT_GOAL := help
@@ -144,7 +149,7 @@ livecheck: ## Check upstream releases (Tatsh/livecheck): make livecheck [PKG=cat
 install: ## Register this tree in $(REPOS_CONF_DIR) as '$(REPO_NAME)' (needs root)
 	@test -n "$(REPO_NAME)" || { echo "profiles/repo_name is empty"; exit 2; }
 	install -d -m0755 $(REPOS_CONF_DIR)
-	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(CURDIR)|g' \
+	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(Cfeat/livecheckURDIR)|g' \
 		$(REPOS_CONF_TEMPLATE) > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
 	@echo "Registered '$(REPO_NAME)' -> $(CURDIR)"
 
