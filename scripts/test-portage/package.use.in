@@ -1,0 +1,6 @@
+# Copied into the container by scripts/test-pkg-container.sh (no @TOKEN@ to fill).
+# "fast_test" tweaks applied to every test container: make source builds feasible
+# and fast without relying on the binhost. A prebuilt GHC (dev-lang/ghc[binary],
+# fetched from gentoo mirrors) avoids the multi-hour source bootstrap that the
+# haskell toolchain (dev-util/shellcheck) would otherwise need.
+dev-lang/ghc binary

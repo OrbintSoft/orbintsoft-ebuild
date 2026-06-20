@@ -5,9 +5,10 @@
 # container (PLAN.md Phase 2D/2E). On pull_request the discover job computes a
 # DYNAMIC matrix of just the packages the diff affects (2.9); on workflow_dispatch
 # it fans out the full suite (2.8). One package per parallel job so each gets its
-# own time budget. Deps come from the gentoo binhost (GETBINPKG) so the heavy
-# GUI/X and toolchain chains are not rebuilt from source — only the overlay ebuilds
-# themselves build. Runs on pull_request and manual dispatch, not on every push.
+# own time budget. How each package is built is declarative: every ebuild carries a
+# `# QA-TEST:` directive (default source; binpkg opt-in where the binhost closure is
+# consistent, with source fallback — PLAN.md 2.6-2.7). Runs on pull_request and
+# manual dispatch, not on every push.
 
 name: test
 
@@ -77,7 +78,7 @@ jobs:
       - name: Build + install ${{ matrix.package }}
         env:
           TREE_MODE: webrsync
-          # Deps from the gentoo binhost (harness uses binpkg-respect-use=n) so the
-          # GUI/X + toolchain chains are not rebuilt from source. PLAN.md 2.7.
-          GETBINPKG: '1'
+          # Build strategy is per-package via each ebuild's `# QA-TEST:` directive
+          # (default source; binpkg opt-in where the binhost closure is consistent,
+          # with source fallback). PLAN.md 2.6-2.7.
         run: make test PKG='${{ matrix.package }}'

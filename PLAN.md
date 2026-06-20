@@ -44,9 +44,10 @@ done. Large items are broken into sub-steps tracked in a gitignored
   headers (verified 2026-06-12), so the open question on this is resolved.
 
 ## Open questions
-- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust): **resolved in Phase 2.5.**
-  Binpkgs are optional via the `GETBINPKG` knob (no skip-list); CI uses them for
-  speed, local runs default to a full source build.
+- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust, claude-desktop→gtk+/mesa):
+  **resolved in 2.6–2.7.** Build strategy is declared per-package by a `# QA-TEST:`
+  directive (Rule 17): source by default, binpkg opt-in where the binhost closure is
+  consistent (with source fallback). shellcheck uses a prebuilt `dev-lang/ghc[binary]`.
 
 ---
 
@@ -94,18 +95,27 @@ locally before CI, with the change-detection matrix added last.
   `scripts/test-pkg-container.sh`; discovery/loop/summary in `scripts/test-all.sh`).
   `TREE_MODE` bind/webrsync; sandboxes relaxed for unprivileged docker; Portage config
   from `scripts/test-portage/*.in` templates. `make test` runs all packages, one
-  (`PKG=cat/name`), or N random (`SAMPLE=N`). `GETBINPKG` pulls deps as binpkgs (no
-  skip-list); `BINPKG_RESPECT_USE` (default `n`) lets the gentoo binhost serve the
-  desktop/X chain despite a USE mismatch (see 2.6–2.7).
-- **Packages fixed locally (2.6–2.7):** full suite green — 11/11 (originally all built
-  from source). The "official binhost can't serve the desktop/X chain" was a
-  `--binpkg-respect-use=y` artifact: it rejects the binhost's richly-USE-built binpkgs
-  (cairo[X], freetype[harfbuzz], …) and rebuilds from source. With `BINPKG_RESPECT_USE=n`
-  the binhost serves the whole chain (gtk+, mesa→LLVM, …) — claude-desktop 1.14271.0 went
-  from an hours-long source build to **~13 min**. So CI now uses binpkgs (`GETBINPKG: 1`
-  in `test.yml`); local default stays source, opt into binpkg with `GETBINPKG=1`. Rule 15:
-  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; the stage3
-  digest is already Renovate-tracked).
+  (`PKG=cat/name`), or N random (`SAMPLE=N`). Build strategy is **per-package** via a
+  `# QA-TEST:` directive (Rule 17): `source` (default), `binpkg`
+  (`--binpkg-respect-use=n`) or `binpkg-respect-use` (`=y`), with optional
+  `image=<tag>`; `STRATEGY`/`GETBINPKG` env override it. A binpkg failure **falls back
+  to source** (`FALLBACK_SOURCE`, default on), and a shared `package.use.in`
+  ("fast_test") carries speed tweaks like `dev-lang/ghc[binary]`.
+- **Binpkg reality, per-package strategy (2.6–2.7):** the suite builds from source
+  (the reliable baseline, originally 11/11). Binpkg was tried as a blanket CI
+  accelerator but the **official binhost can't serve the whole suite consistently**:
+  its binpkgs are built on a **systemd + multilib** desktop profile, so with
+  `--binpkg-respect-use=n` they pull `sys-apps/systemd` into the **openrc** stage3
+  (blocking sysvinit/elogind) and cascade `abi_x86_32` multilib deps, plus
+  binhost↔webrsync-tree **version skew** — the first full-suite CI run failed 6/12 (the
+  live/`git-r3` packages, which drag in the git→libsecret→gtk+→at-spi2 chain).
+  `--binpkg-respect-use=y` dodges that but rebuilds from source (slow) and reintroduces
+  freetype↔harfbuzz; no stage3 image fixes the hard cases (e.g. `polo`). So binpkg is
+  **opt-in per package** where its closure *is* consistent and source is too slow:
+  `app-misc/claude-desktop` (Electron: mesa→LLVM+gtk+, hours→~13 min). `shellcheck` stays
+  source via `dev-lang/ghc[binary]` (prebuilt GHC, no bootstrap, no binhost). Rule 15:
+  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; stage3
+  digest is Renovate-tracked).
 - **Test CI + dynamic matrix (2.8–2.9):** `.github/workflows/test.yml` fans out one
   container per package (parallel, `fail-fast: false`); on PRs `scripts/changed-packages.sh`
   narrows the matrix to the packages the diff touches (empty ⇒ zero jobs).
