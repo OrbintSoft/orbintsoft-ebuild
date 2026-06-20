@@ -3,6 +3,7 @@
 
 EAPI=9
 
+# QA-TEST: source
 DESCRIPTION="Dummy package to satisfy dependencies without installing anything"
 HOMEPAGE="https://github.com/OrbintSoft/orbintsoft-ebuild"
 S="${WORKDIR}"

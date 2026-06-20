@@ -5,6 +5,7 @@ EAPI=9
 
 inherit go-module
 
+# QA-TEST: binpkg
 DESCRIPTION="A tool to create backups compatible with redo"
 HOMEPAGE="https://github.com/OrbintSoft/redo-backups"
 SRC_URI="https://github.com/OrbintSoft/redo-backups/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz"

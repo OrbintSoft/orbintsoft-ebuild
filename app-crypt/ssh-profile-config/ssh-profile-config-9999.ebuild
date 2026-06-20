@@ -3,6 +3,7 @@
 
 EAPI=9
 
+# QA-TEST: source
 DESCRIPTION="Easy scripts to auto-configure ssh agent and load keys and passwords"
 HOMEPAGE="https://github.com/OrbintSoft/ssh-profile-config"
 EGIT_REPO_URI="https://github.com/OrbintSoft/ssh-profile-config.git"
