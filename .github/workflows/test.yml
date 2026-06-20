@@ -28,7 +28,7 @@ jobs:
   # set computed from the diff (scripts/changed-packages.sh); otherwise the full
   # overlay (scripts/list-packages.sh). Both keep the package logic in shared,
   # shellcheck-linted scripts rather than hardcoded here. An empty result ("[]",
-  # e.g. a docs-only PR) makes the test matrix expand to zero jobs.
+  # e.g. a docs-only PR) skips the test job entirely (see its `if:` guard).
   discover:
     runs-on: ubuntu-latest
     outputs:
@@ -62,8 +62,13 @@ jobs:
   # package is exercised even when one fails (we want the whole picture). docker
   # is preinstalled on ubuntu-latest; TREE_MODE=webrsync fetches the gentoo tree
   # inside the container since the runner has no host /var/db/repos/gentoo.
+  #
+  # The `if` guard skips this job when discover selected nothing: an empty
+  # fromJSON matrix is a hard error in Actions ("Matrix vector 'package' does not
+  # contain any values"), not a no-op, so a docs-only change must skip it.
   test:
     needs: discover
+    if: needs.discover.outputs.packages != '[]'
     runs-on: ubuntu-latest
     name: ${{ matrix.package }}
     strategy:
