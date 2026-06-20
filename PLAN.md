@@ -173,12 +173,13 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
 
 Make the overlay easy to discover and adopt, and let people support the work.
 
-- [ ] **5.1** README overhaul — clearer structure and copy: what the overlay is, how to
+- [x] **5.1** README overhaul — clearer structure and copy: what the overlay is, how to
       enable it (both `eselect repository` and the manual `repos.conf`, already drafted),
-      per-package notes, and an honest quality/contribution status. Absorbs 5.2.
-- [ ] **5.2** EAPI accuracy in the README — the header still says **EAPI 8**
-      ([README.md:7](README.md#L7)); state the real mix (EAPI 9 for new/migrated ebuilds,
-      EAPI 8 for the eclass-gated remainder until Phase 6). Sweep for other stale claims.
+      per-package notes (added a live/release/stub column), and an honest quality/contribution
+      status. Absorbs 5.2.
+- [x] **5.2** EAPI accuracy in the README — the header now states the real mix (EAPI 9 for
+      new/migrated ebuilds, EAPI 8 where an inherited eclass caps it until Phase 6). Also
+      corrected the stale "most ebuilds are live" claim (it is now a ~half-and-half mix).
 - [ ] **5.3** `.github/FUNDING.yml` — three sponsor links: `github: OrbintSoft`
       (https://github.com/sponsors/OrbintSoft), a custom `https://paypal.me/orbintsoft`, and a
       custom `https://www.gentoo.org/donate/` so the upstream distro is credited too. Covered

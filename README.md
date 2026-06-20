@@ -9,14 +9,15 @@ A personal [Gentoo](https://www.gentoo.org/) overlay maintained by Stefano
 Balzarotti / OrbintSoft. It ships ebuilds for software that is not in the main
 Gentoo tree, or for variants of it.
 
-- **EAPI:** 8 · **masters:** `gentoo` · **manifests:** thin
-- **Repository name:** `orbintsoft`
+- **EAPI:** 8 and 9 — EAPI 9 for new and migrated ebuilds, EAPI 8 where an
+  inherited eclass does not yet support 9
+- **masters:** `gentoo` · **manifests:** thin · **repository name:** `orbintsoft`
 - **License:** [GPL-3.0](LICENSE) for the overlay's own files (each packaged
   program keeps its own upstream license, declared per ebuild)
 
-> ⚠️ This is a personal overlay. Most ebuilds are **live** (`-9999`) and track
-> upstream `master`/`main`. Treat it as work in progress; see [PLAN.md](PLAN.md)
-> for the quality roadmap.
+> ⚠️ This is a personal, work-in-progress overlay. Its ebuilds are a mix of
+> **versioned releases** and **live** (`-9999`) ebuilds that track upstream
+> `master`/`main`. See [PLAN.md](PLAN.md) for the quality roadmap.
 
 ## Enabling the overlay
 
@@ -47,25 +48,33 @@ emaint sync -r orbintsoft
 ```
 
 Once enabled, install packages as usual, e.g. `emerge -av sys-apps/fsearch`.
-Live (`-9999`) ebuilds have empty `KEYWORDS` and may need to be unmasked first.
+Live (`-9999`) ebuilds carry empty `KEYWORDS`, so you may need to accept them
+first, e.g.:
+
+```sh
+echo '=sys-apps/foo-9999 **' >> /etc/portage/package.accept_keywords
+```
 
 ## Packages
 
-| Package | Description |
-|---|---|
-| `app-admin/pamtester` | Non-interactive PAM testing tool |
-| `app-backup/redo-backups` | Create backups compatible with redo |
-| `app-crypt/ssh-profile-config` | Scripts to auto-configure the ssh agent and load keys/passwords |
-| `app-editors/turbo` | Terminal text editor based on Scintilla and Turbo Vision |
-| `app-misc/claude-desktop` | Claude AI Desktop application (unofficial Linux repackage) |
-| `dev-libs/tvision` | Turbo Vision — a modern port of Borland's TUI library |
-| `dev-util/fnm` | Fast and simple Node.js version manager, built in Rust |
-| `dev-util/shellcheck` | Shell script analysis tool (built from source) |
-| `kde-plasma/ksshaskpass` | Dummy package to satisfy dependencies without installing anything |
-| `media-fonts/nerd-fonts` | Fonts patched to include a high number of glyphs (icons) |
-| `net-wireless/bt-keys-sync` | Sync Bluetooth pairing keys between Windows and Linux |
-| `sys-apps/fsearch` | A fast file search utility for Unix-like systems |
-| `x11-misc/polo` | Polo File Manager (Vala/GTK) |
+| Package | Type | Description |
+|---|---|---|
+| `app-admin/pamtester` | live | Non-interactive PAM testing tool |
+| `app-backup/redo-backups` | release | Create backups compatible with redo |
+| `app-crypt/ssh-profile-config` | live | Scripts to auto-configure the ssh agent and load keys/passwords |
+| `app-editors/turbo` | live | Terminal text editor based on Scintilla and Turbo Vision |
+| `app-misc/claude-desktop` | release | Claude AI Desktop application (unofficial Linux repackage) |
+| `dev-libs/tvision` | live | Turbo Vision — a modern port of Borland's TUI library |
+| `dev-util/fnm` | release | Fast and simple Node.js version manager, built in Rust |
+| `dev-util/shellcheck` | release | Shell script analysis tool (built from source) |
+| `kde-plasma/ksshaskpass` | stub | Dummy package to satisfy dependencies without installing anything |
+| `media-fonts/nerd-fonts` | release | Fonts patched to include a high number of glyphs (icons) |
+| `net-wireless/bt-keys-sync` | live | Sync Bluetooth pairing keys between Windows and Linux |
+| `sys-apps/fsearch` | release | A fast file search utility for Unix-like systems |
+| `x11-misc/polo` | live | Polo File Manager (Vala/GTK) |
+
+*live* tracks upstream HEAD (`-9999`, empty `KEYWORDS`); *release* pins an
+upstream version; *stub* is a metadata-only placeholder.
 
 ## Contributing
 
