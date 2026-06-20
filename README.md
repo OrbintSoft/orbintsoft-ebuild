@@ -1,5 +1,10 @@
 # orbintsoft-ebuild
 
+[![Lint](https://github.com/OrbintSoft/orbintsoft-ebuild/actions/workflows/lint.yml/badge.svg)](https://github.com/OrbintSoft/orbintsoft-ebuild/actions/workflows/lint.yml)
+[![Test](https://github.com/OrbintSoft/orbintsoft-ebuild/actions/workflows/test.yml/badge.svg)](https://github.com/OrbintSoft/orbintsoft-ebuild/actions/workflows/test.yml)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/OrbintSoft)
+
 A personal [Gentoo](https://www.gentoo.org/) overlay maintained by Stefano
 Balzarotti / OrbintSoft. It ships ebuilds for software that is not in the main
 Gentoo tree, or for variants of it.
