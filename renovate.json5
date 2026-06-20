@@ -1,5 +1,5 @@
 {
-  // Renovate config for the orbintsoft overlay — PLAN.md 3.3.
+  // Renovate config for the orbintsoft overlay.
   //
   // Scope: ONLY what Dependabot can't reach. Dependabot owns the GitHub Actions
   // pins (SHA + version comment, .github/dependabot.yml); Renovate owns the Go
@@ -12,8 +12,8 @@
 
   "extends": ["config:recommended"],
 
-  // Once a week (PLAN.md 3.3). The Dependency Dashboard issue lets us force an
-  // out-of-schedule run/PR by ticking a box, so a manual run can always open PRs.
+  // Once a week. The Dependency Dashboard issue lets us force an out-of-schedule
+  // run/PR by ticking a box, so a manual run can always open PRs.
   "schedule": ["after 1pm and before 4pm on wednesday"],
   "dependencyDashboard": true,
 

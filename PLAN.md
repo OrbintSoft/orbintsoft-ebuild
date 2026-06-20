@@ -60,212 +60,59 @@ Repo renamed `local` → **orbintsoft** (0.1); full `profiles/categories` (0.2);
 README / CONTRIBUTING / `.editorconfig` / `.gitignore` / `.gitattributes` (0.5–0.7);
 md5-cache gitignored & tool-generated (0.8); `CLAUDE.md` + `PLAN.md` (0.9).
 
-## Phase 1 — QA tooling & ebuild fixes  `[ ]`
+## Phase 1 — QA tooling & ebuild fixes  `[~]`
 
-`make lint`/`test`/`manifest`/`metadata` + pkgcheck/shellcheck, then fix issues
-**one package per step** (Rule 1).
+`make lint`/`test`/`manifest`/`metadata` (pkgcheck + shellcheck + checkmake + xmllint),
+then per-package fixes (one package per step). Done: standardized copyright headers +
+tabs; a `metadata.xml` for every package; broken builds fixed (`pamtester` → meson,
+`polo` → upstream makefile + slotted vte, `fnm` → cargo + git-r3); empty `KEYWORDS=""`
+on live ebuilds; Italian text removed and `einfo`→`elog`; per-package pkgcheck cleanups;
+licenses and Manifests corrected. Still relevant: `network-sandbox` RESTRICT is accepted
+via `restrict-allowed` in `metadata/layout.conf`; `LICENSE` must be a token in the gentoo
+tree; there is no INI linter.
 
-Done (1.0–1.18): `Makefile` + lint targets — pkgcheck/shellcheck/checkmake/xmllint
-(1.0, 1.11–1.12); standardized copyright headers + tabs (1.1–1.2); a `metadata.xml`
-for every package (1.3). Broken builds fixed: `pamtester` → meson (1.4), `polo` →
-upstream makefile + slotted vte (1.5), `fnm` → proper `cargo`+`git-r3` live ebuild
-(1.6). Empty `KEYWORDS=""` on live ebuilds + dropped redundant empty assignments
-(1.7); removed Italian text, `einfo`→`elog` (1.8); per-package pkgcheck cleanups
-(1.13–1.15, 1.18). License/Manifest: `tvision` → `MIT freedist` (1.9), `nerd-fonts`
-Manifest (1.16). Non-obvious calls worth keeping: `network-sandbox` RESTRICT is
-required (build-time fetch) and accepted via `restrict-allowed` in
-`metadata/layout.conf` (claude-desktop, shellcheck); `LICENSE` must be a token in the
-gentoo tree; no INI linter (1.17).
-
-Open: EAPI 8→9 is **partial** — 5 packages bumped (1.10), the other 6 eclass-gated →
-**Phase 6**; `dev-util/shellcheck` is still fake-live → versioned `0.11.0`
-(`haskell-cabal`) in **Phase 4.3**.
+**Open:** EAPI 8→9 is partial — 5 packages migrated, the other 6 are eclass-gated →
+**Phase 6**.
 
 ## Phase 2 — CI  `[x]`
 
-Quality track first (lint, container-free), then a containerized test track that ran
-locally before CI, with the change-detection matrix added last.
+Two GitHub Actions workflows. `lint.yml` runs the container-free linters
+(`make lint-ci`: shellcheck/checkmake/xmllint/yamllint/actionlint) on master push, PR
+and dispatch; pkgcheck runs in the test workflow instead (it needs the gentoo tree).
+`test.yml` builds+installs each package in a throwaway `gentoo/stage3` container — the
+same `make test` harness used locally (`scripts/test-pkg*.sh`, `TREE_MODE` bind/webrsync,
+Portage config from `scripts/test-portage/*.in`); on a PR `scripts/changed-packages.sh`
+narrows the matrix to the packages the diff touches.
 
-- **Quality CI (2.1–2.2):** `.github/workflows/lint.yml` runs `make lint-ci` (the
-  container-free subset: shellcheck/checkmake/xmllint/yamllint/actionlint) on push, PR
-  and dispatch. pkgcheck is deferred (needs the gentoo tree). `.yamllint` config added;
-  actionlint also shellcheck-lints `run:` blocks.
-- **Local test harness (2.3–2.5):** `make test [PKG=cat/pkg]` builds+installs each
-  package in its own throwaway `gentoo/stage3` container (`scripts/test-pkg.sh` +
-  `scripts/test-pkg-container.sh`; discovery/loop/summary in `scripts/test-all.sh`).
-  `TREE_MODE` bind/webrsync; sandboxes relaxed for unprivileged docker; Portage config
-  from `scripts/test-portage/*.in` templates. `make test` runs all packages, one
-  (`PKG=cat/name`), or N random (`SAMPLE=N`). Build strategy is **per-package** via a
-  `# QA-TEST:` directive (Rule 17): `source` (default), `binpkg`
-  (`--binpkg-respect-use=n`) or `binpkg-respect-use` (`=y`), with optional
-  `image=<tag>`; `STRATEGY`/`GETBINPKG` env override it. A binpkg failure **falls back
-  to source** (`FALLBACK_SOURCE`, default on), and a shared `package.use.in`
-  ("fast_test") carries speed tweaks like `dev-lang/ghc[binary]`.
-- **Binpkg reality, per-package strategy (2.6–2.7):** the suite builds from source
-  (the reliable baseline, originally 11/11). Binpkg was tried as a blanket CI
-  accelerator but the **official binhost can't serve the whole suite consistently**:
-  its binpkgs are built on a **systemd + multilib** desktop profile, so with
-  `--binpkg-respect-use=n` they pull `sys-apps/systemd` into the **openrc** stage3
-  (blocking sysvinit/elogind) and cascade `abi_x86_32` multilib deps, plus
-  binhost↔webrsync-tree **version skew** — the first full-suite CI run failed 6/12 (the
-  live/`git-r3` packages, which drag in the git→libsecret→gtk+→at-spi2 chain).
-  `--binpkg-respect-use=y` dodges that but rebuilds from source (slow) and reintroduces
-  freetype↔harfbuzz; no stage3 image fixes the hard cases (e.g. `polo`). So binpkg is
-  **opt-in per package** where its closure *is* consistent and source is too slow:
-  `app-misc/claude-desktop` (Electron: mesa→LLVM+gtk+, hours→~13 min). `shellcheck` stays
-  source via `dev-lang/ghc[binary]` (prebuilt GHC, no bootstrap, no binhost). Rule 15:
-  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; stage3
-  digest is Renovate-tracked).
-- **Test CI + dynamic matrix (2.8–2.9):** `.github/workflows/test.yml` fans out one
-  container per package (parallel, `fail-fast: false`); on PRs `scripts/changed-packages.sh`
-  narrows the matrix to the packages the diff touches (empty ⇒ zero jobs).
+Build strategy is per-package via the `# QA-TEST:` directive (`source` default, `binpkg`
+opt-in, with source fallback). The official binhost can't serve the whole suite
+consistently (systemd-into-openrc stage3, `abi_x86_32` multilib, binhost↔tree skew), so
+binpkg stays opt-in only where a closure is genuinely consistent (`claude-desktop`);
+everything else builds from source.
 
 ## Phase 3 — Automation  `[x]`
 
-Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
-in Phase 4), then the GitHub-Actions-pin bots and a CI-cost guard so their PRs don't
-retest everything, then the ebuild bump bot, then the `/bump` skill wraps whatever
-bump engine we pick, and finally per-package live→versioned conversion rides on top.
-
-- [x] **3.1** `/new-ebuild` Claude skill — scaffolds a new ebuild + `metadata.xml`
-      following repo conventions (EAPI 9/eclass-gated, copyright tier, upstream-credit,
-      canonical variable order, GLEP 68, tabs/LF). Lives in
-      `.claude/skills/new-ebuild/SKILL.md`; **references the canonical in-repo example
-      ebuilds** (ssh-profile-config, tvision, fnm, nerd-fonts, claude-desktop) instead of
-      duplicating templates, so they can't drift. *Rule 12:* SKILL.md is markdown (already
-      in the repo, no linter) — no new linter; its YAML frontmatter is validated by Claude
-      Code's skill loader. First real exercise: Phase 4.1 (redo-backups).
-- [x] **3.2** Dependabot for GitHub Actions pins, **weekly**. Pinned the actions to full
-      versions for **reproducible builds** (`actions/checkout@v4.3.1`,
-      `actions/setup-go@v5.6.0` — kept the existing major, no silent major bump);
-      Dependabot keeps them current. Deliberately left `@latest` (out of Dependabot's reach
-      here): the Go tools (`checkmake`/`actionlint`, `go install @latest` → would need a
-      go.mod) and `gentoo/stage3` (a shell var, not a Dockerfile). Those are deferred to
-      **Renovate (3.3)**. (3.3 update: kept BOTH bots with split scope — Dependabot now
-      SHA-pins the actions `@<sha> # vX.Y.Z` (since bumped to v6, then SHA-pinned); Renovate
-      owns the Go tools + stage3 digest.)
-      Config in `.github/dependabot.yml`: all action bumps **grouped into one PR**, commit
-      prefix `ci`. Manual runs from Insights → Dependency graph → Dependabot (not a config
-      key); activates once on the default branch. *Rule 12:* YAML, covered by `lint-yaml`
-      (no new linter); verified via PyYAML + `.yamllint` rules (yamllint not installed
-      locally; CI's `lint-ci` is the gate).
-- [x] **3.3** Renovate — **weekly**, config in **renovate.json5** (json5 so each custom
-      manager is documented inline). Instead of compare-then-keep-one, **kept BOTH bots with
-      non-overlapping scope**: Dependabot owns the GitHub Actions (SHA-pinned
-      `@<sha> # vX.Y.Z`, it maintains both SHA and comment); Renovate owns what Dependabot
-      can't reach, so its `github-actions` manager is **disabled** and it runs two regex
-      custom managers — the Go lint tools in `lint.yml` (`go install …@vX.Y.Z`, version
-      only; `# renovate: datasource=github-tags depName=…` annotations, since SHA-pinning a
-      `go install` isn't clean) and the `gentoo/stage3` image in `test-pkg.sh`
-      (digest-pinned `latest@sha256:…`; Renovate refreshes the rolling tag's digest). All
-      deps pinned in-tree to current values (checkout/setup-go SHAs, checkmake v0.3.2,
-      actionlint v1.7.12, stage3 digest). Schedule `after 1pm and before 4pm on wednesday` —
-      the three weekly bots are deliberately staggered across different days and times of day
-      (Dependabot Tue morning, Renovate Wed afternoon, livecheck Thu evening) so they never
-      fire at once;
-      `dependencyDashboard: true` so a manual run can force out-of-schedule PRs anytime;
-      updates grouped into one PR (`ci:` semantic prefix). yamllint
-      `comments.min-spaces-from-content` relaxed to 1 so Dependabot's single-space version
-      comments stay lint-clean. *Rule 12* (new json5 file type): added `lint-renovate`
-      running `renovate-config-validator --strict` via `npx --package $(RENOVATE_PKG)` (wired
-      into `make lint` + `lint-ci`; skipped when npx is absent so Node-less checkouts still
-      pass, CI enforces it; the heavy renovate npm package is the accepted cost, and the Mend
-      app also validates the live config). The validator's major is **pinned**
-      (`RENOVATE_PKG ?= renovate@43`) so local and CI agree on the schema: custom managers use
-      `managerFilePatterns` (renovate ≥39; an unpinned `npx` had validated a stale cached
-      37.x that still wanted the old `fileMatch`, disagreeing with CI's fresh 43.x and failing
-      the lint). `.editorconfig` gained `[*.{json,json5}]`. Validated clean on renovate 43.x.
-      A **third** custom manager pins the `setup-go`/`setup-node` versions in `lint.yml` to
-      exact values (`go 1.26.4`, `node 22.23.0`) instead of floating `stable`/`'22'`, via
-      `# renovate: datasource=golang-version|node-version` annotations on the line above each
-      `*-version:`; node is held to the v22 LTS line by an `allowedVersions: "<23"` rule
-      (Rule 15: the CI toolchain versions are now bump-automatable, not floating).
-- [x] **3.4** CI cost — harness-only diffs test **one random package**, not the full suite
-      (refines the Phase 2E change-detection matrix, 2.9). Motivation: every
-      Dependabot/Renovate PR (stage3 digest in `test-pkg.sh`, action SHA in `test.yml`) used
-      to rerun the whole heavy matrix. `changed-packages.sh` now splits its old "ALL infra"
-      bucket: **overlay-semantics** infra (`profiles/`, `metadata/`, `eclass/`, unrecognized)
-      still → ALL; **test-harness / CI** infra (`scripts/`, `Makefile`,
-      `.github/workflows/test.yml`) → ONE random package (`list-packages.sh | shuf -n1`) as a
-      smoke test. Precedence: ALL dominates; else specifically-changed ebuilds (which already
-      exercise the harness); else one random; else empty. Bot configs
-      (`renovate.json`/`renovate.json5`, `.github/dependabot.yml`) moved to the ignored
-      bucket so a config tweak retests nothing. Tradeoff: random ⇒ non-deterministic re-runs
-      (accepted for a smoke test; seeding by HEAD sha is a possible later refinement).
-      Verified behaviorally (harness→1, ebuild→that pkg, ebuild+harness→that pkg,
-      profiles→all, docs/bot-config→none) + shellcheck clean.
-- [x] **3.5** Ebuild bump bot — **adopted [Tatsh/livecheck](https://github.com/Tatsh/livecheck)**
-      (v0.2.4) as the engine; no custom nvchecker bot needed. Two delivery paths (decided: both):
-      (a) **local** `make livecheck` — `scripts/livecheck.sh` is a thin wrapper, report-only by
-      default, `AUTO=1` rewrites ebuilds (livecheck regenerates their Manifests), `GIT=1` also
-      commits; it bounds itself to this overlay via `list-packages.sh` and needs the overlay
-      registered (`make install`). The `/bump` skill (3.6) wraps this. (b) **weekly CI bump bot**
-      — `.github/workflows/livecheck.yml` (cron Thu 20:00 UTC + `workflow_dispatch`) runs livecheck
-      in a throwaway `gentoo/stage3` container (`scripts/livecheck-ci.sh` launcher +
-      `scripts/livecheck-container.sh`, mirroring the test harness; overlay mounted **read-write**)
-      with `--auto` (livecheck rewrites the ebuild and regenerates its Manifest), leaving the bump uncommitted for
-      `peter-evans/create-pull-request` (GITHUB_TOKEN) to commit + open a PR (`livecheck/bump`).
-      **Scope reality (verified locally):** livecheck keys off the first `SRC_URI` URL, so only the
-      one versioned ebuild — `media-fonts/nerd-fonts` (detected 3.2.1 → 3.4.0 with **zero**
-      `livecheck.json`) — is bumpable today; the 10 live `-9999`/`-99999999` ebuilds have no
-      `SRC_URI` version and are skipped. The hoped-for **tag census does NOT materialize** via
-      livecheck (it sees only the 1 ebuild) → 3.7 must query tags via the `metadata.xml`
-      `remote-id` instead. Most weeks the job is a no-op (no diff → no PR). *Rule 12:* no
-      `livecheck.json` was needed → no new JSON file type entered the repo → no `lint-json` (revisit
-      when one is first required). *Rule 15:* the stage3 digest in `livecheck-ci.sh` is tracked by
-      Renovate (added to the stage3 custom manager); the new `peter-evans` action by Dependabot;
-      `livecheck`/`packaging` are pip-installed unpinned in the throwaway container (always latest —
-      justified, nothing to pin). **Manual prereq:** repo *Settings → Actions →* "Allow GitHub
-      Actions to create and approve pull requests" must be ON (else peter-evans 403s);
-      GITHUB_TOKEN-opened PRs don't trigger `test.yml` (noted in the PR body).
-- [x] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
-      the resulting PR), rather than reimplementing version detection. Delivered as a thin
-      `.claude/skills/bump/SKILL.md` over `make livecheck` (livecheck covers the mechanics,
-      so the skill carries no version-detection logic of its own); scope = versioned ebuilds
-      only (live `-9999` skipped, as in 3.5).
-- [x] **3.7** (per-package) Convert live `-9999` → versioned ebuilds where upstream has
-      **stable** tags; decided dep by dep (live stays where there are none). Census
-      (2026-06-19, via each `metadata.xml` `<remote-id>` — livecheck can't enumerate
-      SRC_URI-less live ebuilds, 3.5): `dev-util/fnm` (1.39.0) and `sys-apps/fsearch` (0.2.3,
-      latest **stable** — HEAD tracks the 0.3 betas) convert; `app-misc/claude-desktop` is a
-      binary repackage with two tagged upstreams under evaluation (aaddrick vs patrickjaja).
-      Stay live: `dev-libs/tvision` (sole tag v2.0 is 2019, HEAD +1332); the OrbintSoft-owned
-      repos (pamtester, ssh-profile-config, bt-keys-sync, polo) — untagged by choice, owner
-      tags them later. `dev-util/shellcheck` (v0.11.0) → **Phase 4.3** (versioned, `haskell-cabal`).
-  - [x] **fnm** 9999 → 1.39.0 — EAPI 8 (cargo eclass caps at 8, cf. 6.3). Crates vendored via a
-        `CRATES` list generated by **app-portage/pycargoebuild** (new dev dep; documented in
-        CONTRIBUTING; kept current by Portage, out of Dependabot/Renovate reach — Rule 15).
-        `ring` is not SPDX-tagged → its licence (ISC + OpenSSL) added by hand. pkgcheck clean;
-        livecheck now processes it (reads 1.39.0), so the bump bot tracks it going forward.
-  - [x] **tvision** — evaluated, **stays live**: its only tag (v2.0) dates to 2019-01 and HEAD is
-        1332 commits ahead. magiblot tags rarely → HEAD is the de-facto stable, and turbo (4.2)
-        needs it; pinning v2.0 would be a 7-year regression. Revisit if a fresh tag lands.
-  - [x] **fsearch** 9999 → 0.2.3 — meson build from the GitHub release tarball; drops the live
-        `git fetch --tags`/checkout dance (it tracked the 0.3 betas). 0.2.3 (2023-08) is the
-        latest non-prerelease tag — older than HEAD but stable, which the owner accepts.
-        pkgcheck clean.
-  - [x] **claude-desktop** 9999 → 1.14271.0 — switched upstream to **patrickjaja/claude-desktop-bin**
-        (cleaner version = Claude's own, more recent, `.deb` with a complete `/usr` tree incl.
-        launcher + .desktop + icon → dropped the orphaned `files/`). PV = Claude version; the
-        downstream packaging revision (`-N` tag suffix, `CLAUDE_PR`) is bumped by hand (livecheck
-        tracks PV only). Prebuilt binary: `RESTRICT="bindist mirror strip"`, `QA_PREBUILT="*"`,
-        `LICENSE="all-rights-reserved"` (Claude is proprietary; only the packaging is MIT).
-        RDEPEND mapped from the `.deb` `Depends`. pkgcheck clean. CI-testable only via
-        binpkg (2.6–2.7): mesa→LLVM + gtk+:3 from source on the 2-core runner is hours.
-- [x] **3.8** CI hardening — least-privilege tokens + lint dedup. Audited every
-      workflow's `GITHUB_TOKEN`: both `lint.yml` and `test.yml` already declare an
-      explicit top-level `permissions: contents: read` (only `actions/checkout` needs
-      it), so they are already minimal — codified as a standing requirement
-      (CLAUDE.md **Rule 14**: explicit minimal `permissions:` per workflow, widened
-      only per-job where a writing step needs it; re-audit on PR/release/packages/pages
-      steps). Also fixed the duplicate lint run: `lint.yml` fired on both
-      `push: ['**']` and `pull_request`, so every PR branch linted twice — restricted
-      `push` to `[master]` (post-merge gate); feature branches now lint through their
-      PR (`pull_request` re-fires on each push to an open PR) and via
-      `workflow_dispatch`. `test.yml` was already `pull_request`+`dispatch` only (no
-      push trigger), so unaffected. Added **Rule 15** (every new *kind* of dependency
-      must be kept current by Dependabot/Renovate, or its absence justified) —
-      companion to Rule 12.
+- **Skills:** `/new-ebuild` and `/bump` Claude skills under `.claude/skills/`.
+- **Dependabot** (weekly) SHA-pins the GitHub Actions (`@<sha> # vX.Y.Z`, both SHA and
+  comment kept current).
+- **Renovate** (weekly, `renovate.json5`, validated by `make lint-renovate` with a
+  major-pinned `RENOVATE_PKG`) owns what Dependabot can't reach — the Go lint tools
+  (`go install …@vX.Y.Z`) and the `gentoo/stage3` digest; its github-actions manager is
+  disabled so the two bots never collide. The three bots are staggered across different
+  days/times.
+- **Bump bot:** [Tatsh/livecheck](https://github.com/Tatsh/livecheck), as both
+  `make livecheck` and a weekly CI job that opens a `livecheck/bump` PR. It keys off
+  `SRC_URI`, so only versioned ebuilds are in scope. *Operational prereq:* repo
+  *Settings → Actions →* "Allow GitHub Actions to create and approve pull requests" must
+  be ON (otherwise the PR-opening step 403s).
+- **CI cost guard:** a harness-only diff smoke-tests one random package, not the full
+  suite; bot-config changes retest nothing.
+- **Live→versioned** (per package, where upstream has stable tags): `fnm` → 1.39.0
+  (crates vendored via `app-portage/pycargoebuild`), `fsearch` → 0.2.3, `claude-desktop`
+  → patrickjaja prebuilt bin; `shellcheck` → 0.11.0 landed later in Phase 4.3. Stay live:
+  `tvision` (sole tag is 2019) and the OrbintSoft-owned repos (untagged by choice).
+- **CI hardening:** explicit least-privilege `permissions:` per workflow and a
+  deduplicated lint run (push restricted to master). Established Rules 14 and 15.
 
 ## Phase 4 — New packages  `[x]`
 
@@ -312,7 +159,7 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
       `network-sandbox` (the eclass builds against installed `dev-haskell/*`, not
       cabal-fetched). `# QA-TEST: source` (GHC via `ghc[binary]`, deps from source) —
       validated by `make test` (PASS, 63 pkgs, thin `Manifest` via `pkgdev manifest`).
-      hackport not installed → hand-written from the template. **Supersedes 7.1.** Bump note:
+      hackport not installed → hand-written from the template. Bump note:
       livecheck tracks the version; dep bounds are manual on major bumps.
       **binpkg ruled out (empirical):** the official gentoo binhost ships `dev-lang/ghc` but
       **zero** `dev-haskell/*` libs (probed its `Packages` index — aeson/text/vector/quickcheck
@@ -324,33 +171,41 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
 
 ## Phase 5 — Publishing  `[ ]`
 
-- [ ] **5.1** README instructions to add the overlay via `repos.conf`
-- [ ] **5.2** README EAPI review — the badge still says **EAPI 8** ([README.md:7](README.md#L7));
-      reflect the real state (EAPI 9 for new/migrated packages, EAPI 8 for the eclass-gated
-      remainder per 1.10). Sweep the rest of the README for other stale claims while here.
-- [ ] **5.3** (Optional) PR to the official `repo/proj/overlays` list for `eselect repository`
+Make the overlay easy to discover and adopt, and let people support the work.
+
+- [ ] **5.1** README overhaul — clearer structure and copy: what the overlay is, how to
+      enable it (both `eselect repository` and the manual `repos.conf`, already drafted),
+      per-package notes, and an honest quality/contribution status. Absorbs 5.2.
+- [ ] **5.2** EAPI accuracy in the README — the header still says **EAPI 8**
+      ([README.md:7](README.md#L7)); state the real mix (EAPI 9 for new/migrated ebuilds,
+      EAPI 8 for the eclass-gated remainder until Phase 6). Sweep for other stale claims.
+- [ ] **5.3** `.github/FUNDING.yml` — three sponsor links: `github: OrbintSoft`
+      (https://github.com/sponsors/OrbintSoft), a custom `https://paypal.me/orbintsoft`, and a
+      custom `https://www.gentoo.org/donate/` so the upstream distro is credited too. Covered
+      by `lint-yaml` (GitHub-schema YAML, no new linter); static links, nothing to bump.
+- [ ] **5.4** List the overlay officially so it's reachable from `eselect repository` (the
+      curated list), `layman`, and https://gpo.zugaina.org/ — all three read the **same**
+      official Gentoo overlay list (`repositories.xml`), so one action covers them: a PR to
+      [gentoo/api-gentoo-org](https://github.com/gentoo/api-gentoo-org) adding a `<repo>`
+      entry (name `orbintsoft`, status unofficial / quality experimental, owner, git source,
+      atom feed). **Verify compliance first:** `profiles/repo_name` == `orbintsoft`,
+      `metadata/layout.conf` `masters = gentoo`, public git URL, and a reasonable `pkgcheck`
+      state. This registers a *personal, unofficial* overlay (not a contribution to the
+      Gentoo tree); the entry is only metadata pointing at the repo, so AI-authorship is
+      irrelevant to the listing.
 
 ## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
-Finish 1.10 for the packages whose inherited eclasses still cap at EAPI 8 in the
-Gentoo tree (snapshot 2026-06-12). Each unblocks when its eclass gains EAPI 9 support
-upstream (a future `emerge --sync` away). **No eclass forking, no reverting to manual
-builds** — that would undo 1.4/1.5/1.6.
+The 6 packages still on EAPI 8 inherit eclasses that cap at EAPI 8 in the Gentoo tree
+(`meson`, `cmake`, `cargo`/`rust`, `font`, `xdg`). Each can only move to EAPI 9 once its
+eclass gains EAPI 9 support upstream in Gentoo. Rather than just wait, the path is to
+**submit PRs to Gentoo** adding EAPI 9 to those eclasses. Gentoo does not accept
+AI-authored commits, so **Stefano authors these PRs by hand and Claude only reviews**;
+in this overlay there is no eclass forking and no reverting to manual builds. Each
+package below moves to EAPI 9 once its eclass PR lands upstream and syncs.
 
-- [ ] **6.1** `app-admin/pamtester`, `sys-apps/fsearch` — blocked by `meson` (7 8)
-- [ ] **6.2** `dev-libs/tvision` — blocked by `cmake` (8)
-- [ ] **6.3** `dev-util/fnm` — blocked by `cargo`/`rust` (8)
-- [ ] **6.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
-- [ ] **6.5** `x11-misc/polo` — blocked by `xdg` (7 8)
-
-## Phase 7 — Deferred complex items  `[ ]`
-
-Bucket for work that surfaced during earlier phases but is too large to do inline.
-Tackled after the main phases (ordering respected); items may grow as more is found.
-
-- [x] **7.1** `dev-util/shellcheck` — **done in 4.3**: converted to a *versioned* `0.11.0`
-      ebuild (`haskell-cabal`) rather than a live rewrite. This replaced the fake-live ebuild
-      entirely, so its old `VariableOrderWrong`/`VariableScope` findings vanish with it, and
-      `cabal` build-time network is gone (the eclass builds against installed `dev-haskell/*`).
-      A CI binpkg cache was considered to speed the ~60-pkg haskell closure and **rejected**
-      (maintainer dislikes caching): heavy from-source packages always build from source.
+- [ ] **6.1** `app-admin/pamtester`, `sys-apps/fsearch` — `meson` eclass (7 8)
+- [ ] **6.2** `dev-libs/tvision` — `cmake` eclass (8)
+- [ ] **6.3** `dev-util/fnm` — `cargo`/`rust` eclass (8)
+- [ ] **6.4** `media-fonts/nerd-fonts` — `font` eclass (7 8)
+- [ ] **6.5** `x11-misc/polo` — `xdg` eclass (7 8)

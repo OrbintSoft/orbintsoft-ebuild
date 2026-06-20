@@ -2,13 +2,12 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # Test CI: build+install each overlay package in its own throwaway gentoo/stage3
-# container (PLAN.md Phase 2D/2E). On pull_request the discover job computes a
-# DYNAMIC matrix of just the packages the diff affects (2.9); on workflow_dispatch
-# it fans out the full suite (2.8). One package per parallel job so each gets its
-# own time budget. How each package is built is declarative: every ebuild carries a
-# `# QA-TEST:` directive (default source; binpkg opt-in where the binhost closure is
-# consistent, with source fallback — PLAN.md 2.6-2.7). Runs on pull_request and
-# manual dispatch, not on every push.
+# container. On pull_request the discover job computes a DYNAMIC matrix of just the
+# packages the diff affects; on workflow_dispatch it fans out the full suite. One
+# package per parallel job so each gets its own time budget. How each package is
+# built is declarative: every ebuild carries a `# QA-TEST:` directive (default
+# source; binpkg opt-in where the binhost closure is consistent, with source
+# fallback). Runs on pull_request and manual dispatch, not on every push.
 
 name: test
 
@@ -80,5 +79,5 @@ jobs:
           TREE_MODE: webrsync
           # Build strategy is per-package via each ebuild's `# QA-TEST:` directive
           # (default source; binpkg opt-in where the binhost closure is consistent,
-          # with source fallback). PLAN.md 2.6-2.7.
+          # with source fallback).
         run: make test PKG='${{ matrix.package }}'

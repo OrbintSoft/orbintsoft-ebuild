@@ -68,12 +68,14 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    language package, …), make sure it can be kept current automatically: wire it
    into Dependabot or Renovate, or record in PLAN.md why neither can and how it
    will be updated instead. Companion to Rule 12 (new file type → linter).
-16. **Comments explain the code, not its history.** A comment (and `--help`/`elog`
-   text) states what the code does, how to use it, and any non-obvious *why* needed
-   to maintain it safely (e.g. a workaround that must not be removed). It does **not**
-   narrate how the code came to be — no change log, no "we used to…", no PR/phase
-   storytelling. The commit message and PLAN.md hold the history; in-code
-   cross-references stay terse (a bare `PLAN.md 3.x` pointer at most).
+16. **Comments serve contributors and users, not the project's history.** A comment
+   (and `--help`/`elog` text) states what the code does, how to use it, and any
+   non-obvious *why* needed to maintain it safely (e.g. a workaround that must not be
+   removed) — written for someone reading or using this project, who has no idea what
+   our roadmap is. It does **not** narrate how the code came to be (no change log, no
+   "we used to…", no PR storytelling) and contains **no references to PLAN.md, phase
+   numbers, or rule numbers** — those are internal bookkeeping. The commit message and
+   PLAN.md hold the history and the roadmap pointers; the code explains itself.
 17. **Every ebuild declares its test strategy.** Each ebuild carries a
    `# QA-TEST: <strategy>` comment driving how the container test builds it:
    `source` (default — always works, the safe fallback), `binpkg` (pull deps from

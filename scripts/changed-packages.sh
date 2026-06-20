@@ -3,9 +3,9 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # changed-packages.sh — given a list of changed file paths on stdin, print the
-# overlay packages whose build could be affected, for the dynamic test matrix
-# (PLAN.md Phase 2E / 2.9). Complements scripts/list-packages.sh, which lists
-# *every* package; this narrows the CI fan-out to just what a PR touches.
+# overlay packages whose build could be affected, for the dynamic test matrix.
+# Complements scripts/list-packages.sh, which lists *every* package; this narrows
+# the CI fan-out to just what a PR touches.
 #
 # Usage:   git diff --name-only base...HEAD | scripts/changed-packages.sh
 #          ... | scripts/changed-packages.sh --json    # compact JSON (CI matrix)
@@ -17,8 +17,8 @@
 #         (except profiles/categories & profiles/repo_name — overlay metadata that
 #          cannot change an existing package's build, so they are ignored: a new
 #          category rides along with its new package, which is already selected)
-#   * test-harness / CI infra        -> ONE random package (PLAN.md 3.4): a smoke
-#         test that the container test path still works, without the full matrix:
+#   * test-harness / CI infra        -> ONE random package: a smoke test that the
+#         container test path still works, without the full matrix:
 #         scripts/  Makefile  .github/workflows/test.yml
 #   * any other .github/workflows/*   -> ignored: a workflow only orchestrates CI
 #         and cannot change a package build (test.yml above is the sole build
@@ -87,10 +87,10 @@ while IFS= read -r file; do
 		# Overlay-semantics infrastructure -> retest everything (any build).
 		profiles/*|metadata/*|eclass/*)
 			test_all=1 ;;
-		# Test-harness / CI infrastructure -> smoke-test ONE random package
-		# (PLAN.md 3.4): proves the container test path still works without the
-		# full matrix. Subsumed when specific packages are already selected. Only
-		# test.yml drives the build harness, so only it gets the smoke.
+		# Test-harness / CI infrastructure -> smoke-test ONE random package:
+		# proves the container test path still works without the full matrix.
+		# Subsumed when specific packages are already selected. Only test.yml
+		# drives the build harness, so only it gets the smoke.
 		scripts/*|Makefile|.github/workflows/test.yml)
 			test_one=1 ;;
 		# Any OTHER workflow only orchestrates CI; it cannot change a package build

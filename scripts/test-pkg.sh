@@ -3,9 +3,9 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # test-pkg.sh — build+install ONE overlay package in a throwaway Gentoo
-# container for QA (PLAN.md Phase 2B). Full isolation: each invocation starts a
-# fresh stage3 container, registers this overlay, emerges the package, verifies
-# it actually installed, then removes the container (foreground `run --rm`).
+# container for QA. Full isolation: each invocation starts a fresh stage3
+# container, registers this overlay, emerges the package, verifies it actually
+# installed, then removes the container (foreground `run --rm`).
 #
 # Usage:   scripts/test-pkg.sh <category/package>
 # Example: scripts/test-pkg.sh app-admin/pamtester
@@ -39,8 +39,8 @@
 # How the package is built is declarative per-package: each ebuild carries a
 # `# QA-TEST: <strategy>` comment (default 'source', which always works). The
 # binhost cannot consistently serve the whole suite (systemd into openrc +
-# abi_x86_32 multilib + version skew, PLAN.md 2.6-2.7), so binpkg is opt-in per
-# package and falls back to source. STRATEGY/GETBINPKG env override the directive.
+# abi_x86_32 multilib + version skew), so binpkg is opt-in per package and falls
+# back to source. STRATEGY/GETBINPKG env override the directive.
 #
 # TREE_MODE explained:
 #   bind      bind-mount the host gentoo tree read-only at /var/db/repos/gentoo
