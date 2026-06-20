@@ -6,6 +6,7 @@
 # These may contain logs, errors or personal data and must never be committed.
 *-steps.md
 *.scratch
+*.log
 /.scratch/
 /scratch/
 
