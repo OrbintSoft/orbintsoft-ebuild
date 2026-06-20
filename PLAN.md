@@ -180,7 +180,7 @@ Make the overlay easy to discover and adopt, and let people support the work.
 - [x] **5.2** EAPI accuracy in the README — the header now states the real mix (EAPI 9 for
       new/migrated ebuilds, EAPI 8 where an inherited eclass caps it until Phase 6). Also
       corrected the stale "most ebuilds are live" claim (it is now a ~half-and-half mix).
-- [ ] **5.3** `.github/FUNDING.yml` — three sponsor links: `github: OrbintSoft`
+- [x] **5.3** `.github/FUNDING.yml` — three sponsor links: `github: OrbintSoft`
       (https://github.com/sponsors/OrbintSoft), a custom `https://paypal.me/orbintsoft`, and a
       custom `https://www.gentoo.org/donate/` so the upstream distro is credited too. Covered
       by `lint-yaml` (GitHub-schema YAML, no new linter); static links, nothing to bump.
@@ -193,7 +193,8 @@ Make the overlay easy to discover and adopt, and let people support the work.
       `metadata/layout.conf` `masters = gentoo`, public git URL, and a reasonable `pkgcheck`
       state. This registers a *personal, unofficial* overlay (not a contribution to the
       Gentoo tree); the entry is only metadata pointing at the repo, so AI-authorship is
-      irrelevant to the listing.
+      irrelevant to the listing. _Compliance verified (repo_name, masters=gentoo, public git,
+      clean `pkgcheck`); listing PR submitted upstream — awaiting merge, then tick._
 
 ## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
