@@ -267,7 +267,7 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       must be kept current by Dependabot/Renovate, or its absence justified) —
       companion to Rule 12.
 
-## Phase 4 — New packages  `[~]`
+## Phase 4 — New packages  `[x]`
 
 Add three more packages before publishing, using the `/new-ebuild` skill (3.1) and the
 full lint+test CI from Phase 2. **One package per step** (Rule 1); EAPI per the eclass
@@ -297,18 +297,30 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
       degrading silently otherwise, so they are not dependencies (this also cut turbo's test
       closure from 33 to 14 packages). No `magic` USE flag: turbo's CMake auto-links libmagic
       from `sys-apps/file` (@system) with no switch, so the flag would be inert.
-- [ ] **4.3** `dev-util/shellcheck` 9999 (fake-live) → **versioned 0.11.0**, source via
-      `haskell-cabal` (**EAPI 8** — eclass caps at 7 8). Replaces the fake-live ebuild
+- [x] **4.3** `dev-util/shellcheck` 9999 (fake-live) → **versioned 0.11.0**, source via
+      `haskell-cabal` (**EAPI 8** — eclass caps at 7 8). Replaced the fake-live ebuild
       (manual `git clone`/checkout + `cabal` with network). Modeled on gentoo's
       `shellcheck-0.9.0-r2` (hackport-generated): same six external haskell deps with 0.11.0
       bounds — `dev-haskell/{aeson <2.3, diff <1.1, fgl, parsec <3.2, quickcheck <2.17,
       regex-tdfa <1.4}`, all present in the tree at compatible versions; core libs are
-      GHC-bundled. GPL-2 dual header (reworked from Gentoo). `RESTRICT="test"` (one upstream
-      test fails); **no** `network-sandbox` (the eclass builds against installed
-      `dev-haskell/*`, not cabal-fetched). `# QA-TEST: source` (GHC via `ghc[binary]`, deps
-      from source). hackport not installed → hand-written from the template, validated by
-      `make test`. **Supersedes 7.1.** Bump note: livecheck tracks the version; dep bounds
-      are manual on major bumps. **Do after 4.2.**
+      GHC-bundled. Bounds confirmed against the upstream `ShellCheck.cabal` at `v0.11.0`;
+      unlike 0.9.0 **no `CABAL_CHDEPS`** is needed — the `fgl` `((>=5.7.0 <5.8.1.0) ||
+      (>=5.8.1.1 <5.9))` exclusion is already native in the 0.11.0 cabal. `SLOT="0/${PV}"`,
+      `KEYWORDS="~amd64"` (first *versioned* overlay ebuild; installable via testing kw),
+      `CABAL_FEATURES` mirror gentoo (heavy bits gated by USE, off by default). GPL-2 dual
+      header (reworked from Gentoo). `RESTRICT="test"` (one upstream test fails); **no**
+      `network-sandbox` (the eclass builds against installed `dev-haskell/*`, not
+      cabal-fetched). `# QA-TEST: source` (GHC via `ghc[binary]`, deps from source) —
+      validated by `make test` (PASS, 63 pkgs, thin `Manifest` via `pkgdev manifest`).
+      hackport not installed → hand-written from the template. **Supersedes 7.1.** Bump note:
+      livecheck tracks the version; dep bounds are manual on major bumps.
+      **binpkg ruled out (empirical):** the official gentoo binhost ships `dev-lang/ghc` but
+      **zero** `dev-haskell/*` libs (probed its `Packages` index — aeson/text/vector/quickcheck
+      all absent), so `binpkg` would fall back to source for the whole closure; `gentoo-haskell`
+      is a source overlay with no binhost (and only has 0.10.0). The ~60-pkg closure is
+      intrinsic (aeson's runtime deps, for `-f json`), not from `CABAL_FEATURES`. **Decision:**
+      heavy from-source packages always build from source in CI — **no binpkg cache** (maintainer
+      preference); the test runs only when an ebuild changes, so the cost is rare and accepted.
 
 ## Phase 5 — Publishing  `[ ]`
 
@@ -336,8 +348,9 @@ builds** — that would undo 1.4/1.5/1.6.
 Bucket for work that surfaced during earlier phases but is too large to do inline.
 Tackled after the main phases (ordering respected); items may grow as more is found.
 
-- [ ] **7.1** `dev-util/shellcheck` — **moved to 4.3**: converted to a *versioned* `0.11.0`
-      ebuild (`haskell-cabal`) rather than a live rewrite. This replaces the fake-live ebuild
+- [x] **7.1** `dev-util/shellcheck` — **done in 4.3**: converted to a *versioned* `0.11.0`
+      ebuild (`haskell-cabal`) rather than a live rewrite. This replaced the fake-live ebuild
       entirely, so its old `VariableOrderWrong`/`VariableScope` findings vanish with it, and
       `cabal` build-time network is gone (the eclass builds against installed `dev-haskell/*`).
-      Done when 4.3 lands.
+      A CI binpkg cache was considered to speed the ~60-pkg haskell closure and **rejected**
+      (maintainer dislikes caching): heavy from-source packages always build from source.
