@@ -44,9 +44,10 @@ done. Large items are broken into sub-steps tracked in a gitignored
   headers (verified 2026-06-12), so the open question on this is resolved.
 
 ## Open questions
-- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust): **resolved in Phase 2.5.**
-  Binpkgs are optional via the `GETBINPKG` knob (no skip-list); CI uses them for
-  speed, local runs default to a full source build.
+- _(none open)_ — Heavy builds (shellcheck→GHC, fnm→Rust, claude-desktop→gtk+/mesa):
+  **resolved in 2.6–2.7.** Build strategy is declared per-package by a `# QA-TEST:`
+  directive (Rule 17): source by default, binpkg opt-in where the binhost closure is
+  consistent (with source fallback). shellcheck uses a prebuilt `dev-lang/ghc[binary]`.
 
 ---
 
@@ -94,23 +95,32 @@ locally before CI, with the change-detection matrix added last.
   `scripts/test-pkg-container.sh`; discovery/loop/summary in `scripts/test-all.sh`).
   `TREE_MODE` bind/webrsync; sandboxes relaxed for unprivileged docker; Portage config
   from `scripts/test-portage/*.in` templates. `make test` runs all packages, one
-  (`PKG=cat/name`), or N random (`SAMPLE=N`). `GETBINPKG` pulls deps as binpkgs (no
-  skip-list); `BINPKG_RESPECT_USE` (default `n`) lets the gentoo binhost serve the
-  desktop/X chain despite a USE mismatch (see 2.6–2.7).
-- **Packages fixed locally (2.6–2.7):** full suite green — 11/11 (originally all built
-  from source). The "official binhost can't serve the desktop/X chain" was a
-  `--binpkg-respect-use=y` artifact: it rejects the binhost's richly-USE-built binpkgs
-  (cairo[X], freetype[harfbuzz], …) and rebuilds from source. With `BINPKG_RESPECT_USE=n`
-  the binhost serves the whole chain (gtk+, mesa→LLVM, …) — claude-desktop 1.14271.0 went
-  from an hours-long source build to **~13 min**. So CI now uses binpkgs (`GETBINPKG: 1`
-  in `test.yml`); local default stays source, opt into binpkg with `GETBINPKG=1`. Rule 15:
-  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; the stage3
-  digest is already Renovate-tracked).
+  (`PKG=cat/name`), or N random (`SAMPLE=N`). Build strategy is **per-package** via a
+  `# QA-TEST:` directive (Rule 17): `source` (default), `binpkg`
+  (`--binpkg-respect-use=n`) or `binpkg-respect-use` (`=y`), with optional
+  `image=<tag>`; `STRATEGY`/`GETBINPKG` env override it. A binpkg failure **falls back
+  to source** (`FALLBACK_SOURCE`, default on), and a shared `package.use.in`
+  ("fast_test") carries speed tweaks like `dev-lang/ghc[binary]`.
+- **Binpkg reality, per-package strategy (2.6–2.7):** the suite builds from source
+  (the reliable baseline, originally 11/11). Binpkg was tried as a blanket CI
+  accelerator but the **official binhost can't serve the whole suite consistently**:
+  its binpkgs are built on a **systemd + multilib** desktop profile, so with
+  `--binpkg-respect-use=n` they pull `sys-apps/systemd` into the **openrc** stage3
+  (blocking sysvinit/elogind) and cascade `abi_x86_32` multilib deps, plus
+  binhost↔webrsync-tree **version skew** — the first full-suite CI run failed 6/12 (the
+  live/`git-r3` packages, which drag in the git→libsecret→gtk+→at-spi2 chain).
+  `--binpkg-respect-use=y` dodges that but rebuilds from source (slow) and reintroduces
+  freetype↔harfbuzz; no stage3 image fixes the hard cases (e.g. `polo`). So binpkg is
+  **opt-in per package** where its closure *is* consistent and source is too slow:
+  `app-misc/claude-desktop` (Electron: mesa→LLVM+gtk+, hours→~13 min). `shellcheck` stays
+  source via `dev-lang/ghc[binary]` (prebuilt GHC, no bootstrap, no binhost). Rule 15:
+  the binhost is the stage3 image's rolling `binrepos.conf` (no new pinned dep; stage3
+  digest is Renovate-tracked).
 - **Test CI + dynamic matrix (2.8–2.9):** `.github/workflows/test.yml` fans out one
   container per package (parallel, `fail-fast: false`); on PRs `scripts/changed-packages.sh`
   narrows the matrix to the packages the diff touches (empty ⇒ zero jobs).
 
-## Phase 3 — Automation  `[~]`
+## Phase 3 — Automation  `[x]`
 
 Ordered so each step unblocks the next: the `/new-ebuild` skill lands first (reused
 in Phase 4), then the GitHub-Actions-pin bots and a CI-cost guard so their PRs don't
@@ -208,9 +218,11 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       justified, nothing to pin). **Manual prereq:** repo *Settings → Actions →* "Allow GitHub
       Actions to create and approve pull requests" must be ON (else peter-evans 403s);
       GITHUB_TOKEN-opened PRs don't trigger `test.yml` (noted in the PR body).
-- [ ] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
-      the resulting PR), rather than reimplementing version detection. Final shape depends
-      on 3.5's outcome; if livecheck covers the mechanics, this stays thin.
+- [x] **3.6** `/bump` Claude skill — wraps the bump engine chosen in 3.5 (run it + review
+      the resulting PR), rather than reimplementing version detection. Delivered as a thin
+      `.claude/skills/bump/SKILL.md` over `make livecheck` (livecheck covers the mechanics,
+      so the skill carries no version-detection logic of its own); scope = versioned ebuilds
+      only (live `-9999` skipped, as in 3.5).
 - [x] **3.7** (per-package) Convert live `-9999` → versioned ebuilds where upstream has
       **stable** tags; decided dep by dep (live stays where there are none). Census
       (2026-06-19, via each `metadata.xml` `<remote-id>` — livecheck can't enumerate
@@ -255,15 +267,21 @@ bump engine we pick, and finally per-package live→versioned conversion rides o
       must be kept current by Dependabot/Renovate, or its absence justified) —
       companion to Rule 12.
 
-## Phase 4 — New packages  `[ ]`
+## Phase 4 — New packages  `[~]`
 
 Add two more packages before publishing, using the `/new-ebuild` skill (3.1) and the
 full lint+test CI from Phase 2. **One package per step** (Rule 1), EAPI 9, each with
 `metadata.xml` (maintainer + `remote-id`) and the upstream-credit comment.
 
-- [ ] **4.1** `redo-backups` (category TBD, likely `app-backup`) — OrbintSoft's own backup
-      tool ([OrbintSoft/redo-backups](https://github.com/OrbintSoft/redo-backups)). Upstream
-      is OrbintSoft, so **no** third-party upstream-credit comment (CLAUDE.md convention).
+- [x] **4.1** `app-backup/redo-backups` (added the `app-backup` category) — OrbintSoft's own
+      backup tool ([OrbintSoft/redo-backups](https://github.com/OrbintSoft/redo-backups)).
+      Upstream is OrbintSoft, so **no** third-party upstream-credit comment (CLAUDE.md
+      convention). Versioned 0.0.15, `EAPI=9` via `go-module` (eclass supports 7 8 9 — no
+      gate); pure-stdlib (no `require` in go.mod → no deps tarball); `LICENSE="EUPL-1.2"`.
+      `BDEPEND=">=dev-lang/go-1.26:="` to match go.mod's `go` directive — the EAPI-9
+      go-module QA check (`install-qa-check.d/60go-module-eclass`) dies otherwise; pkgcheck
+      can't see it (it doesn't run install-qa-check.d), so the container test is the gate.
+      livecheck-bumpable (GitHub release `SRC_URI`); keep BDEPEND's go floor in sync on bumps.
 - [ ] **4.2** `turbo` (category TBD, likely `app-editors`) — magiblot's Turbo, a terminal
       text editor built on Turbo Vision ([magiblot/turbo](https://github.com/magiblot/turbo)).
       Depends on `dev-libs/tvision`, already in this overlay. Add the upstream-credit comment

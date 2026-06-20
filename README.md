@@ -49,6 +49,7 @@ Live (`-9999`) ebuilds have empty `KEYWORDS` and may need to be unmasked first.
 | Package | Description |
 |---|---|
 | `app-admin/pamtester` | Non-interactive PAM testing tool |
+| `app-backup/redo-backups` | Create backups compatible with redo |
 | `app-crypt/ssh-profile-config` | Scripts to auto-configure the ssh agent and load keys/passwords |
 | `app-misc/claude-desktop` | Claude AI Desktop application (unofficial Linux repackage) |
 | `dev-libs/tvision` | Turbo Vision — a modern port of Borland's TUI library |

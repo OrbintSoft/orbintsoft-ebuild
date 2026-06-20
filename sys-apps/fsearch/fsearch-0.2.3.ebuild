@@ -6,6 +6,7 @@ EAPI=8
 
 inherit meson
 
+# QA-TEST: binpkg
 # Thanks to cboxdoerfer, author of FSearch (https://github.com/cboxdoerfer/fsearch).
 DESCRIPTION="A fast file search utility for Unix-like systems"
 HOMEPAGE="https://github.com/cboxdoerfer/fsearch"

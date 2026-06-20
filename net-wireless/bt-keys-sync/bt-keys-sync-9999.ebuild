@@ -6,6 +6,7 @@ EAPI=9
 
 inherit git-r3
 
+# QA-TEST: source
 # Thanks to KeyofBlueS, author of bt-keys-sync (https://github.com/KeyofBlueS/bt-keys-sync).
 DESCRIPTION="Sync Bluetooth pairing keys between Windows and Linux"
 HOMEPAGE="https://github.com/KeyofBlueS/bt-keys-sync"

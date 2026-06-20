@@ -5,6 +5,7 @@ EAPI=9
 
 inherit git-r3
 
+# QA-TEST: source
 # Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"

@@ -6,6 +6,7 @@ EAPI=8
 
 inherit cmake git-r3
 
+# QA-TEST: source
 # Thanks to magiblot, author of Turbo Vision (https://github.com/magiblot/tvision).
 DESCRIPTION="Turbo Vision - A modern port of Borland's TUI library"
 HOMEPAGE="https://github.com/magiblot/tvision"

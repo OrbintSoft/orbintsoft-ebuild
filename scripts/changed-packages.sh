@@ -14,6 +14,9 @@
 #   * category/package/...           -> that package
 #   * overlay-semantics infra        -> ALL packages (can change any build):
 #         profiles/  metadata/  eclass/
+#         (except profiles/categories & profiles/repo_name — overlay metadata that
+#          cannot change an existing package's build, so they are ignored: a new
+#          category rides along with its new package, which is already selected)
 #   * test-harness / CI infra        -> ONE random package (PLAN.md 3.4): a smoke
 #         test that the container test path still works, without the full matrix:
 #         scripts/  Makefile  .github/workflows/test.yml
@@ -76,6 +79,11 @@ while IFS= read -r file; do
 
 	# Not inside a known package — classify the path.
 	case "${file}" in
+		# Overlay metadata that cannot change an existing package's build: a new
+		# category is added together with its new package (already selected above),
+		# and repo_name is just the overlay's identity. Ignore (no retest).
+		profiles/categories|profiles/repo_name)
+			: ;;
 		# Overlay-semantics infrastructure -> retest everything (any build).
 		profiles/*|metadata/*|eclass/*)
 			test_all=1 ;;

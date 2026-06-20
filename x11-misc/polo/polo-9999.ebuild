@@ -5,6 +5,7 @@ EAPI=8
 
 inherit git-r3 vala xdg
 
+# QA-TEST: source
 # Thanks to teejee2008 (Tony George), author of the original Polo File Manager;
 # maintained here as the OrbintSoft fork (https://github.com/OrbintSoft/polo).
 DESCRIPTION="Polo File Manager (Vala/GTK)"

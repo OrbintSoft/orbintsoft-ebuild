@@ -74,6 +74,17 @@ it can be published as a public, CI-tested overlay with automated version bumps.
    narrate how the code came to be — no change log, no "we used to…", no PR/phase
    storytelling. The commit message and PLAN.md hold the history; in-code
    cross-references stay terse (a bare `PLAN.md 3.x` pointer at most).
+17. **Every ebuild declares its test strategy.** Each ebuild carries a
+   `# QA-TEST: <strategy>` comment driving how the container test builds it:
+   `source` (default — always works, the safe fallback), `binpkg` (pull deps from
+   the gentoo binhost, `--binpkg-respect-use=n`), or `binpkg-respect-use`
+   (`=y`), with an optional `image=<tag>`. Use `binpkg` **only** where the package's
+   binhost closure is consistent and it is genuinely faster (verified by a passing
+   `make test`); otherwise `source`. The harness falls back to source on a binpkg
+   failure, so CI stays green, but the directive should reflect the real best
+   strategy. The binhost cannot serve the whole suite consistently (systemd into the
+   openrc stage3 + `abi_x86_32` multilib + binhost↔tree version skew — PLAN.md
+   2.6–2.7). See the `new-ebuild` skill for placement.
 
 ### Proposed additional rules (pending approval)
 

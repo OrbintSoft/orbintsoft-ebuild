@@ -68,6 +68,22 @@ For third-party software, one line **directly above `DESCRIPTION`**, crediting t
 ```
 **Skip it** when the upstream author is OrbintSoft/Stefano, or for stub/dummy packages.
 
+### Test strategy — `# QA-TEST:` (CLAUDE.md Rule 17)
+Every ebuild declares how the container test builds it:
+```
+# QA-TEST: source        # default; always works (the safe fallback)
+# QA-TEST: binpkg         # deps from the gentoo binhost (--binpkg-respect-use=n)
+# QA-TEST: binpkg-respect-use   # binhost with --binpkg-respect-use=y
+# QA-TEST: binpkg image=<stage3-tag>   # optional per-package container image
+```
+Default to **`source`**. Use **`binpkg`** only when the package would otherwise be
+slow to build (heavy toolchain/GUI chain: GHC, Rust, gtk+/mesa/LLVM) **and** its
+binhost closure is consistent — verify with a passing `make test PKG=…`. The binhost
+can't serve the whole suite (systemd into the openrc stage3 + `abi_x86_32` multilib +
+version skew, PLAN.md 2.6–2.7), so live/`git-r3` packages that drag in the gtk+/systemd
+chain stay `source`. The harness falls back to source on a binpkg failure, but pick the
+directive that actually works to avoid a wasted attempt.
+
 ## 3. Ebuild layout
 
 Order, with tabs for indentation and LF line endings:
@@ -78,7 +94,8 @@ Order, with tabs for indentation and LF line endings:
 4. blank line
 5. `inherit <eclasses>` (build-system eclass; add `git-r3` for live)
 6. blank line
-7. *(third-party only)* the `# Thanks to …` credit comment
+7. the `# QA-TEST: <strategy>` directive (§2), then *(third-party only)* the
+   `# Thanks to …` credit comment
 8. `DESCRIPTION`, `HOMEPAGE`, then `EGIT_REPO_URI="…git"` (**live**) or
    `SRC_URI=…` + `S=…` (**versioned**)
 9. blank line

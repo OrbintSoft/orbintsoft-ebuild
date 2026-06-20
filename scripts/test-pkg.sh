@@ -31,10 +31,16 @@
 #   BINPKG_RESPECT_USE --binpkg-respect-use with GETBINPKG (default: n = use a
 #                     binpkg despite a USE mismatch; y = rebuild from source on
 #                     mismatch). n lets the binhost serve the desktop/X chain.
+#   STRATEGY          test build strategy override: source | binpkg |
+#                     binpkg-respect-use [image=<tag>]. Default: the ebuild's
+#                     `# QA-TEST:` directive, else source.
+#   FALLBACK_SOURCE   on a binpkg failure, retry from source (default: 1).
 #
-# Binary packages are never required: locally you choose source (default) or, by
-# setting GETBINPKG, the binpkg-accelerated path. CI builds from source — the
-# official binhost can't serve the GUI/X chain (freetype<->harfbuzz; PLAN.md 2.7).
+# How the package is built is declarative per-package: each ebuild carries a
+# `# QA-TEST: <strategy>` comment (default 'source', which always works). The
+# binhost cannot consistently serve the whole suite (systemd into openrc +
+# abi_x86_32 multilib + version skew, PLAN.md 2.6-2.7), so binpkg is opt-in per
+# package and falls back to source. STRATEGY/GETBINPKG env override the directive.
 #
 # TREE_MODE explained:
 #   bind      bind-mount the host gentoo tree read-only at /var/db/repos/gentoo
@@ -58,6 +64,8 @@ FEATURES_DISABLE="${FEATURES_DISABLE:--network-sandbox -ipc-sandbox -pid-sandbox
 GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
 BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
+STRATEGY="${STRATEGY:-}"
+FALLBACK_SOURCE="${FALLBACK_SOURCE:-1}"
 
 die() { echo "test-pkg: $*" >&2; exit 1; }
 log() { echo ">> $*"; }
@@ -83,6 +91,32 @@ REPO_NAME="$(cat "${OVERLAY_ROOT}/profiles/repo_name")"
 [ -n "${REPO_NAME}" ] || die "profiles/repo_name is empty"
 [ -d "${OVERLAY_ROOT}/$(dirname "${PKG}")/$(basename "${PKG}")" ] \
 	|| die "package '${PKG}' not found in overlay ${OVERLAY_ROOT}"
+
+# --- test strategy (per-package) -------------------------------------------
+# How to build the package for the test: 'source' (default, always works) or a
+# faster binpkg path. Precedence: STRATEGY env > legacy non-empty GETBINPKG env >
+# the ebuild's `# QA-TEST:` directive > 'source'. The directive value is a method
+# (source | binpkg | binpkg-respect-use) with an optional `image=<tag>` modifier.
+if [ -n "${STRATEGY}" ] || [ -z "${GETBINPKG}" ]; then
+	if [ -z "${STRATEGY}" ]; then
+		qa_line="$(grep -hm1 '^#[[:space:]]*QA-TEST:' \
+			"${OVERLAY_ROOT}/${PKG}"/*.ebuild 2>/dev/null || true)"
+		qa_line="${qa_line#*QA-TEST:}"   # value after the marker
+		STRATEGY="${qa_line%%#*}"        # drop any trailing inline comment
+	fi
+	read -r -a strat_parts <<<"${STRATEGY}"
+	strat_method="${strat_parts[0]:-source}"
+	for opt in ${strat_parts[@]+"${strat_parts[@]:1}"}; do
+		case "${opt}" in image=*) STAGE3_IMAGE="${opt#image=}" ;; esac
+	done
+	case "${strat_method}" in
+		source)             GETBINPKG="" ;;
+		binpkg)             GETBINPKG=1; BINPKG_RESPECT_USE=n ;;
+		binpkg-respect-use) GETBINPKG=1; BINPKG_RESPECT_USE=y ;;
+		*) die "unknown QA-TEST strategy '${strat_method}' for ${PKG}" ;;
+	esac
+	STRATEGY="${strat_method}"
+fi
 
 # --- gentoo tree mode ------------------------------------------------------
 if [ "${TREE_MODE}" = "auto" ]; then
@@ -115,6 +149,7 @@ engine_args+=(--env "FEATURES_DISABLE=${FEATURES_DISABLE}")
 engine_args+=(--env "GETBINPKG=${GETBINPKG}")
 engine_args+=(--env "BINHOST=${BINHOST}")
 engine_args+=(--env "BINPKG_RESPECT_USE=${BINPKG_RESPECT_USE}")
+engine_args+=(--env "FALLBACK_SOURCE=${FALLBACK_SOURCE}")
 engine_args+=(--volume "${OVERLAY_ROOT}:/var/db/repos/${REPO_NAME}:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-pkg-container.sh:/test-pkg-container.sh:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-portage:/test-portage:ro")
@@ -129,7 +164,7 @@ engine_args+=("${STAGE3_IMAGE}")
 engine_args+=(bash /test-pkg-container.sh)
 
 # --- run -------------------------------------------------------------------
-log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | binpkg: ${GETBINPKG:-no} | pkg: ${PKG}"
+log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | strategy: ${STRATEGY:-legacy} | binpkg: ${GETBINPKG:-no} | pkg: ${PKG}"
 if "${CONTAINER_ENGINE}" "${engine_args[@]}"; then
 	log "PASS ${PKG}"
 else

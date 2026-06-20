@@ -309,6 +309,7 @@ CRATES="
 
 inherit cargo
 
+# QA-TEST: binpkg
 # Thanks to Schniz (Gal Schlezinger), author of fnm (https://github.com/Schniz/fnm).
 DESCRIPTION="Fast and simple Node.js version manager, built in Rust"
 HOMEPAGE="https://github.com/Schniz/fnm"

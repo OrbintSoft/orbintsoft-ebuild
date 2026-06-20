@@ -13,9 +13,9 @@
 #
 # Configuration arrives as environment variables (set by test-pkg.sh via the
 # container engine's --env): PKG, REPO_NAME, TREE_MODE are required;
-# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG, BINHOST and BINPKG_RESPECT_USE are
-# optional. Assigning from self documents the contract and satisfies shellcheck
-# (env-injected).
+# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG, BINHOST, BINPKG_RESPECT_USE and
+# FALLBACK_SOURCE are optional. Assigning from self documents the contract and
+# satisfies shellcheck (env-injected).
 
 set -eu
 
@@ -27,6 +27,7 @@ FEATURES_DISABLE="${FEATURES_DISABLE:-}"
 GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
 BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
+FALLBACK_SOURCE="${FALLBACK_SOURCE:-1}"
 
 # Portage-config templates mounted read-only by test-pkg.sh; the sed calls below
 # fill their @TOKEN@ placeholders. Config syntax lives in these files, not here.
@@ -44,6 +45,11 @@ sed "s|@REPO_NAME@|${REPO_NAME}|g" \
 sed "s|@FEATURES_DISABLE@|${FEATURES_DISABLE}|g" \
 	"${CONF_DIR}/make.conf.in" >> /etc/portage/make.conf
 
+# fast_test USE tweaks (e.g. a prebuilt GHC) so source builds don't need the
+# binhost. Token-less file -> copied verbatim.
+mkdir -p /etc/portage/package.use
+cp "${CONF_DIR}/package.use.in" /etc/portage/package.use/fast-test
+
 if [ "${TREE_MODE}" = "webrsync" ]; then
 	echo ">> fetching gentoo tree (emerge-webrsync)"
 	emerge-webrsync
@@ -57,7 +63,7 @@ fi
 # freetype[harfbuzz]) — built with richer USE than a base stage3 — is used as-is
 # instead of rebuilt from source; y rejects USE-mismatched binpkgs and falls back
 # to source. Only binhost deps are affected; overlay ebuilds always build from source.
-emerge_opts=()
+binpkg_opts=()
 if [ -n "${GETBINPKG}" ]; then
 	echo ">> binary packages enabled (getbinpkg, binpkg-respect-use=${BINPKG_RESPECT_USE})"
 	if [ -n "${BINHOST}" ]; then
@@ -65,7 +71,7 @@ if [ -n "${GETBINPKG}" ]; then
 		sed "s|@BINHOST@|${BINHOST}|g" \
 			"${CONF_DIR}/binrepos.conf.in" > /etc/portage/binrepos.conf/test-binhost.conf
 	fi
-	emerge_opts+=(--getbinpkg=y "--binpkg-respect-use=${BINPKG_RESPECT_USE}")
+	binpkg_opts=(--getbinpkg=y "--binpkg-respect-use=${BINPKG_RESPECT_USE}")
 fi
 
 # Throwaway container: let Portage auto-apply the USE/keyword changes its
@@ -73,12 +79,30 @@ fi
 # and carry on, instead of stopping at "USE changes necessary to proceed". Safe
 # because the container is disposable and CONFIG_PROTECT is disabled (make.conf.in),
 # so the writes land immediately. Licences are already opened via ACCEPT_LICENSE.
-emerge_opts+=(--autounmask=y --autounmask-use=y --autounmask-write=y --autounmask-continue=y)
+autounmask=(--autounmask=y --autounmask-use=y --autounmask-write=y --autounmask-continue=y)
 
-echo ">> emerge -v ${emerge_opts[*]} ${EMERGE_OPTS} ${PKG}"
-# EMERGE_OPTS must word-split into separate emerge arguments.
-# shellcheck disable=SC2086
-emerge -v "${emerge_opts[@]}" ${EMERGE_OPTS} "${PKG}"
+# $1.. = strategy-specific opts (binpkg or none). autounmask + EMERGE_OPTS always.
+run_emerge() {
+	echo ">> emerge -v $* ${autounmask[*]} ${EMERGE_OPTS} ${PKG}"
+	# EMERGE_OPTS must word-split into separate emerge arguments.
+	# shellcheck disable=SC2086
+	emerge -v "$@" "${autounmask[@]}" ${EMERGE_OPTS} "${PKG}"
+}
+
+# The binpkg path can pull an inconsistent binhost set for some packages (systemd
+# into an openrc stage3, abi_x86_32 multilib, binhost<->tree version skew). When it
+# fails, FALLBACK_SOURCE (default on) retries from source so a binpkg failure
+# degrades to a slow-but-reliable build instead of a red CI (PLAN.md 2.6-2.7). The
+# per-package preference is set by the `# QA-TEST:` directive (test-pkg.sh).
+if [ "${#binpkg_opts[@]}" -gt 0 ]; then
+	if ! run_emerge "${binpkg_opts[@]}"; then
+		[ "${FALLBACK_SOURCE}" != 0 ] || exit 1
+		echo ">> binpkg strategy failed — falling back to a source build"
+		run_emerge
+	fi
+else
+	run_emerge
+fi
 
 echo ">> verifying ${PKG} is installed"
 if command -v qlist >/dev/null 2>&1; then

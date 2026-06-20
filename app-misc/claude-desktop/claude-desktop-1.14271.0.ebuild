@@ -8,6 +8,7 @@ EAPI=9
 # bot tracks the Claude version (PV); bump this by hand when only -N changes.
 CLAUDE_PR="2"
 
+# QA-TEST: binpkg
 # Thanks to Anthropic for Claude Desktop and to patrickjaja for the Linux
 # repackage (https://github.com/patrickjaja/claude-desktop-bin).
 DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"

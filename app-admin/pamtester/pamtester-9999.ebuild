@@ -6,6 +6,7 @@ EAPI=8
 
 inherit meson git-r3
 
+# QA-TEST: source
 # Thanks to thkukuk, author of pamtester (https://github.com/thkukuk/pamtester).
 DESCRIPTION="Non-interactive PAM testing tool"
 HOMEPAGE="https://github.com/thkukuk/pamtester"
