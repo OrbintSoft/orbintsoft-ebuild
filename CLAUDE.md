@@ -91,8 +91,8 @@ it can be published as a public, CI-tested overlay with automated version bumps.
 ### Proposed additional rules (pending approval)
 
 - Once overall quality is high enough, require every touched ebuild to pass
-  `pkgcheck scan` before "done". **Not enforced yet** — the repo does not pass
-  pkgcheck today.
+  `pkgcheck scan` before "done". The overlay now scans clean (`make lint-ebuild`),
+  so this is ready to promote to an enforced rule on your OK.
 - Never hand-commit generated artifacts (`metadata/md5-cache`, `Manifest`) — let a
   `make` target or CI produce them. (Policy TBD — see PLAN.md Phase 0.8.)
 - Every new package needs a `metadata.xml`, a correct copyright header, and tabs.
