@@ -159,7 +159,7 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
       `network-sandbox` (the eclass builds against installed `dev-haskell/*`, not
       cabal-fetched). `# QA-TEST: source` (GHC via `ghc[binary]`, deps from source) —
       validated by `make test` (PASS, 63 pkgs, thin `Manifest` via `pkgdev manifest`).
-      hackport not installed → hand-written from the template. **Supersedes 7.1.** Bump note:
+      hackport not installed → hand-written from the template. Bump note:
       livecheck tracks the version; dep bounds are manual on major bumps.
       **binpkg ruled out (empirical):** the official gentoo binhost ships `dev-lang/ghc` but
       **zero** `dev-haskell/*` libs (probed its `Packages` index — aeson/text/vector/quickcheck
@@ -171,33 +171,41 @@ and the upstream-credit comment. Order: 4.2 then 4.3.
 
 ## Phase 5 — Publishing  `[ ]`
 
-- [ ] **5.1** README instructions to add the overlay via `repos.conf`
-- [ ] **5.2** README EAPI review — the badge still says **EAPI 8** ([README.md:7](README.md#L7));
-      reflect the real state (EAPI 9 for new/migrated packages, EAPI 8 for the eclass-gated
-      remainder per 1.10). Sweep the rest of the README for other stale claims while here.
-- [ ] **5.3** (Optional) PR to the official `repo/proj/overlays` list for `eselect repository`
+Make the overlay easy to discover and adopt, and let people support the work.
+
+- [ ] **5.1** README overhaul — clearer structure and copy: what the overlay is, how to
+      enable it (both `eselect repository` and the manual `repos.conf`, already drafted),
+      per-package notes, and an honest quality/contribution status. Absorbs 5.2.
+- [ ] **5.2** EAPI accuracy in the README — the header still says **EAPI 8**
+      ([README.md:7](README.md#L7)); state the real mix (EAPI 9 for new/migrated ebuilds,
+      EAPI 8 for the eclass-gated remainder until Phase 6). Sweep for other stale claims.
+- [ ] **5.3** `.github/FUNDING.yml` — three sponsor links: `github: OrbintSoft`
+      (https://github.com/sponsors/OrbintSoft), a custom `https://paypal.me/orbintsoft`, and a
+      custom `https://www.gentoo.org/donate/` so the upstream distro is credited too. Covered
+      by `lint-yaml` (GitHub-schema YAML, no new linter); static links, nothing to bump.
+- [ ] **5.4** List the overlay officially so it's reachable from `eselect repository` (the
+      curated list), `layman`, and https://gpo.zugaina.org/ — all three read the **same**
+      official Gentoo overlay list (`repositories.xml`), so one action covers them: a PR to
+      [gentoo/api-gentoo-org](https://github.com/gentoo/api-gentoo-org) adding a `<repo>`
+      entry (name `orbintsoft`, status unofficial / quality experimental, owner, git source,
+      atom feed). **Verify compliance first:** `profiles/repo_name` == `orbintsoft`,
+      `metadata/layout.conf` `masters = gentoo`, public git URL, and a reasonable `pkgcheck`
+      state. This registers a *personal, unofficial* overlay (not a contribution to the
+      Gentoo tree); the entry is only metadata pointing at the repo, so AI-authorship is
+      irrelevant to the listing.
 
 ## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
-Finish 1.10 for the packages whose inherited eclasses still cap at EAPI 8 in the
-Gentoo tree (snapshot 2026-06-12). Each unblocks when its eclass gains EAPI 9 support
-upstream (a future `emerge --sync` away). **No eclass forking, no reverting to manual
-builds** — that would undo 1.4/1.5/1.6.
+The 6 packages still on EAPI 8 inherit eclasses that cap at EAPI 8 in the Gentoo tree
+(`meson`, `cmake`, `cargo`/`rust`, `font`, `xdg`). Each can only move to EAPI 9 once its
+eclass gains EAPI 9 support upstream in Gentoo. Rather than just wait, the path is to
+**submit PRs to Gentoo** adding EAPI 9 to those eclasses. Gentoo does not accept
+AI-authored commits, so **Stefano authors these PRs by hand and Claude only reviews**;
+in this overlay there is no eclass forking and no reverting to manual builds. Each
+package below moves to EAPI 9 once its eclass PR lands upstream and syncs.
 
-- [ ] **6.1** `app-admin/pamtester`, `sys-apps/fsearch` — blocked by `meson` (7 8)
-- [ ] **6.2** `dev-libs/tvision` — blocked by `cmake` (8)
-- [ ] **6.3** `dev-util/fnm` — blocked by `cargo`/`rust` (8)
-- [ ] **6.4** `media-fonts/nerd-fonts` — blocked by `font` (7 8)
-- [ ] **6.5** `x11-misc/polo` — blocked by `xdg` (7 8)
-
-## Phase 7 — Deferred complex items  `[ ]`
-
-Bucket for work that surfaced during earlier phases but is too large to do inline.
-Tackled after the main phases (ordering respected); items may grow as more is found.
-
-- [x] **7.1** `dev-util/shellcheck` — **done in 4.3**: converted to a *versioned* `0.11.0`
-      ebuild (`haskell-cabal`) rather than a live rewrite. This replaced the fake-live ebuild
-      entirely, so its old `VariableOrderWrong`/`VariableScope` findings vanish with it, and
-      `cabal` build-time network is gone (the eclass builds against installed `dev-haskell/*`).
-      A CI binpkg cache was considered to speed the ~60-pkg haskell closure and **rejected**
-      (maintainer dislikes caching): heavy from-source packages always build from source.
+- [ ] **6.1** `app-admin/pamtester`, `sys-apps/fsearch` — `meson` eclass (7 8)
+- [ ] **6.2** `dev-libs/tvision` — `cmake` eclass (8)
+- [ ] **6.3** `dev-util/fnm` — `cargo`/`rust` eclass (8)
+- [ ] **6.4** `media-fonts/nerd-fonts` — `font` eclass (7 8)
+- [ ] **6.5** `x11-misc/polo` — `xdg` eclass (7 8)
