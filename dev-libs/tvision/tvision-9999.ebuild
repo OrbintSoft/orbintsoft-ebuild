@@ -21,11 +21,10 @@ DEPEND="
 	sys-libs/ncurses:0
 	gpm? ( sys-libs/gpm )
 "
-RDEPEND="${DEPEND}
-	x11-misc/xclip
-	x11-misc/xsel
-	gui-apps/wl-clipboard
-"
+# System-clipboard sync execs xsel/xclip (X) or wl-clipboard (Wayland) when those
+# are present and gracefully no-ops otherwise; they are optional runtime helpers,
+# not dependencies.
+RDEPEND="${DEPEND}"
 
 BDEPEND="dev-build/cmake"
 
@@ -33,6 +32,10 @@ src_configure() {
 	local mycmakeargs=(
 		-DCMAKE_BUILD_TYPE=Release
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
+		# PIC so the static libtvision.a can be linked into shared consumers
+		# (e.g. app-editors/turbo's libturbo-core.so); the default non-PIC build
+		# uses local-exec TLS, which ld rejects when making a shared object.
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON
 	)
 	cmake_src_configure
 }
