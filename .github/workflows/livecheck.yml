@@ -64,7 +64,7 @@ jobs:
             bump
           body: |
             Automated upstream version bumps detected by
-            [livecheck](https://github.com/Tatsh/livecheck) (PLAN.md Phase 3.5).
+            [livecheck](https://github.com/Tatsh/livecheck).
 
             livecheck rewrote the affected ebuild(s) and `pkgdev manifest` regenerated
             the Manifest in a throwaway gentoo/stage3 container. Review the diff and the

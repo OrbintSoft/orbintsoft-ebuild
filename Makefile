@@ -48,8 +48,7 @@ GIT_FILES := $(shell git ls-files --cached --others --exclude-standard 2>/dev/nu
 
 # shellcheck targets: tracked files with a shell/openrc shebang, plus OpenRC
 # conf.d fragments (which are sourced and carry no shebang of their own).
-# Parsed as bash; per-file `# shellcheck` directives are added when each
-# package is cleaned up (PLAN.md Phase 1).
+# Parsed as bash; per-file `# shellcheck` directives live in the files themselves.
 SHELLCHECK_OPTS ?= --shell=bash
 SH_SOURCES := $(sort \
 	$(if $(GIT_FILES),$(shell grep -IlE '^#!.*(\bsh\b|bash|openrc-run)' $(GIT_FILES) 2>/dev/null)) \
@@ -75,7 +74,7 @@ help: ## Show this help
 
 lint: lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint + renovate-config-validator)
 
-lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## CI subset: linters needing no gentoo tree (pkgcheck added later, PLAN.md 2B/2D)
+lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## CI subset: linters that need no gentoo tree (everything except pkgcheck)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan

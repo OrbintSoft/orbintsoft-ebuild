@@ -3,8 +3,8 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # test-all.sh — run scripts/test-pkg.sh for several overlay packages, each in
-# its own fresh container (PLAN.md Phase 2B). With no arguments it walks every
-# package in the overlay; otherwise it tests only the atoms given.
+# its own fresh container. With no arguments it walks every package in the
+# overlay; otherwise it tests only the atoms given.
 #
 # Usage:   scripts/test-all.sh [category/package ...]
 # Example: scripts/test-all.sh                       # the whole overlay

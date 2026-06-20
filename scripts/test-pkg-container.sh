@@ -3,7 +3,7 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # test-pkg-container.sh — runs INSIDE the throwaway gentoo/stage3 container
-# driven by scripts/test-pkg.sh (PLAN.md Phase 2B). It is mounted read-only at
+# driven by scripts/test-pkg.sh. It is mounted read-only at
 # /test-pkg-container.sh and invoked there; do not run it on the host.
 #
 # The Portage config it installs lives in real files — scripts/test-portage/*.in,
@@ -92,8 +92,8 @@ run_emerge() {
 # The binpkg path can pull an inconsistent binhost set for some packages (systemd
 # into an openrc stage3, abi_x86_32 multilib, binhost<->tree version skew). When it
 # fails, FALLBACK_SOURCE (default on) retries from source so a binpkg failure
-# degrades to a slow-but-reliable build instead of a red CI (PLAN.md 2.6-2.7). The
-# per-package preference is set by the `# QA-TEST:` directive (test-pkg.sh).
+# degrades to a slow-but-reliable build instead of a red CI. The per-package
+# preference is set by the `# QA-TEST:` directive (see test-pkg.sh).
 if [ "${#binpkg_opts[@]}" -gt 0 ]; then
 	if ! run_emerge "${binpkg_opts[@]}"; then
 		[ "${FALLBACK_SOURCE}" != 0 ] || exit 1

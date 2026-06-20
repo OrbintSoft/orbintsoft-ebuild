@@ -5,7 +5,7 @@
 # list-packages.sh — print every package in this overlay: each cat/pkg directory
 # (depth 3) that holds at least one *.ebuild. Single source of truth for the
 # package list, shared by scripts/test-all.sh (the local suite) and the test CI
-# matrix (PLAN.md Phase 2D / 2.8).
+# matrix.
 #
 # Usage:   scripts/list-packages.sh           # one "category/package" per line
 #          scripts/list-packages.sh --json    # compact JSON array (CI matrix)
