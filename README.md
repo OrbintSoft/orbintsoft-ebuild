@@ -71,6 +71,7 @@ echo '=sys-apps/foo-9999 **' >> /etc/portage/package.accept_keywords
 | `media-fonts/nerd-fonts` | release | Fonts patched to include a high number of glyphs (icons) |
 | `net-wireless/bt-keys-sync` | live | Sync Bluetooth pairing keys between Windows and Linux |
 | `sys-apps/fsearch` | release | A fast file search utility for Unix-like systems |
+| `sys-block/partclone` | release | Utilities to save and restore only used blocks on a partition |
 | `x11-misc/polo` | live | Polo File Manager (Vala/GTK) |
 
 *live* tracks upstream HEAD (`-9999`, empty `KEYWORDS`); *release* pins an
