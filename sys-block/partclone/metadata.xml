@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
+	</maintainer>
+	<use>
+		<flag name="apfs">Enable cloning of APFS (Apple) filesystems</flag>
+		<flag name="btrfs">Enable cloning of Btrfs filesystems</flag>
+		<flag name="e2fs">Enable cloning of ext2/ext3/ext4 filesystems (via <pkg>sys-fs/e2fsprogs</pkg>)</flag>
+		<flag name="exfat">Enable cloning of exFAT filesystems</flag>
+		<flag name="f2fs">Enable cloning of F2FS (Flash-Friendly) filesystems</flag>
+		<flag name="fat">Enable cloning of FAT12/FAT16/FAT32 filesystems</flag>
+		<flag name="fuse">Build imgfuse to mount Partclone images via FUSE3</flag>
+		<flag name="hfs">Enable cloning of HFS+ (Apple) filesystems</flag>
+		<flag name="isal">Use <pkg>dev-libs/isa-l</pkg> for optimized CRC32 checksums</flag>
+		<flag name="jfs">Enable cloning of JFS filesystems (via <pkg>sys-fs/jfsutils</pkg>)</flag>
+		<flag name="minix">Enable cloning of Minix filesystems</flag>
+		<flag name="nilfs2">Enable cloning of NILFS2 filesystems (via <pkg>sys-fs/nilfs-utils</pkg>)</flag>
+		<flag name="ntfs">Enable cloning of NTFS filesystems (via <pkg>sys-fs/ntfs3g</pkg>)</flag>
+		<flag name="reiserfs">Enable cloning of ReiserFS filesystems (via <pkg>sys-fs/progsreiserfs</pkg>)</flag>
+		<flag name="xfs">Enable cloning of XFS filesystems (requires <pkg>dev-libs/userspace-rcu</pkg>)</flag>
+		<flag name="xxhash">Use <pkg>dev-libs/xxhash</pkg> for image checksums</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">Thomas-Tsai/partclone</remote-id>
+	</upstream>
+</pkgmetadata>

@@ -14,6 +14,9 @@ LICENSE="EUPL-1.2"
 SLOT="0"
 KEYWORDS="~amd64"
 
+# redo-backup drives partclone to clone/restore filesystems.
+RDEPEND="sys-block/partclone"
+
 # Must match go.mod's go directive (go-module QA dies on mismatch under EAPI 9).
 BDEPEND=">=dev-lang/go-1.26:="
 
