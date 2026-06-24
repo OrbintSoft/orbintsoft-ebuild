@@ -23,7 +23,7 @@ CONTAINER_ENGINE="${CONTAINER_ENGINE:-docker}"
 # Digest-pinned; Renovate refreshes the rolling `latest` tag's digest (also pinned
 # the same way in scripts/test-pkg.sh; both matched by the manager in renovate.json5).
 # renovate: datasource=docker depName=gentoo/stage3
-STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:91134e1375edb5d0b69951bab06d229e6695b66ce9726d46a5a4293fc305eb34}"
+STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:222fd3c74d998cd8ef40d4ecf75c203716387dd2e0ad9bdea65c3eeb148ba7bb}"
 CONTAINER_OPTS="${CONTAINER_OPTS:-}"
 
 die() { echo "livecheck-ci: $*" >&2; exit 1; }
