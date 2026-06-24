@@ -1,10 +1,10 @@
 {
   // Renovate config for the orbintsoft overlay.
   //
-  // Scope: ONLY what Dependabot can't reach. Dependabot owns the GitHub Actions
-  // pins (SHA + version comment, .github/dependabot.yml); Renovate owns the Go
-  // lint tools (`go install …@vX.Y.Z`) and the gentoo/stage3 container digest.
-  // The github-actions manager is disabled below so the two bots never collide.
+  // Renovate manages: the Go lint tools (`go install …@vX.Y.Z`), the gentoo/stage3
+  // container digest, the setup-go/setup-node versions, and the GitHub Actions pins
+  // (SHA + version comment). Dependabot also maintains the GitHub Actions pins
+  // (.github/dependabot.yml), on a different day — the two overlap on actions.
   //
   // json5 (not json) so each custom manager can be documented inline. Validated
   // by `make lint-renovate` (renovate-config-validator) and by the Mend app.
@@ -21,21 +21,17 @@
   "semanticCommits": "enabled",
   "semanticCommitType": "ci",
 
-  // Dependabot owns the GitHub Actions pins — keep Renovate out of that lane.
+  // GitHub Actions pins — bumped here (and also by Dependabot, on a different day).
   "github-actions": {
-    "enabled": false,
+    "enabled": true,
   },
 
   "packageRules": [
     {
-      // One grouped, weekly PR for everything Renovate manages here.
-      "matchManagers": ["custom.regex"],
+      // One grouped, weekly PR for everything Renovate manages here (CI tooling
+      // and the GitHub Actions pins). Node follows upstream to the latest major.
+      "matchManagers": ["custom.regex", "github-actions"],
       "groupName": "ci tooling",
-    },
-    {
-      // Node stays on the v22 LTS line; bump within 22.x only.
-      "matchDepNames": ["node"],
-      "allowedVersions": "<23",
     },
   ],
 
@@ -64,9 +60,9 @@
     },
     {
       // setup-go / setup-node versions in the lint workflow, pinned exact and
-      // bumped by Renovate (node held to the v22 LTS line by the packageRule
-      // above; go follows upstream stable). The `# renovate:` annotation sits
-      // on the line directly above each `*-version:` value.
+      // bumped by Renovate to the latest upstream major (node and go alike). The
+      // `# renovate:` annotation sits on the line directly above each
+      // `*-version:` value.
       "customType": "regex",
       "managerFilePatterns": ["/^\\.github/workflows/lint\\.yml$/"],
       "matchStrings": [
