@@ -1,0 +1,10 @@
+# Copied verbatim (no @TOKEN@) by scripts/test-pkg-container.sh. Registers the
+# gentoo-haskell overlay inside the test container for packages that depend on
+# Haskell. priority=50 makes it win version ties over ::gentoo, so the Haskell
+# dependency chain is built from the same overlay a Gentoo Haskell setup uses.
+# The tree itself is bind-mounted from the host or fetched as a tarball.
+[haskell]
+location = /var/db/repos/haskell
+masters = gentoo
+priority = 50
+auto-sync = no

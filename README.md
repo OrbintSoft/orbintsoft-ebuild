@@ -55,6 +55,18 @@ first, e.g.:
 echo '=sys-apps/foo-9999 **' >> /etc/portage/package.accept_keywords
 ```
 
+### Haskell-based packages need the gentoo-haskell overlay
+
+Some packages here are built from Haskell sources (currently
+`dev-util/shellcheck`). Their dependency chain is maintained in the
+[gentoo-haskell](https://github.com/gentoo-haskell/gentoo-haskell) overlay, so
+enable it before installing them:
+
+```sh
+eselect repository enable haskell
+emaint sync -r haskell
+```
+
 ## Packages
 
 | Package | Type | Description |

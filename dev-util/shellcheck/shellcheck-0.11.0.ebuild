@@ -9,7 +9,12 @@ CABAL_PN="ShellCheck"
 CABAL_FEATURES="lib profile haddock hoogle hscolour test-suite"
 inherit haskell-cabal
 
-# QA-TEST: source
+# Link the executable statically against its Haskell libraries: a dynamically
+# linked binary keeps a reference to each library's old version, so every bump
+# of a Haskell dependency leaves a preserved-libs rebuild behind.
+CABAL_CONFIGURE_FLAGS="--disable-executable-dynamic"
+
+# QA-TEST: source overlay=haskell
 # Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"
