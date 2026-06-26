@@ -13,9 +13,10 @@
 #
 # Configuration arrives as environment variables (set by test-pkg.sh via the
 # container engine's --env): PKG, REPO_NAME, TREE_MODE are required;
-# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG, BINHOST, BINPKG_RESPECT_USE and
-# FALLBACK_SOURCE are optional. Assigning from self documents the contract and
-# satisfies shellcheck (env-injected).
+# EMERGE_OPTS, FEATURES_DISABLE, GETBINPKG, BINHOST, BINPKG_RESPECT_USE,
+# FALLBACK_SOURCE and HASKELL_OVERLAY/HASKELL_TREE_MODE/HASKELL_URL/HASKELL_REF
+# are optional. Assigning from self documents the contract and keeps shellcheck
+# happy (env-injected).
 
 set -eu
 
@@ -28,6 +29,10 @@ GETBINPKG="${GETBINPKG:-}"
 BINHOST="${BINHOST:-}"
 BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
 FALLBACK_SOURCE="${FALLBACK_SOURCE:-1}"
+HASKELL_OVERLAY="${HASKELL_OVERLAY:-}"
+HASKELL_TREE_MODE="${HASKELL_TREE_MODE:-}"
+HASKELL_URL="${HASKELL_URL:-}"
+HASKELL_REF="${HASKELL_REF:-}"
 
 # Portage-config templates mounted read-only by test-pkg.sh; the sed calls below
 # fill their @TOKEN@ placeholders. Config syntax lives in these files, not here.
@@ -53,6 +58,23 @@ cp "${CONF_DIR}/package.use.in" /etc/portage/package.use/fast-test
 if [ "${TREE_MODE}" = "webrsync" ]; then
 	echo ">> fetching gentoo tree (emerge-webrsync)"
 	emerge-webrsync
+fi
+
+# Optional gentoo-haskell overlay (only for packages whose QA-TEST says
+# overlay=haskell): build their Haskell deps from the overlay a Gentoo Haskell
+# setup uses, not ::gentoo. The tree is bind-mounted from the host (bind) or
+# fetched here as a tarball (fetch); registered at priority 50 to win ties.
+if [ -n "${HASKELL_OVERLAY}" ]; then
+	echo ">> enabling gentoo-haskell overlay (${HASKELL_TREE_MODE})"
+	cp "${CONF_DIR}/repos.conf.haskell.in" /etc/portage/repos.conf/haskell.conf
+	cp "${CONF_DIR}/package.accept_keywords.haskell.in" \
+		/etc/portage/package.accept_keywords/haskell
+	if [ "${HASKELL_TREE_MODE}" = "fetch" ]; then
+		echo ">> fetching gentoo-haskell tarball (${HASKELL_URL} @ ${HASKELL_REF})"
+		mkdir -p /var/db/repos/haskell
+		wget -qO- "${HASKELL_URL}/archive/${HASKELL_REF}.tar.gz" \
+			| tar -xz -C /var/db/repos/haskell --strip-components=1
+	fi
 fi
 
 # Binary packages: off by default (full source build). When GETBINPKG is set we

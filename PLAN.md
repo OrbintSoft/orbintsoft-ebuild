@@ -20,6 +20,12 @@ done. Large items are broken into sub-steps tracked in a gitignored
   fsearch, claude-desktop, nerd-fonts). `pkgcheck` accepts both.
 - Linters: **pkgcheck** + **pkgdev** + **shellcheck**. CI tests **only packages
   changed in the PR**, in a `gentoo/stage3` container; never the whole suite.
+- **Haskell test realism:** packages whose deps live in gentoo-haskell carry
+  `overlay=haskell` on their `# QA-TEST:` line; the test container then registers the
+  gentoo-haskell overlay (priority 50 — wins ties over ::gentoo, bind-mounted from the
+  host or fetched as a tarball in CI) so their deps build from it, as a Gentoo Haskell
+  system does. Rule 15: tracked rolling (`HASKELL_REF=master`, auto-current by
+  construction — realism over reproducibility); pin via `HASKELL_REF` if ever needed.
 - Publishing: a **git overlay on GitHub**, no server.
 - **EAPI 9** (since 2025-12-14) is the target for new/bumped ebuilds; older ebuilds
   migrate in Phase 6 (eclass-gated). Future EAPIs adopted likewise.
@@ -76,8 +82,11 @@ bin (`tvision` and the OrbintSoft-owned repos stay live). Established Rules 14�
 - `app-editors/turbo` -9999 — EAPI 8, cmake; needed `dev-libs/tvision` PIC +
   clipboard-dep fixes.
 - `dev-util/shellcheck` 0.11.0 — EAPI 8, haskell-cabal from source; dep bounds are
-  manual on major bumps. Heavy from-source packages always build from source in CI
-  (no binpkg cache — maintainer preference).
+  manual on major bumps. The executable links statically
+  (`CABAL_CONFIGURE_FLAGS=--disable-executable-dynamic`) so a Haskell-library bump no
+  longer strands it on preserved libs. Tested with `overlay=haskell` (deps from
+  gentoo-haskell). Heavy from-source packages always build from source in CI (no
+  binpkg cache — maintainer preference).
 
 ## Phase 5 — Publishing  `[ ]`
 

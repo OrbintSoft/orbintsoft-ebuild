@@ -20,6 +20,11 @@
 #                     digest-pinned in-script; Renovate keeps the digest current)
 #   GENTOO_REPO       host gentoo ebuild tree to bind     (default: /var/db/repos/gentoo)
 #   TREE_MODE         bind | webrsync | auto              (default: auto)
+#   HASKELL_OVERLAY   force-enable the gentoo-haskell overlay (default: empty =
+#                     enabled only when the ebuild's QA-TEST says overlay=haskell)
+#   HASKELL_REPO      host gentoo-haskell tree to bind     (default: /var/db/repos/haskell)
+#   HASKELL_URL       gentoo-haskell repo for the tarball fetch (CI, no host tree)
+#   HASKELL_REF       branch/tag/commit to fetch           (default: master)
 #   EMERGE_OPTS       extra args appended to `emerge -v`  (default: empty)
 #   CONTAINER_OPTS    extra args for `<engine> run`       (default: empty)
 #   FEATURES_DISABLE  Portage FEATURES to turn off        (default: the namespace
@@ -66,6 +71,15 @@ BINHOST="${BINHOST:-}"
 BINPKG_RESPECT_USE="${BINPKG_RESPECT_USE:-n}"
 STRATEGY="${STRATEGY:-}"
 FALLBACK_SOURCE="${FALLBACK_SOURCE:-1}"
+# Optional gentoo-haskell overlay, requested per-package via `# QA-TEST: ...
+# overlay=haskell`, so Haskell deps build from the same overlay a Gentoo Haskell
+# setup uses (priority 50) instead of ::gentoo. Bind-mounted from the host when
+# present (fast, no network), else fetched as a tarball inside the container (CI).
+HASKELL_OVERLAY="${HASKELL_OVERLAY:-}"
+HASKELL_REPO="${HASKELL_REPO:-/var/db/repos/haskell}"
+HASKELL_URL="${HASKELL_URL:-https://github.com/gentoo-haskell/gentoo-haskell}"
+HASKELL_REF="${HASKELL_REF:-master}"
+HASKELL_TREE_MODE=""
 
 die() { echo "test-pkg: $*" >&2; exit 1; }
 log() { echo ">> $*"; }
@@ -107,7 +121,13 @@ if [ -n "${STRATEGY}" ] || [ -z "${GETBINPKG}" ]; then
 	read -r -a strat_parts <<<"${STRATEGY}"
 	strat_method="${strat_parts[0]:-source}"
 	for opt in ${strat_parts[@]+"${strat_parts[@]:1}"}; do
-		case "${opt}" in image=*) STAGE3_IMAGE="${opt#image=}" ;; esac
+		case "${opt}" in
+			image=*)   STAGE3_IMAGE="${opt#image=}" ;;
+			overlay=*) case "${opt#overlay=}" in
+					haskell) HASKELL_OVERLAY=1 ;;
+					*) die "unknown QA-TEST overlay '${opt#overlay=}' for ${PKG}" ;;
+				esac ;;
+		esac
 	done
 	case "${strat_method}" in
 		source)             GETBINPKG="" ;;
@@ -134,6 +154,17 @@ case "${TREE_MODE}" in
 	*) die "TREE_MODE must be bind, webrsync or auto (got '${TREE_MODE}')" ;;
 esac
 
+# --- gentoo-haskell overlay mode (only when the package requested it) -------
+# Bind the host overlay if it is checked out (fast, no network); otherwise fetch
+# a tarball inside the container (CI on a non-Gentoo host). Mirrors TREE_MODE.
+if [ -n "${HASKELL_OVERLAY}" ]; then
+	if [ -d "${HASKELL_REPO}/profiles" ]; then
+		HASKELL_TREE_MODE="bind"
+	else
+		HASKELL_TREE_MODE="fetch"
+	fi
+fi
+
 command -v "${CONTAINER_ENGINE}" >/dev/null 2>&1 \
 	|| die "container engine '${CONTAINER_ENGINE}' not found on PATH"
 
@@ -150,11 +181,18 @@ engine_args+=(--env "GETBINPKG=${GETBINPKG}")
 engine_args+=(--env "BINHOST=${BINHOST}")
 engine_args+=(--env "BINPKG_RESPECT_USE=${BINPKG_RESPECT_USE}")
 engine_args+=(--env "FALLBACK_SOURCE=${FALLBACK_SOURCE}")
+engine_args+=(--env "HASKELL_OVERLAY=${HASKELL_OVERLAY}")
+engine_args+=(--env "HASKELL_TREE_MODE=${HASKELL_TREE_MODE}")
+engine_args+=(--env "HASKELL_URL=${HASKELL_URL}")
+engine_args+=(--env "HASKELL_REF=${HASKELL_REF}")
 engine_args+=(--volume "${OVERLAY_ROOT}:/var/db/repos/${REPO_NAME}:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-pkg-container.sh:/test-pkg-container.sh:ro")
 engine_args+=(--volume "${SCRIPT_DIR}/test-portage:/test-portage:ro")
 if [ "${TREE_MODE}" = "bind" ]; then
 	engine_args+=(--volume "${GENTOO_REPO}:/var/db/repos/gentoo:ro")
+fi
+if [ "${HASKELL_TREE_MODE}" = "bind" ]; then
+	engine_args+=(--volume "${HASKELL_REPO}:/var/db/repos/haskell:ro")
 fi
 # shellcheck disable=SC2206  # CONTAINER_OPTS is intentionally word-split
 [ -n "${CONTAINER_OPTS}" ] && engine_args+=(${CONTAINER_OPTS})
@@ -164,7 +202,7 @@ engine_args+=("${STAGE3_IMAGE}")
 engine_args+=(bash /test-pkg-container.sh)
 
 # --- run -------------------------------------------------------------------
-log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | strategy: ${STRATEGY:-legacy} | binpkg: ${GETBINPKG:-no} | pkg: ${PKG}"
+log "container: ${CONTAINER_ENGINE} ${STAGE3_IMAGE} | tree: ${TREE_MODE} | haskell: ${HASKELL_TREE_MODE:-no} | strategy: ${STRATEGY:-legacy} | binpkg: ${GETBINPKG:-no} | pkg: ${PKG}"
 if "${CONTAINER_ENGINE}" "${engine_args[@]}"; then
 	log "PASS ${PKG}"
 else

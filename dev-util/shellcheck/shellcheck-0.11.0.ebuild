@@ -14,7 +14,7 @@ inherit haskell-cabal
 # of a Haskell dependency leaves a preserved-libs rebuild behind.
 CABAL_CONFIGURE_FLAGS="--disable-executable-dynamic"
 
-# QA-TEST: source
+# QA-TEST: source overlay=haskell
 # Thanks to koalaman, author of ShellCheck (https://github.com/koalaman/shellcheck).
 DESCRIPTION="Shell script analysis tool (built from source)"
 HOMEPAGE="https://www.shellcheck.net/"

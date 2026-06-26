@@ -1,0 +1,5 @@
+# Copied verbatim (no @TOKEN@) by scripts/test-pkg-container.sh. Mirror a Gentoo
+# Haskell setup: accept ~amd64 for the Haskell libraries (the gentoo-haskell
+# overlay and ::gentoo keyword them ~arch), so the dependency chain of a Haskell
+# package is installable on the otherwise-stable stage3.
+dev-haskell/* ~amd64
