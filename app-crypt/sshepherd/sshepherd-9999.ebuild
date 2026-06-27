@@ -4,10 +4,10 @@
 EAPI=9
 
 # QA-TEST: source
-DESCRIPTION="Easy scripts to auto-configure ssh agent and load keys and passwords"
-HOMEPAGE="https://github.com/OrbintSoft/ssh-profile-config"
-EGIT_REPO_URI="https://github.com/OrbintSoft/ssh-profile-config.git"
-LICENSE="MIT"
+DESCRIPTION="Tend the SSH agent: lifecycle, health checks, diagnostics, key loading"
+HOMEPAGE="https://github.com/OrbintSoft/sshepherd"
+EGIT_REPO_URI="https://github.com/OrbintSoft/sshepherd.git"
+LICENSE="EUPL-1.2"
 SLOT="0"
 KEYWORDS=""
 

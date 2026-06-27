@@ -113,7 +113,7 @@ Don't emit redundant empty global assignments (`IUSE=""`, `SRC_URI=""`, etc.) â€
 ### Reference ebuilds in this repo (copy the closest, don't reinvent)
 | Use case | Look at |
 |---|---|
-| original-work, live, plain Makefile | [app-crypt/ssh-profile-config](../../../app-crypt/ssh-profile-config/ssh-profile-config-9999.ebuild) |
+| original-work, live, plain Makefile | [app-crypt/sshepherd](../../../app-crypt/sshepherd/sshepherd-9999.ebuild) |
 | third-party, live, `cmake` (EAPI 8) | [dev-libs/tvision](../../../dev-libs/tvision/tvision-9999.ebuild) |
 | third-party, live, `cargo`+`rust` | [dev-util/fnm](../../../dev-util/fnm/fnm-9999.ebuild) |
 | versioned + `Manifest` + USE-flag docs | [media-fonts/nerd-fonts](../../../media-fonts/nerd-fonts/nerd-fonts-3.2.1.ebuild) |
