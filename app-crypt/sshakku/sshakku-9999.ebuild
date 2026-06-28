@@ -7,12 +7,22 @@ EAPI=9
 DESCRIPTION="Tend the SSH agent: lifecycle, health checks, diagnostics, key loading"
 HOMEPAGE="https://github.com/OrbintSoft/sshakku"
 EGIT_REPO_URI="https://github.com/OrbintSoft/sshakku.git"
-LICENSE="EUPL-1.2"
+# EUPL-1.2 is sshakku's own licence; BSD covers the vendored golang.org/x/sys.
+LICENSE="EUPL-1.2 BSD"
 SLOT="0"
 KEYWORDS=""
 
-# Needed to fetch from GitHub
-inherit git-r3
+# git-r3 fetches the live source from GitHub; go-module vendors the Go module
+# dependencies during src_unpack so the build runs offline in the sandbox.
+inherit git-r3 go-module
+
+# go-module already pulls in a baseline Go; go.mod needs at least this toolchain.
+BDEPEND+=" >=dev-lang/go-1.25.0"
+
+src_unpack() {
+	git-r3_src_unpack
+	go-module_live_vendor
+}
 
 src_compile() {
 	: # no-op
