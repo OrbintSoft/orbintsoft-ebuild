@@ -73,7 +73,7 @@ emaint sync -r haskell
 |---|---|---|
 | `app-admin/pamtester` | live | Non-interactive PAM testing tool |
 | `app-backup/redo-backups` | release | Create backups compatible with redo |
-| `app-crypt/sshepherd` | live | Tend the SSH agent: lifecycle, health checks, diagnostics, key loading |
+| `app-crypt/sshakku` | live | Tend the SSH agent: lifecycle, health checks, diagnostics, key loading |
 | `app-editors/turbo` | live | Terminal text editor based on Scintilla and Turbo Vision |
 | `app-misc/claude-desktop` | release | Claude AI Desktop application (unofficial Linux repackage) |
 | `dev-libs/tvision` | live | Turbo Vision — a modern port of Borland's TUI library |
