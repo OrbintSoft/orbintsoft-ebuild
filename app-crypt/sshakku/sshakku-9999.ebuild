@@ -5,8 +5,8 @@ EAPI=9
 
 # QA-TEST: source
 DESCRIPTION="Tend the SSH agent: lifecycle, health checks, diagnostics, key loading"
-HOMEPAGE="https://github.com/OrbintSoft/sshepherd"
-EGIT_REPO_URI="https://github.com/OrbintSoft/sshepherd.git"
+HOMEPAGE="https://github.com/OrbintSoft/sshakku"
+EGIT_REPO_URI="https://github.com/OrbintSoft/sshakku.git"
 LICENSE="EUPL-1.2"
 SLOT="0"
 KEYWORDS=""

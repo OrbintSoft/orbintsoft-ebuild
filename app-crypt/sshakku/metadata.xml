@@ -6,6 +6,6 @@
 		<name>Stefano Balzarotti</name>
 	</maintainer>
 	<upstream>
-		<remote-id type="github">OrbintSoft/sshepherd</remote-id>
+		<remote-id type="github">OrbintSoft/sshakku</remote-id>
 	</upstream>
 </pkgmetadata>
