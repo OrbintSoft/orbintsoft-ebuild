@@ -23,10 +23,19 @@ Gentoo tree, or for variants of it.
 
 ### Option A — `eselect repository` (recommended)
 
+The overlay is listed in the official Gentoo overlay list, so:
+
 ```sh
 # install app-eselect/eselect-repository if you don't have it
-eselect repository add orbintsoft git https://github.com/OrbintSoft/orbintsoft-ebuild.git
+eselect repository enable orbintsoft
 emaint sync -r orbintsoft
+```
+
+If `enable` can't find it, your cached repository list is stale — run `eselect
+repository list` once to refresh it, or add the overlay directly by URL:
+
+```sh
+eselect repository add orbintsoft git https://github.com/OrbintSoft/orbintsoft-ebuild.git
 ```
 
 ### Option B — manual `repos.conf`

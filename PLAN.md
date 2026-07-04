@@ -20,6 +20,8 @@ done. Large items are broken into sub-steps tracked in a gitignored
   fsearch, claude-desktop, nerd-fonts). `pkgcheck` accepts both.
 - Linters: **pkgcheck** + **pkgdev** + **shellcheck**. CI tests **only packages
   changed in the PR**, in a `gentoo/stage3` container; never the whole suite.
+- **No INI linter** — deliberate no-linter decision (Rule 12) for `checkmake.ini`,
+  the repo's only INI file; revisit if a suitable linter turns up.
 - **Haskell test realism:** packages whose deps live in gentoo-haskell carry
   `overlay=haskell` on their `# QA-TEST:` line; the test container then registers the
   gentoo-haskell overlay (priority 50 — wins ties over ::gentoo, bind-mounted from the
@@ -44,51 +46,15 @@ done. Large items are broken into sub-steps tracked in a gitignored
 
 ---
 
-## Phases 0–4 — completed (summary)
+## Phases 0–4 — done
 
-Foundations, QA tooling, CI, automation, and the first new packages are all done.
-Only the forward-relevant points are kept below; the rest is in the git history.
+Foundations, QA tooling (`make lint`/`test`/`manifest`/`metadata`), CI (`lint.yml` +
+`test.yml`), the `/new-ebuild` and `/bump` skills plus the rest of the bump automation,
+and the first new packages (`redo-backups`, `turbo`, `shellcheck`) are all done. Detail
+is in git history, not here; durable decisions from this work are in "Decisions taken"
+above and in CLAUDE.md.
 
-**Phase 0 — Foundations.** Repo renamed `local`→`orbintsoft`; full
-`profiles/categories`; GPL-3 `LICENSE`; `metadata/layout.conf` (`masters = gentoo`,
-thin manifests, manifest-hashes, cache-formats, `restrict-allowed` for
-`network-sandbox`); README / CONTRIBUTING / editorconfig / gitignore / gitattributes;
-md5-cache gitignored and tool-generated.
-
-**Phase 1 — QA tooling & ebuild fixes.** `make lint`/`test`/`manifest`/`metadata`
-(pkgcheck + shellcheck + checkmake + xmllint). Per-package fixes done: standardized
-copyright headers + tabs, a `metadata.xml` per package, broken builds repaired,
-`KEYWORDS=""` on live ebuilds, Italian→English, `einfo`→`elog`. Constraints that
-still bite: `LICENSE` must be a gentoo-tree token; no INI linter exists.
-  → **Carries into Phase 6:** EAPI 8→9 is partial — 5 packages migrated, 6 eclass-gated.
-
-**Phase 2 — CI.** `lint.yml` (container-free linters on master push / PR / dispatch)
-and `test.yml` (build+install each package in a throwaway `gentoo/stage3` via the
-`make test` harness; a PR narrows the matrix to the packages the diff touches). Build
-strategy is per-package via the `# QA-TEST:` directive (Rule 17): `source` default,
-`binpkg` opt-in with source fallback. The binhost can't serve the whole suite
-consistently, so binpkg is opt-in only where a closure is consistent (`claude-desktop`).
-
-**Phase 3 — Automation.** `/new-ebuild` and `/bump` skills; the bump automation
-described under Decisions (Dependabot + Renovate + livecheck, staggered across
-days/times). CI cost guard: a harness-only diff smoke-tests one random package. First
-live→versioned conversions: `fnm`→1.39.0, `fsearch`→0.2.3, `claude-desktop`→prebuilt
-bin (`tvision` and the OrbintSoft-owned repos stay live). Established Rules 14–15.
-*Operational prereq:* repo Settings must allow Actions to create PRs.
-
-**Phase 4 — New packages** (EAPI per the eclass gate):
-- `app-backup/redo-backups` 0.0.15 — EAPI 9, go-module; keep `BDEPEND`'s go floor in
-  sync with go.mod on bumps.
-- `app-editors/turbo` -9999 — EAPI 8, cmake; needed `dev-libs/tvision` PIC +
-  clipboard-dep fixes.
-- `dev-util/shellcheck` 0.11.0 — EAPI 8, haskell-cabal from source; dep bounds are
-  manual on major bumps. The executable links statically
-  (`CABAL_CONFIGURE_FLAGS=--disable-executable-dynamic`) so a Haskell-library bump no
-  longer strands it on preserved libs. Tested with `overlay=haskell` (deps from
-  gentoo-haskell). Heavy from-source packages always build from source in CI (no
-  binpkg cache — maintainer preference).
-
-## Phase 5 — Publishing  `[ ]`
+## Phase 5 — Publishing  `[x]`
 
 Make the overlay easy to discover and adopt, and let people support the work.
 
@@ -103,7 +69,7 @@ Make the overlay easy to discover and adopt, and let people support the work.
       (https://github.com/sponsors/OrbintSoft), a custom `https://paypal.me/orbintsoft`, and a
       custom `https://www.gentoo.org/donate/` so the upstream distro is credited too. Covered
       by `lint-yaml` (GitHub-schema YAML, no new linter); static links, nothing to bump.
-- [ ] **5.4** List the overlay officially so it's reachable from `eselect repository` (the
+- [x] **5.4** List the overlay officially so it's reachable from `eselect repository` (the
       curated list), `layman`, and https://gpo.zugaina.org/ — all three read the **same**
       official Gentoo overlay list (`repositories.xml`), so one action covers them: a PR to
       [gentoo/api-gentoo-org](https://github.com/gentoo/api-gentoo-org) adding a `<repo>`
@@ -112,8 +78,9 @@ Make the overlay easy to discover and adopt, and let people support the work.
       `metadata/layout.conf` `masters = gentoo`, public git URL, and a reasonable `pkgcheck`
       state. This registers a *personal, unofficial* overlay (not a contribution to the
       Gentoo tree); the entry is only metadata pointing at the repo, so AI-authorship is
-      irrelevant to the listing. _Compliance verified (repo_name, masters=gentoo, public git,
-      clean `pkgcheck`); listing PR submitted upstream — awaiting merge, then tick._
+      irrelevant to the listing. _Listing PR merged upstream; confirmed live in the official
+      `repositories.xml` (status unofficial, quality experimental, correct owner/sources/feed)
+      and discoverable via `eselect repository list`._
 
 ## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
