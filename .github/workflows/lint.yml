@@ -2,8 +2,9 @@
 # Distributed under the terms of the GNU General Public License v3
 #
 # Quality CI: the container-free linters (shellcheck + checkmake + xmllint +
-# yamllint + actionlint), i.e. `make lint-ci`. pkgcheck is not run here because it
-# needs the gentoo ebuild tree; it runs in the containerized test workflow instead.
+# json.tool + yamllint + actionlint), i.e. `make lint-ci`. pkgcheck is not run here
+# because it needs the gentoo ebuild tree; it runs in the containerized test
+# workflow instead.
 
 name: lint
 

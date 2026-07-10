@@ -46,7 +46,7 @@ Run the linters via the [Makefile](Makefile) (it documents each tool and how to
 install it; tooling is added incrementally — see [PLAN.md](PLAN.md)):
 
 ```sh
-make lint       # pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint
+make lint       # pkgcheck + shellcheck + checkmake + xmllint + json.tool + yamllint + actionlint
 make lint-ci    # the container-free subset CI runs today (everything but pkgcheck)
 ```
 

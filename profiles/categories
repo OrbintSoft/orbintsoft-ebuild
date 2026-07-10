@@ -1,3 +1,4 @@
+acct-group
 app-admin
 app-backup
 app-crypt
@@ -5,6 +6,7 @@ app-editors
 app-misc
 dev-libs
 dev-util
+gui-apps
 kde-plasma
 media-fonts
 net-wireless

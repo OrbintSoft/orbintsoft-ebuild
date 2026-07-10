@@ -1,0 +1,5 @@
+{
+	"type": "regex",
+	"url": "https://releases.1password.com/linux/stable/",
+	"regex": "id=1password-for-linux-([0-9]+\\.[0-9]+\\.[0-9]+)"
+}
