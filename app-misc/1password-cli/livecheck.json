@@ -1,0 +1,5 @@
+{
+	"type": "regex",
+	"url": "https://app-updates.agilebits.com/product_history/CLI2",
+	"regex": "op_linux_amd64_v([0-9]+\\.[0-9]+\\.[0-9]+)\\.zip"
+}
