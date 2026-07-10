@@ -4,7 +4,7 @@
 # Developer tooling for the orbintsoft overlay.
 # Requires: app-portage/pkgcheck, app-portage/pkgdev (egencache),
 #           dev-util/shellcheck, dev-libs/libxml2 (xmllint),
-#           dev-python/yamllint, checkmake
+#           dev-python/yamllint, python3 (json.tool), checkmake
 #           (go install github.com/checkmake/checkmake/cmd/checkmake@latest),
 #           actionlint
 #           (go install github.com/rhysd/actionlint/cmd/actionlint@latest),
@@ -31,6 +31,7 @@ CHECKMAKE  ?= checkmake
 XMLLINT    ?= xmllint
 YAMLLINT   ?= yamllint
 ACTIONLINT ?= actionlint
+JSONLINT_RUNNER ?= scripts/lint-json.sh
 TEST_RUNNER ?= scripts/test-all.sh
 LIVECHECK_RUNNER ?= scripts/livecheck.sh
 REPOS_CONF_TEMPLATE ?= scripts/install-repos.conf.in
@@ -57,6 +58,11 @@ SH_SOURCES := $(sort \
 # XML sources: every tracked *.xml (currently all metadata.xml).
 XML_SOURCES := $(filter %.xml,$(GIT_FILES))
 
+# JSON sources: every tracked *.json (currently all livecheck.json). Note the
+# %.json filter excludes $(RENOVATE_CONFIG) — JSON5 is not JSON, and gets its
+# own validator in lint-renovate.
+JSON_SOURCES := $(filter %.json,$(GIT_FILES))
+
 # YAML sources: every tracked *.yml / *.yaml (the .yamllint config is
 # extensionless on purpose, so it is config — not a lint target). GitHub Actions
 # workflows get an extra, Actions-specific pass from actionlint.
@@ -65,16 +71,16 @@ WORKFLOW_SOURCES := $(wildcard .github/workflows/*.yml .github/workflows/*.yaml)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate test livecheck manifest metadata install uninstall clean
+.PHONY: help lint lint-ci lint-ebuild lint-sh lint-make lint-xml lint-json lint-yaml lint-actions lint-renovate test livecheck manifest metadata install uninstall clean
 
 help: ## Show this help
 	@echo "orbintsoft overlay — make targets:"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-lint: lint-ebuild lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + yamllint + actionlint + renovate-config-validator)
+lint: lint-ebuild lint-sh lint-make lint-xml lint-json lint-yaml lint-actions lint-renovate ## Run all linters (pkgcheck + shellcheck + checkmake + xmllint + lint-json + yamllint + actionlint + renovate-config-validator)
 
-lint-ci: lint-sh lint-make lint-xml lint-yaml lint-actions lint-renovate ## CI subset: linters that need no gentoo tree (everything except pkgcheck)
+lint-ci: lint-sh lint-make lint-xml lint-json lint-yaml lint-actions lint-renovate ## CI subset: linters that need no gentoo tree (everything except pkgcheck)
 
 lint-ebuild: ## Run pkgcheck over the whole overlay
 	$(PKGCHECK) scan
@@ -100,6 +106,11 @@ lint-xml: ## Check all *.xml are well-formed (xmllint; DTD checks done by pkgche
 	else \
 		echo "no xml sources to check"; \
 	fi
+
+# Well-formedness only; livecheck publishes no schema for livecheck.json. Logic
+# (and the rationale for using python3) lives in the script.
+lint-json: ## Check all *.json are well-formed (python3 json.tool)
+	@$(JSONLINT_RUNNER) $(JSON_SOURCES)
 
 lint-yaml: ## Lint all *.yml/*.yaml (yamllint; config in .yamllint)
 	@if [ -n "$(strip $(YAML_SOURCES))" ]; then \

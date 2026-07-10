@@ -22,6 +22,12 @@ done. Large items are broken into sub-steps tracked in a gitignored
   changed in the PR**, in a `gentoo/stage3` container; never the whole suite.
 - **No INI linter** — deliberate no-linter decision (Rule 12) for `checkmake.ini`,
   the repo's only INI file; revisit if a suitable linter turns up.
+- **JSON linter (Rule 12): `python3 -m json.tool`** via `make lint-json`, wired into
+  `lint` and `lint-ci`. Chosen over `jq` because Python is already implied by
+  pkgcheck/pkgdev/yamllint and ships on CI runners, so it adds no dependency to bump
+  (Rule 15) — and the shell scripts deliberately avoid a `jq` dependency. Well-formedness
+  only: the overlay's `*.json` are all `livecheck.json`, for which livecheck publishes no
+  schema. `renovate.json5` is **not** JSON and is excluded — `lint-renovate` validates it.
 - **Haskell test realism:** packages whose deps live in gentoo-haskell carry
   `overlay=haskell` on their `# QA-TEST:` line; the test container then registers the
   gentoo-haskell overlay (priority 50 — wins ties over ::gentoo, bind-mounted from the
