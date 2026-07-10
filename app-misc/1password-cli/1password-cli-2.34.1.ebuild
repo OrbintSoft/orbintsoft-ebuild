@@ -17,7 +17,9 @@ SLOT="0"
 KEYWORDS="~amd64"
 RESTRICT="bindist mirror strip test"
 
-RDEPEND="acct-group/onepassword-cli"
+# The group must already exist when src_install chgrps the binary to it.
+DEPEND="acct-group/onepassword-cli"
+RDEPEND="${DEPEND}"
 BDEPEND="app-arch/unzip"
 
 QA_FLAGS_IGNORED="usr/bin/op"
