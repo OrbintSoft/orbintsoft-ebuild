@@ -88,6 +88,8 @@ fi
 binpkg_opts=()
 if [ -n "${GETBINPKG}" ]; then
 	echo ">> binary packages enabled (getbinpkg, binpkg-respect-use=${BINPKG_RESPECT_USE})"
+	# Match the binhost's multilib ABI; see the template for why.
+	cat "${CONF_DIR}/make.conf.multilib.in" >> /etc/portage/make.conf
 	if [ -n "${BINHOST}" ]; then
 		mkdir -p /etc/portage/binrepos.conf
 		sed "s|@BINHOST@|${BINHOST}|g" \
