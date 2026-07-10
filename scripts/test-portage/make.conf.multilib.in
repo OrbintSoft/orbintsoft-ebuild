@@ -1,0 +1,13 @@
+# Appended to the container's make.conf by scripts/test-pkg-container.sh, only on
+# the binpkg path (no @TOKEN@ to fill).
+#
+# The gentoo binhost builds its multilib packages with abi_x86_32 enabled. A
+# 64-bit-only container cannot use them as-is: portage tries to satisfy e.g.
+# harfbuzz[abi_x86_32] by turning on abi_x86_32 for glib alone, rebuilds it from
+# source, and ends up merging gtk+ without ever merging cairo -- gtk+'s postinst
+# then dies looking for libcairo. Matching the binhost's ABI keeps the binary
+# closure self-consistent.
+#
+# Source builds do not set this: they would otherwise compile every multilib
+# package twice for no benefit.
+ABI_X86="32 64"
