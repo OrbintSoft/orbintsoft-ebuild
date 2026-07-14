@@ -7,4 +7,6 @@ EAPI=9
 inherit acct-group
 
 # QA-TEST: source
-ACCT_GROUP_ID=-1
+# See acct-group/1password for why this is a fixed id >= 1000 rather than
+# the usual auto-allocated system range.
+ACCT_GROUP_ID=1007

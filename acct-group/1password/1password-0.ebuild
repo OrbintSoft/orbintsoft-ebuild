@@ -7,4 +7,9 @@ EAPI=9
 inherit acct-group
 
 # QA-TEST: source
-ACCT_GROUP_ID=-1
+# 1Password's own Linux binaries refuse to trust a setgid helper whose group
+# id is below 1000 (undocumented upstream behaviour, confirmed against the
+# officially packaged .deb/.rpm groups and reported by users of other
+# distributions hitting the same default system-range allocation): a fixed
+# id is used instead of the usual auto-allocated system range.
+ACCT_GROUP_ID=1006
