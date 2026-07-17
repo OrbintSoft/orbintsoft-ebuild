@@ -26,4 +26,5 @@ RDEPEND="${DEPEND}"
 BDEPEND="
 	virtual/pkgconfig
 	dev-util/itstool
+	dev-util/glib-utils
 "
