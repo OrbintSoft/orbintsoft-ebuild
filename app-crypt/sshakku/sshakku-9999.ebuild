@@ -17,7 +17,7 @@ KEYWORDS=""
 inherit git-r3 go-module
 
 # go-module already pulls in a baseline Go; go.mod needs at least this toolchain.
-BDEPEND+=" >=dev-lang/go-1.25.0"
+BDEPEND+=" >=dev-lang/go-1.26.0"
 
 src_unpack() {
 	git-r3_src_unpack
