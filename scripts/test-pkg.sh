@@ -60,7 +60,7 @@ CONTAINER_ENGINE="${CONTAINER_ENGINE:-docker}"
 # Digest-pinned for reproducible test containers; Renovate bumps the digest of the
 # rolling `latest` tag (datasource=docker annotation below; see renovate.json5).
 # renovate: datasource=docker depName=gentoo/stage3
-STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:08914e15d306bfdb251262ca3f7e3489b77ca32604ad1928cbb21dc94587261c}"
+STAGE3_IMAGE="${STAGE3_IMAGE:-gentoo/stage3:latest@sha256:5dd166736e74109e3f4443f5414bc5abf673d821240548b3794a24b29945c4bc}"
 GENTOO_REPO="${GENTOO_REPO:-/var/db/repos/gentoo}"
 TREE_MODE="${TREE_MODE:-auto}"
 EMERGE_OPTS="${EMERGE_OPTS:-}"
