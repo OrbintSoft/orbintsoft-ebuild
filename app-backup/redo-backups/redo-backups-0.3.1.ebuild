@@ -21,10 +21,12 @@ RDEPEND="sys-block/partclone"
 BDEPEND=">=dev-lang/go-1.26:="
 
 src_compile() {
-	ego build ./cmd/redo-backup
+	emake VERSION="v${PV}" build
 }
 
 src_install() {
-	dobin redo-backup
-	einstalldocs
+	# `install` depends on the phony `build`, so it recompiles: VERSION must be
+	# repeated here or the rebuild overwrites the binary with an unversioned one
+	# and `redo-backup version` reports the 0.0.0-dev placeholder.
+	emake VERSION="v${PV}" PREFIX="/usr" docdir="/usr/share/doc/${PF}" DESTDIR="${D}" install
 }
