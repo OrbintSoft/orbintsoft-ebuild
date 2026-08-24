@@ -23,6 +23,7 @@ REPO_NAME="${REPO_NAME:?REPO_NAME is required}"
 FEATURES_DISABLE="${FEATURES_DISABLE:--network-sandbox -ipc-sandbox -pid-sandbox}"
 CONF_DIR=/test-portage
 OVERLAY="/var/db/repos/${REPO_NAME}"
+VENV=/opt/livecheck-venv
 
 echo ">> registering overlay '${REPO_NAME}'"
 mkdir -p /etc/portage/repos.conf
@@ -37,16 +38,22 @@ sed "s|@FEATURES_DISABLE@|${FEATURES_DISABLE}|g" \
 echo ">> fetching gentoo tree (emerge-webrsync)"
 emerge-webrsync
 
-echo ">> installing tooling (pip, then livecheck from PyPI)"
-emerge --oneshot --quiet-build=y dev-python/pip
-# Disposable container: --break-system-packages bypasses PEP 668. livecheck's
-# wheel omits 'packaging'; keyrings.alt provides a keyring backend (see below).
-pip install --break-system-packages --root-user-action=ignore --quiet \
-	livecheck packaging keyrings.alt
+echo ">> installing livecheck from PyPI into a venv"
+# livecheck goes into its own venv, never into the system site-packages: Portage
+# strips RECORD from the dist-info of the Python packages it installs, so pip
+# cannot upgrade one in place and aborts (uninstall-no-record-file) as soon as a
+# livecheck dependency outgrows the stage3's version. --system-site-packages
+# keeps Portage's `portage` module — which livecheck imports — visible, and the
+# venv bootstraps its own pip from ensurepip, so none has to be emerged.
+python3 -m venv --system-site-packages "${VENV}"
 
-# Put pip's console-script dir on PATH so the wrapper finds `livecheck`.
-PATH="$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))'):${PATH}"
+# Put the venv's bin dir first so `pip`, `python3` and `livecheck` all resolve to it.
+PATH="${VENV}/bin:${PATH}"
 export PATH
+
+# livecheck's wheel omits 'packaging'; keyrings.alt provides a keyring backend
+# (see below).
+pip install --root-user-action=ignore --quiet livecheck packaging keyrings.alt
 
 # livecheck reads its token via python-keyring; a bare container has no backend and
 # raises NoKeyringError. keyrings.alt's file backend returns None when unset (no
