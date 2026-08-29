@@ -160,7 +160,7 @@ livecheck: ## Check upstream releases (Tatsh/livecheck): make livecheck [PKG=cat
 install: ## Register this tree in $(REPOS_CONF_DIR) as '$(REPO_NAME)' (needs root)
 	@test -n "$(REPO_NAME)" || { echo "profiles/repo_name is empty"; exit 2; }
 	install -d -m0755 $(REPOS_CONF_DIR)
-	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(Cfeat/livecheckURDIR)|g' \
+	@sed -e 's|@REPO_NAME@|$(REPO_NAME)|g' -e 's|@LOCATION@|$(CURDIR)|g' \
 		$(REPOS_CONF_TEMPLATE) > $(REPOS_CONF_DIR)/$(REPO_NAME).conf
 	@echo "Registered '$(REPO_NAME)' -> $(CURDIR)"
 
