@@ -55,6 +55,15 @@ export PATH
 # (see below).
 pip install --root-user-action=ignore --quiet livecheck packaging keyrings.alt
 
+# livecheck declares a minimum Portage version; when the stage3's Portage is older,
+# pip installs its own copy into the venv. That copy is a Prefix install whose
+# EPREFIX is the venv, so it looks for the Portage config and the repositories under
+# the venv instead of /, sees no repos.conf at all and makes livecheck abort with
+# "Not inside a repository configured in repos.conf". Drop it so the container's real
+# Portage shows through again: pip removes only the venv's own copy, never one
+# outside it, and exits 0 when there is nothing to remove.
+pip uninstall --root-user-action=ignore --quiet --yes portage
+
 # livecheck reads its token via python-keyring; a bare container has no backend and
 # raises NoKeyringError. keyrings.alt's file backend returns None when unset (no
 # crash); seed GITHUB_TOKEN when present so API calls are authenticated (the
