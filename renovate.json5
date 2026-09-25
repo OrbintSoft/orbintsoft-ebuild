@@ -12,9 +12,10 @@
 
   "extends": ["config:recommended"],
 
-  // Once a week. The Dependency Dashboard issue lets us force an out-of-schedule
-  // run/PR by ticking a box, so a manual run can always open PRs.
-  "schedule": ["after 1pm and before 4pm on wednesday"],
+  // Once a week, over the whole day: the hosted app runs at irregular intervals,
+  // so a narrow window can be missed entirely. The Dependency Dashboard issue lets
+  // us force an out-of-schedule run/PR by ticking a box.
+  "schedule": ["on wednesday"],
   "dependencyDashboard": true,
 
   // Conventional Commits: everything Renovate touches here is CI tooling.
