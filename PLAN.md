@@ -118,7 +118,7 @@ PR-able upstream now with no prerequisite:
 |---|---|---|
 | `ninja-utils` | multiprocessing ✓ | `meson` + `cmake` |
 | `xdg-utils` | (none) | `cmake` + `xdg` |
-| `font` | (none) | nerd-fonts |
+| ~~`font`~~ ✓ (EAPI 9 upstream) | (none) | nerd-fonts |
 | `vala` | flag-o-matic ✓ | polo |
 | `rust`, `rust-toolchain` | (none) | `cargo` |
 | `python-utils-r1` | multiprocessing ✓, toolchain-funcs ✓ | `meson` |
@@ -134,8 +134,10 @@ work — core eclasses (`cmake`, `meson`, `python-utils-r1`, `xdg-utils`) may ga
 sync on their own. When flipping a package: bump `EAPI`, audit the ebuild body for any
 EAPI-9 behavioral change, and confirm with `make test PKG=<cat/pkg>`.
 
-- [ ] **6.1** `media-fonts/nerd-fonts` — gate: `font` (single standalone leaf). Smallest
-      and self-contained; do first to prove the workflow end to end.
+- [x] **6.1** `media-fonts/nerd-fonts` — gate: `font` (single standalone leaf). Smallest
+      and self-contained; do first to prove the workflow end to end. _Unblocked by `font`
+      gaining EAPI 9 upstream (no PR needed); migrated with no body changes — in EAPI 9
+      `font` also exports `src_compile`, a no-op without `FONT_OPENTYPE_COMPAT`._
 - [ ] **6.2** `dev-libs/tvision` — gate: `cmake` (= `ninja-utils` + `xdg-utils`, two small
       leaves); also inherits `git-r3` ✓.
 - [ ] **6.3** `x11-misc/polo` — gate: `xdg` (← `xdg-utils`) + `vala`; also `git-r3` ✓.

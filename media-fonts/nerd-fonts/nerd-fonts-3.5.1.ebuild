@@ -2,13 +2,13 @@
 # Copyright 2026 Stefano Balzarotti
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=8
+EAPI=9
 
 inherit font
 
 # QA-TEST: source
 # Thanks to ryanoasis, author of Nerd Fonts (https://github.com/ryanoasis/nerd-fonts).
-DESCRIPTION="Collection of fonts that are patched to include a high number of glyphs (icons)."
+DESCRIPTION="Collection of fonts that are patched to include a high number of glyphs (icons)"
 HOMEPAGE="https://www.nerdfonts.com/"
 
 # curl -s https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest \
