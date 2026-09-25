@@ -88,8 +88,12 @@ fi
 binpkg_opts=()
 if [ -n "${GETBINPKG}" ]; then
 	echo ">> binary packages enabled (getbinpkg, binpkg-respect-use=${BINPKG_RESPECT_USE})"
-	# Match the binhost's multilib ABI; see the template for why.
-	cat "${CONF_DIR}/make.conf.multilib.in" >> /etc/portage/make.conf
+	# With respect-use=n, match the binhost's multilib ABI; see the template for
+	# why. With respect-use=y it would do the opposite: every 64-bit-only binpkg
+	# would mismatch and be rebuilt from source.
+	if [ "${BINPKG_RESPECT_USE}" = n ]; then
+		cat "${CONF_DIR}/make.conf.multilib.in" >> /etc/portage/make.conf
+	fi
 	if [ -n "${BINHOST}" ]; then
 		mkdir -p /etc/portage/binrepos.conf
 		sed "s|@BINHOST@|${BINHOST}|g" \
