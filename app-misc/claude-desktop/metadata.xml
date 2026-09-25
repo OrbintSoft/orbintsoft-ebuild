@@ -10,10 +10,10 @@
 			<email>support@anthropic.com</email>
 			<name>Anthropic</name>
 		</maintainer>
-		<bugs-to>https://github.com/patrickjaja/claude-desktop-bin/issues</bugs-to>
+		<bugs-to>https://github.com/patrickjaja/claude-desktop-extra/issues</bugs-to>
 		<doc>https://docs.claude.com</doc>
-		<changelog>https://github.com/patrickjaja/claude-desktop-bin/releases</changelog>
-		<remote-id type="github">patrickjaja/claude-desktop-bin</remote-id>
+		<changelog>https://github.com/patrickjaja/claude-desktop-extra/releases</changelog>
+		<remote-id type="github">patrickjaja/claude-desktop-extra</remote-id>
 	</upstream>
 	<longdescription>
 		Claude is an AI assistant made by Anthropic. This package installs the
