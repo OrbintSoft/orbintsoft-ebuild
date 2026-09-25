@@ -6,7 +6,7 @@ EAPI=8
 
 inherit desktop optfeature xdg
 
-# QA-TEST: binpkg
+# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:aefbb8e743dda46bd55f400aba470019b4203e09a57a78f8fce4ab007bd8c8ac
 # Thanks to AgileBits, author of 1Password (https://1password.com).
 DESCRIPTION="Password manager and secure digital wallet"
 HOMEPAGE="https://1password.com"
@@ -76,7 +76,7 @@ src_install() {
 	dosym -r /opt/1Password/1password /usr/bin/1password
 	dosym -r /opt/1Password/op-ssh-sign /usr/bin/op-ssh-sign
 
-	domenu resources/1password.desktop
+	domenu resources/com.onepassword.OnePassword.desktop
 	local size
 	for size in 32 64 256 512; do
 		doicon -s ${size} resources/icons/hicolor/${size}x${size}/apps/1password.png
@@ -85,7 +85,7 @@ src_install() {
 	dodoc "${ED}/opt/1Password/resources/custom_allowed_browsers"
 
 	rm "${ED}/opt/1Password/com.1password.1Password.policy.tpl" || die
-	rm "${ED}/opt/1Password/resources/"{1password.desktop,custom_allowed_browsers} || die
+	rm "${ED}/opt/1Password/resources/"{com.onepassword.OnePassword.desktop,custom_allowed_browsers} || die
 	rm -r "${ED}/opt/1Password/resources/icons" || die
 
 	# chrome-sandbox requires the setuid bit to be specifically set.

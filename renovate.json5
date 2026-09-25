@@ -12,9 +12,10 @@
 
   "extends": ["config:recommended"],
 
-  // Once a week. The Dependency Dashboard issue lets us force an out-of-schedule
-  // run/PR by ticking a box, so a manual run can always open PRs.
-  "schedule": ["after 1pm and before 4pm on wednesday"],
+  // Once a week, over the whole day: the hosted app runs at irregular intervals,
+  // so a narrow window can be missed entirely. The Dependency Dashboard issue lets
+  // us force an out-of-schedule run/PR by ticking a box.
+  "schedule": ["on wednesday"],
   "dependencyDashboard": true,
 
   // Conventional Commits: everything Renovate touches here is CI tooling.
@@ -57,6 +58,17 @@
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s+STAGE3_IMAGE=\"\\$\\{STAGE3_IMAGE:-[^:\"]+:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\\}\"",
       ],
+    },
+    {
+      // Per-package stage3 image override in an ebuild's `# QA-TEST:` directive
+      // (`image=gentoo/stage3:<tag>@sha256:…`), digest-pinned like the default
+      // image above; Renovate refreshes the digest of the named tag.
+      "customType": "regex",
+      "managerFilePatterns": ["/\\.ebuild$/"],
+      "matchStrings": [
+        "# QA-TEST:.*\\bimage=(?<depName>[^:\\s]+):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+      ],
+      "datasourceTemplate": "docker",
     },
     {
       // setup-go / setup-node versions in the lint workflow, pinned exact and
