@@ -60,6 +60,17 @@
       ],
     },
     {
+      // Per-package stage3 image override in an ebuild's `# QA-TEST:` directive
+      // (`image=gentoo/stage3:<tag>@sha256:…`), digest-pinned like the default
+      // image above; Renovate refreshes the digest of the named tag.
+      "customType": "regex",
+      "managerFilePatterns": ["/\\.ebuild$/"],
+      "matchStrings": [
+        "# QA-TEST:.*\\bimage=(?<depName>[^:\\s]+):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)",
+      ],
+      "datasourceTemplate": "docker",
+    },
+    {
       // setup-go / setup-node versions in the lint workflow, pinned exact and
       // bumped by Renovate to the latest upstream major (node and go alike). The
       // `# renovate:` annotation sits on the line directly above each
