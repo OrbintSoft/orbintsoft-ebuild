@@ -85,6 +85,7 @@ emaint sync -r haskell
 | `app-crypt/sshakku` | live | Tend the SSH agent: lifecycle, health checks, diagnostics, key loading |
 | `app-editors/turbo` | live | Terminal text editor based on Scintilla and Turbo Vision |
 | `app-misc/claude-desktop` | release | Claude AI Desktop application (unofficial Linux repackage) |
+| `app-misc/claude-science` | release | Claude Science, Anthropic's AI workbench for scientific research |
 | `dev-libs/tvision` | live | Turbo Vision — a modern port of Borland's TUI library |
 | `dev-util/fnm` | release | Fast and simple Node.js version manager, built in Rust |
 | `dev-util/shellcheck` | release | Shell script analysis tool (built from source) |
