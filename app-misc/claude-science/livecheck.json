@@ -1,0 +1,5 @@
+{
+	"type": "regex",
+	"url": "https://claude.com/docs/claude-science/changelog.md",
+	"regex": "<Update label=\"([0-9]+\\.[0-9]+\\.[0-9]+)\""
+}

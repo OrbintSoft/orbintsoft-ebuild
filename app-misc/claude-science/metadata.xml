@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
+	</maintainer>
+	<upstream>
+		<maintainer status="active">
+			<email>support@anthropic.com</email>
+			<name>Anthropic</name>
+		</maintainer>
+		<doc>https://claude.com/docs/claude-science/get-started</doc>
+		<changelog>https://claude.com/docs/claude-science/changelog</changelog>
+	</upstream>
+	<longdescription>
+		Claude Science is Anthropic's AI workbench for scientific research. It
+		runs locally as a single prebuilt binary that serves a browser UI, and
+		executes analysis code (Python, R, shell) inside a bubblewrap sandbox.
+	</longdescription>
+</pkgmetadata>
