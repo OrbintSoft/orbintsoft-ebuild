@@ -6,7 +6,7 @@ EAPI=8
 
 inherit meson
 
-# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:8d18c8e53411587b685425751fb933e298e972b9222111d8519947ed65f09b7b
+# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:4cc59961ac8434705b9c6650d25e3189c3e811aa13acfb1790c55b180aae7610
 # Thanks to cboxdoerfer, author of FSearch (https://github.com/cboxdoerfer/fsearch).
 DESCRIPTION="A fast file search utility for Unix-like systems"
 HOMEPAGE="https://github.com/cboxdoerfer/fsearch"
