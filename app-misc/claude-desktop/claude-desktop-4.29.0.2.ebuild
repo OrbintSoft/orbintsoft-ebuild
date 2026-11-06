@@ -17,7 +17,7 @@ else
 	CLAUDE_TAG="v${PV}"
 fi
 
-# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:3157e2d68d97918f5c92070d6483aa312b8c0bda3fe3cb9af85d69229f2caed9
+# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:7d7b7e9bce5f312a71b0d4053ab0f0e3de47de57952ec84c4601fc87660e5ebf
 # Thanks to Anthropic for Claude Desktop and to patrickjaja for the Linux
 # repackage (https://github.com/patrickjaja/claude-desktop-extra).
 DESCRIPTION="Claude AI Desktop application (unofficial Linux repackage)"
