@@ -2,9 +2,10 @@
   // Renovate config for the orbintsoft overlay.
   //
   // Renovate manages: the Go lint tools (`go install …@vX.Y.Z`), the gentoo/stage3
-  // container digest, the setup-go/setup-node versions, and the GitHub Actions pins
-  // (SHA + version comment). Dependabot also maintains the GitHub Actions pins
-  // (.github/dependabot.yml), on a different day — the two overlap on actions.
+  // container digest, the setup-go/setup-node versions, the renovate major used by
+  // `make lint-renovate`, and the GitHub Actions pins (SHA + version comment).
+  // Dependabot also maintains the GitHub Actions pins (.github/dependabot.yml), on
+  // a different day — the two overlap on actions.
   //
   // json5 (not json) so each custom manager can be documented inline. Validated
   // by `make lint-renovate` (renovate-config-validator) and by the Mend app.
@@ -16,7 +17,7 @@
   // so a narrow window can be missed entirely. The Dependency Dashboard issue lets
   // us force an out-of-schedule run/PR by ticking a box.
   "schedule": ["on wednesday"],
-  "dependencyDashboard": true,
+  "dependencyDashboard": { "enabled": true },
 
   // Conventional Commits: everything Renovate touches here is CI tooling.
   "semanticCommits": "enabled",
@@ -80,6 +81,19 @@
       "matchStrings": [
         "# renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\s*\\n\\s*[\\w.-]+:\\s*['\"]?(?<currentValue>[^'\"\\s]+)['\"]?",
       ],
+    },
+    {
+      // renovate npm package that `make lint-renovate` validates this config with
+      // (Makefile RENOVATE_PKG), pinned to a major. A new major is where config
+      // migrations surface, so moving the pin makes CI validate against it.
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": [
+        "RENOVATE_PKG \\?= renovate@(?<currentValue>[0-9]+)",
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "renovate",
+      "versioningTemplate": "npm",
     },
   ],
 }
