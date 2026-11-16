@@ -3,6 +3,8 @@
 
 EAPI=9
 
+inherit desktop
+
 # QA-TEST: source
 # Thanks to Anthropic, author of Claude Science (https://claude.com/product/claude-science).
 DESCRIPTION="Claude Science, Anthropic's AI workbench for scientific research"
@@ -33,14 +35,26 @@ src_unpack() {
 
 src_install() {
 	dobin claude-science
+
+	exeinto /usr/libexec/${PN}
+	newexe "${FILESDIR}"/${PN}-launcher.sh ${PN}-launcher
+
+	# Upstream ships no Linux icon; use the generic theme icon.
+	make_desktop_entry /usr/libexec/${PN}/${PN}-launcher \
+		-n "Claude Science" \
+		-d ${PN} \
+		-i applications-science \
+		-c "Education;Science;"
 }
 
 pkg_postinst() {
-	elog "Start Claude Science with: claude-science serve"
-	elog "It prints a local URL and opens the app in your browser."
+	elog "Start Claude Science from your application menu, or run:"
+	elog "  claude-science serve"
+	elog "Either way it opens the app in your browser."
 	elog
-	elog "Updates are managed by Portage. To stop the app from updating itself,"
-	elog "add this to ~/.claude-science/config.toml:"
+	elog "Updates are managed by Portage, and the menu launcher keeps the app"
+	elog "from updating itself. When starting it from a terminal, pass"
+	elog "--no-auto-update, or add this to ~/.claude-science/config.toml:"
 	elog "  [update]"
 	elog "  auto_update = false"
 }
