@@ -39,8 +39,8 @@ RENOVATE_CONFIG ?= renovate.json5
 # Pin the validator's major so local and CI agree on the config schema (the
 # fileMatch -> managerFilePatterns rename means an unpinned npx can validate a
 # stale cached major and disagree with CI's fresh install). Tracks the renovate
-# the Mend app runs (stable 43.x).
-RENOVATE_PKG ?= renovate@43
+# the Mend app runs; Renovate moves it to each new major (see renovate.json5).
+RENOVATE_PKG ?= renovate@44
 
 # Lint only files git would track (tracked + untracked, minus gitignored), so
 # scratch/working files (e.g. under .scratch/, *-steps.md — CLAUDE.md rules 7-9)
