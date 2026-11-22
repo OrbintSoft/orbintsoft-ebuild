@@ -1,0 +1,11 @@
+{
+	"type": "regex",
+	"url": "https://api.snapcraft.io/api/v1/snaps/details/bluemail?channel=stable",
+	"headers": {
+		"X-Ubuntu-Series": "16",
+		"X-Ubuntu-Architecture": "amd64"
+	},
+	"regex": "\"revision\": ?([0-9]+,.*?\"version\": ?\"[0-9.]+)\"",
+	"pattern_version": "^([0-9]+),.*\"([0-9.]+)$",
+	"replace_version": "\\2_p\\1"
+}
