@@ -5,7 +5,7 @@ Read this at the start of every session. The detailed roadmap lives in [PLAN.md]
 
 ## What this repo is
 
-`orbintsoft-ebuild` is a personal **Gentoo overlay** (EAPI 8, `masters = gentoo`,
+`orbintsoft-ebuild` is a personal **Gentoo overlay** (EAPI 8/9, `masters = gentoo`,
 thin manifests) maintained by Stefano Balzarotti / OrbintSoft. It ships ebuilds
 for software not in the main Gentoo tree. Goal: raise quality to the point where
 it can be published as a public, CI-tested overlay with automated version bumps.
@@ -100,8 +100,9 @@ it can be published as a public, CI-tested overlay with automated version bumps.
 ## Repository conventions
 
 - **EAPI: the latest.** EAPI **9** was released 2025-12-14 and is supported by the
-  installed Portage; it is the target for new and bumped ebuilds. Existing ebuilds
-  are still EAPI 8 — migrate per PLAN.md (Phase 1.10). Adopt future EAPIs likewise.
+  installed Portage; it is the target for new and bumped ebuilds. Ebuilds whose
+  eclasses still cap at EAPI 8 stay on 8 — migrate per PLAN.md (Phase 6). Adopt
+  future EAPIs likewise.
 - **Indentation: tabs** in `*.ebuild` / `*.eclass` (not spaces).
 - **Copyright headers** (standardized in Phase 1.1; `pkgcheck scan` accepts them).
   Original work uses GPL-3:

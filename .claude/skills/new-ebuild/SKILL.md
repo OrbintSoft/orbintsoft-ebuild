@@ -38,9 +38,10 @@ minimal follow-up. Authoritative rules live in [CLAUDE.md](../../../CLAUDE.md) a
 
 ### EAPI — default 9, but eclass-gated
 Target **`EAPI=9`**. An ebuild can only be EAPI 9 if *none* of its inherited eclasses
-caps at EAPI 8. As of the 2026-06-12 tree snapshot the still-EAPI-8 eclasses are
-**`cargo`, `rust`, `cmake`, `meson`, `font`, `xdg`**; `git-r3` is EAPI-9-ready. If you
-inherit any capped eclass, use **`EAPI=8`** (see PLAN.md 1.10 / Phase 6). Don't trust
+caps at EAPI 8. As of the 2026-11-22 tree snapshot the still-EAPI-8 eclasses are
+**`cargo`, `rust`, `cmake`, `meson`, `xdg`, `vala`, `haskell-cabal`**; `git-r3`, `font`,
+`desktop`, `optfeature` are EAPI-9-ready. If you inherit any capped eclass, use
+**`EAPI=8`** (see PLAN.md Phase 6). Don't trust
 the snapshot blindly — verify against the installed tree when unsure:
 `grep -nE 'EAPI[ )]' /var/db/repos/gentoo/eclass/<name>.eclass` (look at its
 `case ${EAPI} in` block). Never fork an eclass or hand-roll a build to dodge the cap.

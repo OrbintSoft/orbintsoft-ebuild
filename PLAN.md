@@ -90,7 +90,7 @@ Make the overlay easy to discover and adopt, and let people support the work.
 
 ## Phase 6 — EAPI 9 migration (eclass-gated)  `[ ]`
 
-The 6 packages still on EAPI 8 inherit eclasses that cap at EAPI 8 in the Gentoo tree.
+The packages still on EAPI 8 inherit eclasses that cap at EAPI 8 in the Gentoo tree.
 Each can only move to EAPI 9 once its eclass gains EAPI 9 support upstream. The path is
 to **submit PRs to Gentoo** adding EAPI 9 to those eclasses (or wait for in-flight
 upstream work). Gentoo does not accept AI-authored commits, so **Stefano authors these
@@ -109,7 +109,7 @@ is small: add `9)` to the guard, audit the phase functions, test.
 
 **Already EAPI-9-ready** in these chains (no work): `git-r3`, `flag-o-matic`,
 `toolchain-funcs`, `multiprocessing`, `multilib-build`, `sysroot`, `out-of-source-utils`,
-`multibuild`.
+`multibuild`, `desktop`, `optfeature`.
 
 **Leaf eclasses still capped at 8** — they inherit only ready eclasses, so each is
 PR-able upstream now with no prerequisite:
@@ -120,12 +120,19 @@ PR-able upstream now with no prerequisite:
 | `xdg-utils` | (none) | `cmake` + `xdg` |
 | ~~`font`~~ ✓ (EAPI 9 upstream) | (none) | nerd-fonts |
 | `vala` | flag-o-matic ✓ | polo |
-| `rust`, `rust-toolchain` | (none) | `cargo` |
+| `rust`, `rust-toolchain` | (none)¹ | `cargo` |
 | `python-utils-r1` | multiprocessing ✓, toolchain-funcs ✓ | `meson` |
+| `ghc-package` | multiprocessing ✓ | `haskell-cabal` |
+| `multilib` | toolchain-funcs ✓ | `haskell-cabal` |
+
+¹ `rust` (and `cargo`) inherit `llvm-r2` only with `RUST_NEEDS_LLVM`, and `rust` inherits
+`multilib-build` ✓ only with `RUST_MULTILIB`; fnm sets neither. A package that sets
+`RUST_NEEDS_LLVM` would also need `llvm-r2` (← `multilib`), still capped at 8.
 
 **Blocked until a leaf lands first:** `meson` (← `ninja-utils` + `python-utils-r1`),
 `cmake` (← `ninja-utils` + `xdg-utils`), `xdg` (← `xdg-utils`),
-`cargo` (← `rust` + `rust-toolchain`).
+`cargo` (← `rust` + `rust-toolchain`), `haskell-cabal` (← `ghc-package` + `multilib`;
+the overlay's `masters = gentoo`, so the `::gentoo` copy is the one that counts).
 
 ### Per-package gate (easiest first)
 
@@ -138,10 +145,15 @@ EAPI-9 behavioral change, and confirm with `make test PKG=<cat/pkg>`.
       and self-contained; do first to prove the workflow end to end. _Unblocked by `font`
       gaining EAPI 9 upstream (no PR needed); migrated with no body changes — in EAPI 9
       `font` also exports `src_compile`, a no-op without `FONT_OPENTYPE_COMPAT`._
-- [ ] **6.2** `dev-libs/tvision` — gate: `cmake` (= `ninja-utils` + `xdg-utils`, two small
-      leaves); also inherits `git-r3` ✓.
-- [ ] **6.3** `x11-misc/polo` — gate: `xdg` (← `xdg-utils`) + `vala`; also `git-r3` ✓.
+- [ ] **6.2** `dev-libs/tvision`, `app-editors/turbo` — gate: `cmake` (= `ninja-utils` +
+      `xdg-utils`, two small leaves); both also inherit `git-r3` ✓.
+- [ ] **6.3** `gui-apps/1password`, `x11-misc/polo` — gate: `xdg` (← `xdg-utils`); polo
+      also needs `vala`. 1password's other eclasses (`desktop`, `optfeature`) are ✓; polo
+      also inherits `git-r3` ✓.
 - [ ] **6.4** `app-admin/pamtester`, `sys-apps/fsearch` — gate: `meson`
       (= `ninja-utils` + `python-utils-r1`). Longest path: `python-utils-r1` is a
       heavyweight, high-scrutiny eclass.
 - [ ] **6.5** `dev-util/fnm` — gate: `cargo` (= `rust` + `rust-toolchain`).
+- [ ] **6.6** `dev-util/shellcheck` — gate: `haskell-cabal` (= `ghc-package` + `multilib`).
+      Haskell eclasses are developed in the gentoo-haskell overlay before reaching
+      `::gentoo`, so check there for in-flight EAPI 9 work first.
