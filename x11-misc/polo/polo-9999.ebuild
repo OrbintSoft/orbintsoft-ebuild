@@ -16,8 +16,10 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS=""
 
-# Runtime dependencies
+# Runtime dependencies. Polo refuses to start unless the `7z` and `xdg-mime`
+# commands are available; only 7zip[symlink] installs the `7z` name.
 RDEPEND="
+	app-arch/7zip[symlink]
 	dev-libs/glib:2
 	dev-libs/json-glib
 	dev-libs/libgee
@@ -31,6 +33,7 @@ RDEPEND="
 	x11-libs/cairo
 	x11-libs/vte:2.91
 	x11-misc/shared-mime-info
+	x11-misc/xdg-utils
 	dev-util/desktop-file-utils
 "
 
