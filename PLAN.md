@@ -147,9 +147,9 @@ EAPI-9 behavioral change, and confirm with `make test PKG=<cat/pkg>`.
       `font` also exports `src_compile`, a no-op without `FONT_OPENTYPE_COMPAT`._
 - [ ] **6.2** `dev-libs/tvision`, `app-editors/turbo` — gate: `cmake` (= `ninja-utils` +
       `xdg-utils`, two small leaves); both also inherit `git-r3` ✓.
-- [ ] **6.3** `gui-apps/1password`, `x11-misc/polo` — gate: `xdg` (← `xdg-utils`); polo
-      also needs `vala`. 1password's other eclasses (`desktop`, `optfeature`) are ✓; polo
-      also inherits `git-r3` ✓.
+- [ ] **6.3** `gui-apps/1password`, `mail-client/bluemail`, `x11-misc/polo` — gate: `xdg`
+      (← `xdg-utils`); polo also needs `vala`. 1password's and bluemail's other eclasses
+      (`desktop`, `optfeature`) are ✓; polo also inherits `git-r3` ✓.
 - [ ] **6.4** `app-admin/pamtester`, `sys-apps/fsearch` — gate: `meson`
       (= `ninja-utils` + `python-utils-r1`). Longest path: `python-utils-r1` is a
       heavyweight, high-scrutiny eclass.

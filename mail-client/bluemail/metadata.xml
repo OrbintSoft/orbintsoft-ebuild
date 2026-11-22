@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>stefano.balzarotti@orbintsoft.net</email>
+		<name>Stefano Balzarotti</name>
+	</maintainer>
+	<upstream>
+		<maintainer status="active">
+			<name>Blix Inc.</name>
+		</maintainer>
+		<doc>https://bluemail.me/help/</doc>
+	</upstream>
+	<longdescription>
+		BlueMail is a free email and calendar client that manages an unlimited
+		number of accounts from different providers. This package installs the
+		official Linux build, a prebuilt Electron bundle unpacked from the Snap
+		Store image, so it can be managed through Portage without snapd.
+	</longdescription>
+</pkgmetadata>

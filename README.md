@@ -90,6 +90,7 @@ emaint sync -r haskell
 | `dev-util/fnm` | release | Fast and simple Node.js version manager, built in Rust |
 | `dev-util/shellcheck` | release | Shell script analysis tool (built from source) |
 | `kde-plasma/ksshaskpass` | stub | Dummy package to satisfy dependencies without installing anything |
+| `mail-client/bluemail` | release | Universal email and calendar client (repackaged from the Snap Store) |
 | `media-fonts/nerd-fonts` | release | Fonts patched to include a high number of glyphs (icons) |
 | `net-wireless/bt-keys-sync` | live | Sync Bluetooth pairing keys between Windows and Linux |
 | `sys-apps/fsearch` | release | A fast file search utility for Unix-like systems |
