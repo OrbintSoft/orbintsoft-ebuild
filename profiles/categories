@@ -4,6 +4,7 @@ app-backup
 app-crypt
 app-editors
 app-misc
+app-portage
 dev-libs
 dev-util
 gui-apps
