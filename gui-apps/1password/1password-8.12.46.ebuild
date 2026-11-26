@@ -6,7 +6,7 @@ EAPI=8
 
 inherit desktop optfeature xdg
 
-# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:a5ef311f82bd949f3f1cab8f3b5d95aa84acc090c971bfc18b457e12ae7a4c79
+# QA-TEST: binpkg-respect-use image=gentoo/stage3:desktop@sha256:88ea9336c900219b0d783b36fbe391a43d47d7ea7a9e3e78b66f8d4f31ed8547
 # Thanks to AgileBits, author of 1Password (https://1password.com).
 DESCRIPTION="Password manager and secure digital wallet"
 HOMEPAGE="https://1password.com"
