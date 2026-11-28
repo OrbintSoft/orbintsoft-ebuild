@@ -90,7 +90,6 @@ emaint sync -r haskell
 | `dev-libs/tvision` | live | Turbo Vision — a modern port of Borland's TUI library |
 | `dev-util/fnm` | release | Fast and simple Node.js version manager, built in Rust |
 | `dev-util/shellcheck` | release | Shell script analysis tool (built from source) |
-| `kde-plasma/ksshaskpass` | stub | Dummy package to satisfy dependencies without installing anything |
 | `mail-client/bluemail` | release | Universal email and calendar client (repackaged from the Snap Store) |
 | `media-fonts/nerd-fonts` | release | Fonts patched to include a high number of glyphs (icons) |
 | `net-wireless/bt-keys-sync` | live | Sync Bluetooth pairing keys between Windows and Linux |
@@ -99,7 +98,7 @@ emaint sync -r haskell
 | `x11-misc/polo` | live | Polo File Manager (Vala/GTK) |
 
 *live* tracks upstream HEAD (`-9999`, empty `KEYWORDS`); *release* pins an
-upstream version; *stub* is a metadata-only placeholder.
+upstream version.
 
 ## Contributing
 
